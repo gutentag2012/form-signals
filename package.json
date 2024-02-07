@@ -1,12 +1,20 @@
 {
   "name": "signal-forms",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {},
   "private": true,
-  "dependencies": {},
+  "repository": "todo",
+  "packageManager": "pnpm@8.15.1",
+  "type": "module",
+  "namespace": "signal-forms",
+  "scripts": {
+    "style:fix": "pnpm dlx @biomejs/biome check"
+  },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@nx/js": "18.0.2",
-    "nx": "18.0.2"
+    "@types/node": "^20.11.16",
+    "nx": "18.0.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitest": "^1.2.2"
   }
 }
