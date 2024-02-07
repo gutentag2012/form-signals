@@ -1,0 +1,12 @@
+{
+  "name": "signal-forms",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@nx/js": "18.0.2",
+    "nx": "18.0.2"
+  }
+}
