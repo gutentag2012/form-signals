@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {FormField} from "@/components/form/FormField";
 import {FormProvider} from "@/components/form/FormProvider";
 import {Button, ButtonProps} from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {Calendar as CalendarIcon} from "lucide-react";
 import {createRoot} from "react-dom/client";
 import "./index.css";
 import {signal, useSignal} from "@preact/signals-react";
+import {deepSignalifyValue} from "@/components/form/signals.utils";
 
 interface DatePickerProps extends Omit<ButtonProps, "value"> {
 	value?: Date;
@@ -122,6 +123,11 @@ export const Index = () => {
 			})),
 		),
 	});
+
+	useEffect(() => {
+		const signal = deepSignalifyValue(defaultValues);
+		console.log(signal);
+	}, []);
 
 	const [selectedCurrency, setSelectedCurrency] = useState<string>();
 	const populatedCurrencyCount = Object.keys(values.prices).length;
