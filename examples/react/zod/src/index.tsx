@@ -1,6 +1,4 @@
-import {useEffect, useState} from "react";
-import {FormField} from "@/components/form/FormField";
-import {FormProvider} from "@/components/form/FormProvider";
+import {useState} from "react";
 import {Button, ButtonProps} from "@/components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
@@ -123,11 +121,6 @@ export const Index = () => {
 		),
 	});
 
-	useEffect(() => {
-		const signal = deepSignalifyValue(defaultValues);
-		console.log(signal);
-	}, []);
-
 	const [selectedCurrency, setSelectedCurrency] = useState<string>();
 	const populatedCurrencyCount = Object.keys(values.prices).length;
 
@@ -140,10 +133,6 @@ export const Index = () => {
 				This is an example form with a complex data structure demonstrated on a
 				form to update product information.
 			</p>
-
-			<FormProvider>
-				<FormField />
-			</FormProvider>
 
 			<form
 				className="flex flex-col gap-4 w-full"
