@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { FormApi } from "@/components/form/FormApi";
-import { FieldApi } from "@/components/form/FieldApi";
-import { computed, effect, signal } from "@preact/signals-react";
+import { FormApi } from "./FormApi";
+import { FieldApi } from "./FieldApi";
+import { effect } from "@preact/signals";
 
 describe("FieldAPI", () => {
 	describe("construction", () => {
@@ -27,6 +27,7 @@ describe("FieldAPI", () => {
 							{
 								nested: [["string"]],
 							},
+							// TODO If I do this as `as const` it does not work
 						],
 					},
 				},
@@ -185,21 +186,6 @@ describe("FieldAPI", () => {
 
 			expect(field.signal.value).toBe(1);
 		});
-		it("should transform the value for submit", () => {
-			const form = new FormApi({
-				defaultValues: {
-					num: 2,
-				},
-			});
-
-			const field = new FieldApi(form, "num", {
-				transformForSubmit: (value) => value * 2,
-			});
-			field.handleChange(3);
-
-			const transformed = field.handleSubmit();
-			expect(transformed).toBe(6);
-		});
 	});
 	describe("validation", () => {
 		it.todo("should validate the value");
@@ -230,11 +216,44 @@ describe("FieldAPI", () => {
 
 			expect(field.isDirty.value).toBe(true);
 		});
-		it.todo("should be touched after it was blurred");
-		it.todo("should be touched after its value was changed");
+		it("should be touched after it was blurred", () => {
+			const form = new FormApi({
+				defaultValues: {
+					name: "test",
+				},
+			});
+
+			const field = new FieldApi(form, "name");
+
+			expect(field.isTouched.value).toBe(false);
+			field.handleBlur();
+
+			expect(field.isTouched.value).toBe(true);
+		});
+		it("should be touched after its value was changed", () => {
+			const form = new FormApi({
+				defaultValues: {
+					name: "test",
+				},
+			});
+
+			const field = new FieldApi(form, "name");
+
+			expect(field.isTouched.value).toBe(false);
+			field.handleChange("new value");
+
+			expect(field.isTouched.value).toBe(true);
+		});
 		it.todo("should have a list of errors after validating erroneous values");
 		it.todo("should reset the state after reset the form");
 		it.todo("should reset the state after reset the field");
+		it.todo(
+			"should not reset the state after reset the form if ignoring dirty fields and is dirty",
+		);
+		it.todo(
+			"should reset the state after reset the form if ignoring dirty fields and is not dirty",
+		);
+		// TODO Figure out what I want to do for the mounting and unmounting
 		it.todo("should preserve field state on unmount if configured");
 		it.todo("should reset field state on unmount if not otherwise configured");
 		it.todo("should show the validating state while doing async validation");

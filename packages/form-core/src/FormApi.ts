@@ -1,12 +1,14 @@
 import {
   deepSignalifyValue,
-  getSignalValueAtPath, getValueAtPath,
+  getSignalValueAtPath,
+  getValueAtPath,
+  removeSignalValueAtPath,
   setSignalValueAtPath,
   SignalifiedData,
-} from "@/components/form/signals.utils";
-import {Paths, ValueAtPath} from "@/components/form/types.utils";
-import {signal, Signal} from "@preact/signals-react";
-import {FieldApi} from "@/components/form/FieldApi";
+} from "./signals.utils";
+import {Paths, ValueAtPath} from "./types.utils";
+import {signal, Signal} from "@preact/signals";
+import {FieldApi} from "./FieldApi";
 
 type FormApiOptions<TData> = {
 	defaultValues?: TData;
@@ -15,8 +17,11 @@ type FormApiOptions<TData> = {
 // TODO In addition to the onSubmit validator this should also have a afterSubmit validation which checks all the transformed values
 export class FormApi<TData> {
 	private readonly _data: SignalifiedData<TData> | Signal<undefined>;
+	private readonly _fields: Map<
+		Paths<TData>,
 	// biome-ignore lint/suspicious/noExplicitAny: This could a field with any type of output
-private  readonly _fields: Map<Paths<TData>, FieldApi<TData, Paths<TData>, any>>;
+		FieldApi<TData, Paths<TData>, any>
+	>;
 
 	constructor(private readonly _options?: FormApiOptions<TData>) {
 		if (this._options?.defaultValues) {
@@ -33,20 +38,20 @@ private  readonly _fields: Map<Paths<TData>, FieldApi<TData, Paths<TData>, any>>
 		defaultValues?: ValueAtPath<TData, TPath>,
 	) {
 		this._fields.set(path, field);
-    if(defaultValues === undefined) return;
+		if (defaultValues === undefined) return;
 		setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues);
 	}
 
-	public unregisterField<TPath extends Paths<TData>>(path: TPath) {
+	public unregisterField<TPath extends Paths<TData>>(path: TPath, preserveValue?: boolean) {
 		this._fields.delete(path);
-		// TODO Remove from data
+    if (preserveValue) return;
+    removeSignalValueAtPath(this._data, path);
 	}
 
 	public getDefaultValueForPath<TPath extends Paths<TData>>(
 		path: TPath,
 	): ValueAtPath<TData, TPath> | undefined {
-    if(!this._options?.defaultValues) return undefined;
-		return getValueAtPath<TData, TPath>(this._options.defaultValues, path);
+		return getValueAtPath<TData, TPath>(this._options?.defaultValues, path);
 	}
 
 	public getValueForPath<TPath extends Paths<TData>>(

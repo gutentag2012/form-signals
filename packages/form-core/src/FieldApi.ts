@@ -1,20 +1,8 @@
-import { type FormApi } from "@/components/form/FormApi";
-import { Paths, ValueAtPath } from "@/components/form/types.utils";
-import {
-	computed,
-	effect,
-	ReadonlySignal,
-	signal,
-} from "@preact/signals-react";
-import {
-	Validator,
-	ValidatorAsync,
-	ValidatorSync,
-} from "@/components/form/validators";
-import {
-	makeArrayEntry,
-	SignalifiedData,
-} from "@/components/form/signals.utils";
+import { type FormApi } from "./FormApi";
+import { Paths, ValueAtPath } from "./types.utils";
+import { computed, effect, ReadonlySignal, signal } from "@preact/signals";
+import { Validator, ValidatorAsync, ValidatorSync } from "./validators";
+import { makeArrayEntry } from "./signals.utils";
 
 interface FieldApiOptions<TValue, TName extends Paths<TValue>, TOutput> {
 	/**
@@ -32,18 +20,6 @@ interface FieldApiOptions<TValue, TName extends Paths<TValue>, TOutput> {
 	 * Whether the value should be preserved once the field is unmounted
 	 */
 	preserveValueOnUnmount?: boolean;
-	/**
-	 * Transform the field value and hand its return to the onSubmit function. The onSubmit validation will run before this transformation.
-	 * @param value The current value of the field
-	 * @returns The transformed value
-	 *
-	 * @example
-	 * ```typescript
-	 * const field = new FieldApi(form, "name", {
-	 * };
-	 * ```
-	 */
-	transformForSubmit?: (value: ValueAtPath<TValue, TName>) => TOutput;
 }
 
 let ValidatorKeys = 0;
@@ -52,11 +28,13 @@ type ValidatorEvents = "onChange" | "onBlur" | "onSubmit" | "onMount";
 
 export class FieldApi<TValue, TName extends Paths<TValue>, TOutput = never> {
 	//region State
-  // TODO Think about scenarios where value changes should not trigger the touched state (e.g. inserting a value into an array)
+	// TODO Think about scenarios where value changes should not trigger the touched state (e.g. inserting a value into an array)
 	private readonly _isTouched = signal(false);
-  private readonly _isTouchedReadOnly = computed(() => this._isTouched.value);
+	private readonly _isTouchedReadOnly = computed(() => this._isTouched.value);
 	private readonly _isValidating = signal(false);
-  private readonly _isValidatingReadOnly = computed(() => this._isValidating.value);
+	private readonly _isValidatingReadOnly = computed(
+		() => this._isValidating.value,
+	);
 	private readonly _errorMap = signal<Record<number, string[]>>({});
 
 	private readonly _isValid: ReadonlySignal<boolean> = computed(() => {
@@ -166,11 +144,10 @@ export class FieldApi<TValue, TName extends Paths<TValue>, TOutput = never> {
 	}
 
 	unmount() {
+    this._isMounted = false;
 		this._unsubscribeFromChangeEffect();
 
-		if (this._options?.preserveValueOnUnmount) return;
-
-		this._form.unregisterField(this._name);
+		this._form.unregisterField(this._name, this._options?.preserveValueOnUnmount);
 	}
 	//endregion
 
@@ -196,14 +173,7 @@ export class FieldApi<TValue, TName extends Paths<TValue>, TOutput = never> {
 		if (!this.isValid.value) {
 			return;
 		}
-
-		const currentValue = this.signal.value;
-		if (this._options?.transformForSubmit) {
-			return this._options.transformForSubmit(
-				currentValue as ValueAtPath<TValue, TName>,
-			);
-		}
-		return currentValue;
+    return this.signal.value;
 	}
 	//endregion
 
@@ -242,7 +212,7 @@ export class FieldApi<TValue, TName extends Paths<TValue>, TOutput = never> {
 	 * @param value The value to push to the array
 	 */
 	pushValueToArray(
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
+		// biome-ignore lint/suspicious/noExplicitAny: Could be any array
 		value: ValueAtPath<TValue, TName> extends any[]
 			? ValueAtPath<TValue, TName>[number]
 			: never,
@@ -268,7 +238,7 @@ export class FieldApi<TValue, TName extends Paths<TValue>, TOutput = never> {
 	 */
 	removeValueFromArray(
 		// biome-ignore lint/suspicious/noExplicitAny: Could be any array
-index: ValueAtPath<TValue, TName> extends any[] ? number : never,
+		index: ValueAtPath<TValue, TName> extends any[] ? number : never,
 	) {
 		const currentValue = this.signal.value;
 		if (!Array.isArray(currentValue)) {
@@ -283,11 +253,11 @@ index: ValueAtPath<TValue, TName> extends any[] ? number : never,
 	}
 	//endregion
 
-  //region State
-  /**
-   * The reactive signal of the fields value, you can get, subscribe and set the value of the field with this signal.
-   */
-  get signal() {
+	//region State
+	/**
+	 * The reactive signal of the fields value, you can get, subscribe and set the value of the field with this signal.
+	 */
+	get signal() {
 		return this._form.getValueForPath(this._name);
 	}
 
@@ -311,9 +281,9 @@ index: ValueAtPath<TValue, TName> extends any[] ? number : never,
 		return this._isDirty;
 	}
 
-  get isMounted() {
-    return this._isMounted;
-  }
+	get isMounted() {
+		return this._isMounted;
+	}
 	//endregion
 
 	private get _defaultValue() {

@@ -1,5 +1,5 @@
-import {signal, Signal} from "@preact/signals-react";
-import {Paths, ValueAtPath} from "@/components/form/types.utils";
+import {signal, Signal} from "@preact/signals";
+import {Paths, ValueAtPath} from "./types.utils";
 
 // TODO When inserting or deleting from an array this value must be considered
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
@@ -69,25 +69,25 @@ const pathToParts = (path: string): Array<string | number> =>
 	});
 
 export const getValueAtPath = <TValue, TPath extends Paths<TValue>>(
-  obj: TValue,
-  path: TPath,
+	obj: TValue | undefined,
+	path: TPath,
 ): ValueAtPath<TValue, TPath> | undefined => {
-  if (!path || !obj) {
-    return undefined;
-  }
-  const parts = pathToParts(path as string);
+	if (!path || !obj) {
+		return undefined;
+	}
+	const parts = pathToParts(path as string);
 
-  // biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
-  let value: any = obj;
-  for (const part of parts) {
-    if (typeof value !== "object" || value === null || !(part in value)) {
-      return undefined;
-    }
-    value = value[part];
-  }
+	// biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
+	let value: any = obj;
+	for (const part of parts) {
+		if (typeof value !== "object" || value === null || !(part in value)) {
+			return undefined;
+		}
+		value = value[part];
+	}
 
-  return value;
-}
+	return value;
+};
 
 export const getSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 	obj: SignalifiedData<TValue> | Signal<undefined>,
@@ -124,6 +124,35 @@ export const getSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 	return value;
 };
 
+export const removeSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
+	obj: SignalifiedData<TValue> | Signal<undefined>,
+	path: TPath,
+): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined => {
+	if (!path || !obj) {
+		return undefined;
+	}
+	const parts = pathToParts(path as string);
+	const parentPath = parts.slice(0, -1).join(".");
+
+	const parent =
+		parts.length === 1 ? obj : getSignalValueAtPath(obj, parentPath);
+	if (!parent) {
+		return undefined;
+	}
+
+	const part = parts[parts.length - 1];
+	if (typeof part === "number") {
+		const arrayCopy = [...parent.peek()];
+		arrayCopy.splice(part, 1);
+		parent.value = arrayCopy;
+	} else {
+		const { [part]: _, ...rest } = parent.peek();
+		parent.value = rest;
+	}
+
+	console.log("After parent", parent.peek());
+};
+
 export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 	obj: SignalifiedData<TValue> | Signal<undefined>,
 	path: TPath,
@@ -143,6 +172,10 @@ export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 	let current: Signal<any> = obj;
 	for (let i = 0; i < parts.length; i++) {
 		const part = parts[i];
+		if (part === undefined) {
+			return undefined;
+		}
+
 		const nextPart = parts[i + 1];
 		const newValue =
 			nextPart === undefined
@@ -156,7 +189,7 @@ export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 			"signal" in current ? (current.signal as Signal<any>) : current;
 
 		// If the current part is already included in the current value, we can continue with that value
-		if (!!element.peek() && part in element.peek() && !!nextPart) {
+		if (!!element.peek() && part in element.peek() && nextPart !== undefined) {
 			current = element.peek()[part];
 			continue;
 		}
@@ -171,7 +204,7 @@ export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 			// We know the value is not already included, so we can insert it at the part
 			const arrayCopy = [...element.peek()];
 			// We need to signalify the value before inserting it
-			arrayCopy[part] = makeArrayEntry(newValue);
+			arrayCopy[part] = makeArrayEntry(value);
 			element.value = arrayCopy;
 		} else {
 			// If the current value is not an object, we need to create an object
@@ -185,9 +218,10 @@ export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 				[part]: newValue,
 			};
 		}
-		if (nextPart === undefined) {
-			return current as SignalifiedData<ValueAtPath<TValue, TPath>>;
+
+		if (nextPart !== undefined) {
+			current = element.peek()[part];
 		}
-		current = element.peek()[part];
 	}
+	return current;
 };

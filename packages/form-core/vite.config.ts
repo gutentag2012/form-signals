@@ -6,7 +6,7 @@ export default defineConfig({
 		dir: "./src",
 		watch: false,
 		environment: "jsdom",
-		globals: true,
+		globals: false,
 		coverage: {
 			enabled: true,
 			provider: "istanbul",

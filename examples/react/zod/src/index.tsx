@@ -26,7 +26,6 @@ import {Calendar as CalendarIcon} from "lucide-react";
 import {createRoot} from "react-dom/client";
 import "./index.css";
 import {signal, useSignal} from "@preact/signals-react";
-import {deepSignalifyValue} from "@/components/form/signals.utils";
 
 interface DatePickerProps extends Omit<ButtonProps, "value"> {
 	value?: Date;

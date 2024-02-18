@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "Bundler",
-    "types": ["vitest/globals"]
   },
   "include": ["./src/**/*.ts", "vite.config.ts"]
 }
