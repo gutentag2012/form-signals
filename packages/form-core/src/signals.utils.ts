@@ -143,27 +143,28 @@ export const getSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
 export const removeSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
-): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined => {
+) => {
   if (!path || !obj) {
-    return undefined;
+    return;
   }
   const parts = pathToParts(path as string);
   const parentPath = parts.slice(0, -1).join(".");
 
   const parent =
-    parts.length === 1 ? obj : getSignalValueAtPath(obj, parentPath);
+    parts.length === 1 ? obj : getSignalValueAtPath(obj, parentPath as Paths<TValue>);
   if (!parent) {
-    return undefined;
+    return;
   }
+  const peekedValue = parent.peek()
 
   const part = parts[parts.length - 1];
-  if (typeof part === "number") {
-    const arrayCopy = [...parent.peek()];
+  if (typeof part === "number" && Array.isArray(peekedValue)) {
+    const arrayCopy = [...peekedValue];
     arrayCopy.splice(part, 1);
-    parent.value = arrayCopy;
+    parent.value = arrayCopy as typeof parent["value"];
   } else {
-    const { [part]: _, ...rest } = parent.peek();
-    parent.value = rest;
+    const { [part as keyof TValue]: _, ...rest } = peekedValue;
+    parent.value = rest as typeof parent["value"];
   }
 };
 
