@@ -19,8 +19,7 @@ export class FormApi<TData> {
 	private readonly _data: SignalifiedData<TData> | Signal<undefined>;
 	private readonly _fields: Map<
 		Paths<TData>,
-	// biome-ignore lint/suspicious/noExplicitAny: This could a field with any type of output
-		FieldApi<TData, Paths<TData>, any>
+		FieldApi<TData, Paths<TData>>
 	>;
 
 	constructor(private readonly _options?: FormApiOptions<TData>) {
@@ -32,9 +31,9 @@ export class FormApi<TData> {
 		this._fields = new Map();
 	}
 
-	public registerField<TPath extends Paths<TData>, TOutput>(
+	public registerField<TPath extends Paths<TData>>(
 		path: TPath,
-		field: FieldApi<TData, TPath, TOutput>,
+		field: FieldApi<TData, TPath>,
 		defaultValues?: ValueAtPath<TData, TPath>,
 	) {
 		this._fields.set(path, field);

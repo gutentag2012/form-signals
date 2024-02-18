@@ -1,7 +1,7 @@
 interface ValidatorBase {
 	/**
 	 * Whether the validator should run on change
-	 * @default true
+	 * @default false
 	 */
 	onChange?: boolean;
 	/**
@@ -26,13 +26,12 @@ export interface ValidatorSync<TValue> extends ValidatorBase {
 	isAsync?: false;
 	validate: (
 		value: TValue,
-		abortSignal: AbortSignal,
-	) => Array<string> | undefined;
+	) => string | undefined;
 }
 
 export interface ValidatorAsync<TValue> extends ValidatorBase {
 	isAsync: true;
-	validate: (value: TValue) => Promise<Array<string> | undefined>;
+	validate: (value: TValue, abortSignal: AbortSignal) => Promise<string | undefined>;
 	debounceMs?: number;
 }
 
