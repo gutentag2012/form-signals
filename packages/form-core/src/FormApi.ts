@@ -14,13 +14,21 @@ type FormApiOptions<TData> = {
 	defaultValues?: TData;
 };
 
-// TODO In addition to the onSubmit validator this should also have a afterSubmit validation which checks all the transformed values
 export class FormApi<TData> {
+  /**
+   * Single source of truth for the form data
+   * @private
+   */
 	private readonly _data: SignalifiedData<TData> | Signal<undefined>;
+  /**
+   * Map of all the fields in the form
+   * @private
+   */
 	private readonly _fields: Map<
 		Paths<TData>,
 		FieldApi<TData, Paths<TData>>
 	>;
+  // TODO Add support for plugins
 
 	constructor(private readonly _options?: FormApiOptions<TData>) {
 		if (this._options?.defaultValues) {
@@ -30,6 +38,12 @@ export class FormApi<TData> {
 		}
 		this._fields = new Map();
 	}
+
+  public handleSubmit = async () => {
+    for (const field of this._fields.values()) {
+      await field.handleSubmit()
+    }
+  }
 
 	public registerField<TPath extends Paths<TData>>(
 		path: TPath,
