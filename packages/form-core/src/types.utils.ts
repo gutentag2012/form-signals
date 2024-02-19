@@ -30,8 +30,7 @@ type CombinePath<
 	MaxDepth extends number = 15,
 	DepthCheck extends unknown[] = [],
 > = Path extends keyof T & (number | string)
-	? // @ts-ignore I have no clue why this is complaining
-	  `${Path}.${Paths<T[Path], MaxDepth, [...DepthCheck, unknown]> & string}`
+	? `${Path}.${Paths<T[Path], MaxDepth, [...DepthCheck, unknown]>}`
 	: never;
 
 export type Paths<
@@ -63,21 +62,3 @@ export type PathArray<
 	T extends `${string}.${string}` | `${string}`,
 	Acc extends string[] = [],
 > = T extends `${infer A}.${infer B}` ? PathArray<B, [...Acc, A]> : [...Acc, T];
-
-// EXAMPLE
-
-const obj = {
-	name: "this is a name",
-	validRange: [new Date(), new Date()] as const,
-	objArray: [{ name: "string" }, { name: "string", age: 10 }] as const,
-	looseArray: [
-		{ name: "string" },
-		{ name: "string", age: 10 },
-		{ name: "string", age: 10, other: "string" },
-	],
-};
-type ObjPaths = Paths<typeof obj>;
-
-declare const paths: ObjPaths;
-declare const pathArray: PathArray<typeof paths>;
-declare const values: ValueAtPath<typeof obj, typeof paths>;
