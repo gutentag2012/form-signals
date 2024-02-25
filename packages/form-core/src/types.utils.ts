@@ -57,8 +57,3 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
 		? ValueAtPath<T[TBranch], TDeepProp>
 		: T[TProp & string]
 	: never;
-
-export type PathArray<
-	T extends `${string}.${string}` | `${string}`,
-	Acc extends string[] = [],
-> = T extends `${infer A}.${infer B}` ? PathArray<B, [...Acc, A]> : [...Acc, T];
