@@ -1,13 +1,12 @@
 import {
   deepSignalifyValue,
   getSignalValueAtPath,
-  getValueAtPath, makeArrayEntry,
+  makeArrayEntry,
   removeSignalValueAtPath,
-  setSignalValueAtPath,
-  SignalifiedData,
+  setSignalValueAtPath, SignalifiedData,
   unSignalifyValue,
-} from "./signals.utils";
-import { Paths, ValueAtPath } from "./types.utils";
+} from "./utils/signals.utils";
+import { Paths, ValueAtPath } from "./utils/types";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { FieldLogic } from "./FieldLogic";
 import {
@@ -18,7 +17,9 @@ import {
 	ValidatorEvents,
 	ValidatorSync,
 	WithKey,
-} from "./validators";
+} from "./utils/validation";
+import {equalityUtils} from "./utils/equality.utils";
+import {getValueAtPath, setValueAtPath} from "./utils/access.utils";
 
 type FormLogicOptions<TData> = {
 	/**
@@ -79,8 +80,8 @@ export class FormLogic<TData> {
 	>({});
 	/**
 	 * @NOTE on errors
-	 * Each validator can trigger its own errors and can overwrite only its own errors
-	 * Each list of errors is stored with a key that is unique to the validator, therefore, only this validator can overwrite it
+	 * Each validator can trigger its own errors and can override only its own errors
+	 * Each list of errors is stored with a key that is unique to the validator, therefore, only this validator can override it
 	 */
 	private readonly _errors = computed(() => {
 		const errorMap = this._errorMap.value;
@@ -100,7 +101,13 @@ export class FormLogic<TData> {
 	});
 
 	private readonly _isDirty = computed(() => {
-		return this.fields.some((field) => field.isDirty.value);
+    const defaultValues = (this._options?.defaultValues ?? {}) as TData;
+    // Get any possible default value overrides from the fields
+    for (const field of this.fields) {
+      setValueAtPath(defaultValues, field.name, field.defaultValue)
+    }
+
+    return !equalityUtils(defaultValues, this._jsonData.value)
 	});
 
 	private readonly _submitCountSuccessful = signal(0);
@@ -294,14 +301,10 @@ export class FormLogic<TData> {
 			try {
 				const res = Promise.resolve(this._options.onSubmit(currentJson));
 
-        if("then" in res) {
-          await res.then((res) => {
-            onFinished(true);
-            return res;
-          });
-        } else {
+        await res.then((res) => {
           onFinished(true);
-        }
+          return res;
+        });
 			} catch (e) {
 				onFinished(false);
 				throw e;
@@ -384,7 +387,7 @@ export class FormLogic<TData> {
 			path,
 			this.getDefaultValueForPath(path),
 		);
-		if (!createdValue) throw new Error("Could not create value for path");
+		if (!createdValue) throw new Error(`Could not create value for path "${path}"`);
 		return createdValue;
 	}
 
@@ -392,6 +395,19 @@ export class FormLogic<TData> {
     path: TPath,
   ) {
     return this._fields.get(path) as FieldLogic<TData, TPath>;
+  }
+
+  public reset() {
+    this._data.value = (deepSignalifyValue(this._options?.defaultValues ?? {}) as SignalifiedData<TData>).peek();
+    for (const field of this.fields) {
+      field.reset();
+    }
+
+    this.submitCountUnsuccessful.value = 0;
+    this.submitCountSuccessful.value = 0;
+    this._isValidatingForm.value = false;
+    this._isSubmitting.value = false;
+    this._errorMap.value = {};
   }
 	//endregion
 
@@ -429,7 +445,7 @@ export class FormLogic<TData> {
     batch(() => {
       signal.value = arrayCopy as typeof currentValue;
       if (options?.shouldTouch) {
-        this.getFieldForPath(name).handleTouched()
+        this.getFieldForPath(name)?.handleTouched()
       }
     });
   }
@@ -462,7 +478,7 @@ export class FormLogic<TData> {
     batch(() => {
       signal.value = arrayCopy as typeof currentValue;
       if (options?.shouldTouch) {
-        this.getFieldForPath(name).handleTouched()
+        this.getFieldForPath(name)?.handleTouched()
       }
     });
   }
@@ -492,7 +508,7 @@ export class FormLogic<TData> {
         (_, i) => i !== index,
       ) as typeof currentValue;
       if (options?.shouldTouch) {
-        this.getFieldForPath(name).handleTouched()
+        this.getFieldForPath(name)?.handleTouched()
       }
     });
   }
@@ -548,7 +564,7 @@ export class FormLogic<TData> {
     batch(() => {
       signal.value = arrayCopy as typeof currentValue;
       if (options?.shouldTouch) {
-        this.getFieldForPath(name).handleTouched()
+        this.getFieldForPath(name)?.handleTouched()
       }
     });
   }

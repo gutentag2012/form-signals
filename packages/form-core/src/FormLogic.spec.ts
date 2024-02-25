@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { FormLogic } from "./FormLogic";
 import { FieldLogic } from "./FieldLogic";
-import { Truthy } from "./utils";
+import { Truthy } from "./utils/utils";
 
 describe("FormLogic", () => {
 	it("should have the correct initial state", () => {
@@ -61,6 +61,20 @@ describe("FormLogic", () => {
 			field.unmount();
 			expect(form.fields.length).toBe(1);
 		});
+    it("should no register a field that is already registered", () => {
+      const form = new FormLogic<{ name: string }>();
+      new FieldLogic(form, "name");
+      expect(form.fields.length).toBe(1);
+
+      new FieldLogic(form, "name");
+      expect(form.fields.length).toBe(1);
+    })
+    it("should set the value of the form if a field with default value is registered", () => {
+      const form = new FormLogic<{ name: string }>();
+      expect(form.data.value.name).toBeUndefined();
+      new FieldLogic(form, "name", { defaultValue: "default" });
+      expect(form.data.value.name.value).toBe("default");
+    })
 
 		it("should have reactive data", () => {
 			const form = new FormLogic<{ name: string }>();
@@ -773,6 +787,29 @@ describe("FormLogic", () => {
 
 			expect(validate).toHaveBeenCalledTimes(4);
 		});
+    it("should not validate if unmounted", async () => {
+      const validate = vi.fn(() => undefined);
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: ""
+        },
+        validators: [
+          {
+            validate,
+            onMount: true,
+            onSubmit: true,
+            onChange: true,
+            onBlur: true,
+          },
+        ],
+      });
+
+      form.data.value.name.value = "asd"
+      await form.handleBlur()
+      await form.handleSubmit()
+
+      expect(validate).toHaveBeenCalledTimes(0);
+    })
 	});
 	describe("handleSubmit", () => {
     it("should not handle submit if the form is invalid", () => {
@@ -937,6 +974,213 @@ describe("FormLogic", () => {
       await form.unmount();
       form.data.value.name.value = "test1";
       expect(form.errors.value).toEqual([]);
+    })
+    it("should reset to the default state", async () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: "test",
+          deep: {
+            value: 1
+          }
+        },
+        validators: [
+          {
+            validate: () => "error",
+            onChange: true,
+            onSubmit: false,
+          }
+        ]
+      });
+      await form.mount();
+      const field = new FieldLogic(form, "deep.value" as const, {
+        validators: [
+          {
+            validate: () => "error",
+            onChange: true,
+            onSubmit: false,
+          }
+        ]
+      })
+      await field.mount()
+      await field.handleBlur()
+
+      await form.handleSubmit()
+
+      field.handleChange(2)
+      form.data.value.name.value = "test1";
+
+      expect(form.data.value.name.value).toBe("test1");
+      expect(form.data.value.deep.value.value.value).toBe(2);
+      expect(form.errors.value).toEqual(["error"]);
+      expect(field.errors.value).toEqual(["error"]);
+      expect(form.isTouched.value).toBe(true);
+      expect(form.isDirty.value).toBe(true);
+      expect(form.submitCount.value).toBe(1);
+
+      form.reset();
+
+      expect(form.data.value.name.value).toBe("test");
+      expect(form.data.value.deep.value.value.value).toBe(1);
+      expect(form.errors.value).toEqual([]);
+      expect(field.errors.value).toEqual([]);
+      expect(form.isTouched.value).toBe(false);
+      expect(form.isDirty.value).toBe(false);
+      expect(form.submitCount.value).toBe(0);
+    })
+    it("should insert a value into a form value array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      form.insertValueInArray("array", 1, 4)
+      expect(form.json.value.array).toEqual([1, 4, 3]);
+    })
+    it("should not do anything when trying to insert a value into a form value that is not an array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        }
+      });
+      form.mount();
+      form.insertValueInArray("array", 1, 4 as never)
+      expect(form.data.value.array.value).toEqual(1);
+    })
+    it("should touch a field when inserting a value into a form value array if a field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      const field = new FieldLogic(form, "array");
+      field.mount();
+      form.insertValueInArray("array", 1, 4, {shouldTouch: true})
+      expect(field.isTouched.value).toBe(true);
+    })
+    it("should not touch a field when inserting a value into a form value array if no field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      expect(() => form.insertValueInArray("array", 1, 4, {shouldTouch: true})).not.toThrow()
+    })
+    it("should remove a value from a form value array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      form.removeValueFromArray("array", 1)
+      expect(form.json.value.array).toEqual([1, 3]);
+    })
+    it("should not do anything when trying to remove a value from a form value that is not an array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        }
+      });
+      form.mount();
+      form.removeValueFromArray("array", 1 as never)
+      expect(form.data.value.array.value).toEqual(1);
+    })
+    it("should touch a field when removing a value from a form value array if a field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      const field = new FieldLogic(form, "array");
+      field.mount();
+      form.removeValueFromArray("array", 1, {shouldTouch: true})
+      expect(field.isTouched.value).toBe(true);
+    })
+    it("should not touch a field when removing a value from a form value array if no field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      expect(() => form.removeValueFromArray("array", 1, {shouldTouch: true})).not.toThrow()
+    })
+    it("should push a value into a form value array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      form.pushValueToArray("array", 4)
+      expect(form.json.value.array).toEqual([1, 2, 3, 4]);
+    })
+    it("should not do anything when trying to push a value into a form value that is not an array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        }
+      });
+      form.mount();
+      form.pushValueToArray("array", 4 as never)
+      expect(form.data.value.array.value).toEqual(1);
+    })
+    it("should touch a field when pushing a value into a form value array if a field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      const field = new FieldLogic(form, "array");
+      field.mount();
+      form.pushValueToArray("array", 4, {shouldTouch: true})
+      expect(field.isTouched.value).toBe(true);
+    })
+    it("should swap two values in a form value array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      form.swapValuesInArray("array", 1, 2)
+      expect(form.json.value.array).toEqual([1, 3, 2]);
+    })
+    it("should not do anything when trying to swap two values in a form value that is not an array", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        }
+      });
+      form.mount();
+      form.swapValuesInArray("array", 1 as never, 2 as never)
+      expect(form.data.value.array.value).toEqual(1);
+    })
+    it("should touch a field when swapping two values in a form value array if a field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      const field = new FieldLogic(form, "array");
+      field.mount();
+      form.swapValuesInArray("array", 1, 2, {shouldTouch: true})
+      expect(field.isTouched.value).toBe(true);
+    })
+    it("should not touch a field when swapping two values in a form value array if no field is attached", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        }
+      });
+      form.mount();
+      expect(() => form.swapValuesInArray("array", 1, 2, {shouldTouch: true})).not.toThrow()
     })
   });
 });

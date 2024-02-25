@@ -47,6 +47,14 @@ export type Validator<TValue> = ValidatorSync<TValue> | ValidatorAsync<TValue>;
 //endregion
 
 let ValidatorKeys = 0;
+/**
+ * Resets the validator keys to 0.
+ * This is useful for testing to ensure that the keys are always the same.
+ * @internal
+ */
+export const resetValidatorKeys = () => {
+  ValidatorKeys = 0;
+}
 
 /**
  * Groups validators by their events for easier access
@@ -164,6 +172,9 @@ export const validateWithValidators = async <TValue>(
      */
     const validate = async () =>
       validator.validate(value, abortController.signal).then((error) => {
+        // If the validation was aborted during the async validation we just ignore the result
+        if(abortController.signal.aborted) return;
+
         errors[event] = error;
         // If we don't want to accumulate errors and there is an error, we abort the validation of other async validators this round
         if (errors[event] && !accumulateErrors) {

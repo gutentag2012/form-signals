@@ -27,7 +27,7 @@ type IsTuple<T> = T extends readonly any[] & { length: infer Length }
 type CombinePath<
 	T,
 	Path,
-	MaxDepth extends number = 15,
+	MaxDepth extends number = 10,
 	DepthCheck extends unknown[] = [],
 > = Path extends keyof T & (number | string)
 	? `${Path}.${Paths<T[Path], MaxDepth, [...DepthCheck, unknown]>}`

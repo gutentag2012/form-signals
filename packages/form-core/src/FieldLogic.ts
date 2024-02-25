@@ -1,5 +1,5 @@
 import { type FormLogic } from "./FormLogic";
-import { Paths, ValueAtPath } from "./types.utils";
+import { Paths, ValueAtPath } from "./utils/types";
 import {
   batch,
   computed,
@@ -15,12 +15,13 @@ import {
   ValidatorEvents,
   ValidatorSync,
   WithKey
-} from "./validators";
+} from "./utils/validation";
 import {
+  deepSignalifyValue,
   SignalifiedData,
   unSignalifyValue,
-} from "./signals.utils";
-import { isDeepEqual } from "./isDeepEqual";
+} from "./utils/signals.utils";
+import { equalityUtils } from "./utils/equality.utils";
 
 interface FieldLogicOptions<TData, TName extends Paths<TData>> {
   /**
@@ -61,7 +62,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   );
 
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
-    () => !isDeepEqual(this._defaultValue, unSignalifyValue(this.signal.value)),
+    () => !equalityUtils(this.defaultValue, unSignalifyValue(this.signal.value)),
   );
 
   private readonly _errorMap = signal<Partial<Record<ValidatorEvents, ValidationError>>>({});
@@ -182,7 +183,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     event: ValidatorEvents,
     checkValue?: SignalifiedData<ValueAtPath<TData, TName>>,
   ) {
-    if(!this._isMounted && event !== "onSubmit") return;
+    if(!this._isMounted) return;
     const value = unSignalifyValue(checkValue ?? this.signal);
     return validateWithValidators(value, event, this._validators, this._asyncValidationState, this._errorMap, this._isValidating, this._options?.accumulateErrors);
   }
@@ -322,7 +323,15 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   }
   //endregion
 
-  private get _defaultValue() {
+  public reset() {
+    this._errorMap.value = {};
+    this._isTouched.value = false;
+    this._isValidating.value = false;
+
+    this.signal.value = (deepSignalifyValue(this.defaultValue) as SignalifiedData<ValueAtPath<TData, TName>>).peek();
+  }
+
+  public get defaultValue() {
     return (
       this._options?.defaultValue ??
       this._form.getDefaultValueForPath(this._name)

@@ -787,6 +787,28 @@ describe("FieldLogic", () => {
 
       expect(validate).toHaveBeenCalledTimes(4)
     })
+    it("should not validate if unmounted", () => {
+      const form = new FormLogic<{ name: string }>();
+      form.mount()
+      const validate = vi.fn(() => undefined)
+      const field = new FieldLogic(form, "name", {
+        validators: [
+          {
+            validate,
+            onBlur: true,
+            onChange: true,
+            onSubmit: true,
+            onMount: true,
+          }
+        ]
+      });
+
+      field.handleBlur()
+      field.handleChange("test")
+      form.handleSubmit()
+
+      expect(validate).toHaveBeenCalledTimes(0)
+    })
   });
   describe("state", () => {
     it("should not be mounted after construction", () => {
@@ -1114,40 +1136,6 @@ describe("FieldLogic", () => {
 
       vi.useRealTimers()
     });
-    it("should run only the onSubmit validations if unmounted", () => {
-      const form = new FormLogic<{ name: string }>();
-      form.mount()
-      const validateSubmitFn = vi.fn(() => "error")
-      const validateFn = vi.fn(() => "error")
-      const field = new FieldLogic(form, "name", {
-        validators: [
-          {
-            validate: validateSubmitFn,
-            onSubmit: true,
-          },
-          {
-            validate: validateFn,
-            onSubmit: false,
-            onChange: true,
-          },
-          {
-            validate: validateFn,
-            onSubmit: false,
-            onMount: true,
-          },
-          {
-            validate: validateFn,
-            onSubmit: false,
-            onBlur: true,
-          },
-        ]
-      });
-
-      field.handleSubmit()
-
-      expect(validateFn).toHaveBeenCalledTimes(0)
-      expect(validateSubmitFn).toHaveBeenCalledTimes(1)
-    })
     it("should not accept value changes through its handlers", () => {
       const form = new FormLogic<{ name: string }>();
       form.mount()

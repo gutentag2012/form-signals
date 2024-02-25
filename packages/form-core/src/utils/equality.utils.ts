@@ -1,6 +1,6 @@
 const isNullOrUndefined = <T>(value: T): value is NonNullable<T> => value === null || value === undefined;
 
-export const isDeepEqual = (a: unknown, b: unknown): boolean => {
+export const equalityUtils = (a: unknown, b: unknown): boolean => {
   // Primitives + object references
   if (a === b) return true;
   if(isNullOrUndefined<unknown>(a) || isNullOrUndefined<unknown>(b)) return a === b;
@@ -20,7 +20,7 @@ export const isDeepEqual = (a: unknown, b: unknown): boolean => {
     const valA = aNonNullable[key as keyof typeof aNonNullable];
     const valB = bNonNullable[key as keyof typeof bNonNullable];
 
-    if(!isDeepEqual(valA, valB)) return false;
+    if(!equalityUtils(valA, valB)) return false;
   }
   return true;
 }

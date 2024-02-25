@@ -17,6 +17,7 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **form-react**: Add FormProvider to provide form state to form fields
 - [ ] **form-react**: Add useField hook to access form field state and validation
 - [ ] **form-react**: Add useForm hook to access form state and validation
+- [ ] **logging**: Add internal logging module for errors and traces
 - [ ] **examples**: Add example for complex nested form
 - [ ] **examples**: Add example for async form setup
 - [ ] **examples**: Add example for async default values
