@@ -9,7 +9,7 @@ export const makeArrayEntry = <T>(
 ): { key: number; signal: SignalifiedData<T> } => ({
   key: arrayKey++,
   signal: deepSignalifyValue(value),
-});
+})
 
 type SignalifiedTuple<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -63,7 +63,7 @@ export const deepSignalifyValue = <T>(value: T): SignalifiedData<T> => {
 };
 
 export const unSignalifyValue = <T>(value: SignalifiedData<T>): T => {
-  const peekedValue = typeof value === "object" && "peek" in value ? value.peek() : value;
+  const peekedValue = typeof value === "object" && value instanceof Signal ? value.peek() : value;
 
   if (Array.isArray(peekedValue)) {
     return peekedValue.map((entry) => unSignalifyValue(entry.signal)) as T;
@@ -74,7 +74,7 @@ export const unSignalifyValue = <T>(value: SignalifiedData<T>): T => {
   }
 
   return Object.fromEntries(
-    Object.entries(value).map(([key, value]) => [key, unSignalifyValue(value)]),
+    Object.entries(peekedValue).map(([key, value]) => [key, unSignalifyValue(value)]),
   ) as T;
 }
 
