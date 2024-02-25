@@ -11,7 +11,7 @@ export default defineConfig({
 			enabled: true,
 			provider: "istanbul",
 			include: ["src/**/*"],
-      reporter: ["html", "lcov"],
+      reporter: ["html", "lcov", "text", "text-summary"],
 		},
 		typecheck: { enabled: true },
 	},
