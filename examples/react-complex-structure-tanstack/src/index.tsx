@@ -1,4 +1,4 @@
-import {Button, ButtonProps} from "@/components/ui/button";
+import {Button, ButtonProps} from "./components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible.tsx";
@@ -27,6 +27,7 @@ import {useRef, useState} from "react";
 import {createRoot} from "react-dom/client";
 import {z} from "zod";
 import "./index.css";
+import {BehaviourCheck} from "@/BehaviourCheck.tsx";
 
 interface DatePickerProps extends Omit<ButtonProps, "value" | "onChange"> {
 	value?: Date;
@@ -100,6 +101,7 @@ export const Index = () => {
 
 	const justAddedOption = useRef(false);
 
+  // TODO Add async validation + loading indicator
 	const form = useForm<Product, typeof zodValidator>({
 		defaultValues: emptyDefaultValues,
 		validatorAdapter: zodValidator,
@@ -719,4 +721,4 @@ export const Index = () => {
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 const rootElement = document.getElementById("root")!;
 
-createRoot(rootElement).render(<Index />);
+createRoot(rootElement).render(<BehaviourCheck />);
