@@ -35,7 +35,7 @@ type CombinePath<
 
 export type Paths<
 	T,
-	MaxDepth extends number = 15,
+	MaxDepth extends number = 10,
 	DepthCheck extends unknown[] = [],
 > = DepthCheck["length"] extends MaxDepth
 	? never
