@@ -47,21 +47,23 @@ export type Validator<TValue> = ValidatorSync<TValue> | ValidatorAsync<TValue>;
 //endregion
 
 let ValidatorKeys = 0;
+
 /**
  * Resets the validator keys to 0.
  * This is useful for testing to ensure that the keys are always the same.
  * @internal
  */
-export const resetValidatorKeys = () => {
+export function resetValidatorKeys() {
   ValidatorKeys = 0;
 }
+
 
 /**
  * Groups validators by their events for easier access
  * @param validators Array of validators to group
  * @returns Validators grouped by their events and whether they are async or not
  */
-export const groupValidators = <TValue>(validators?: Validator<TValue>[]) => {
+export function groupValidators<TValue>(validators?: Validator<TValue>[]) {
   const groupedValidators: Record<
     ValidatorEvents,
     {
@@ -97,7 +99,7 @@ export const groupValidators = <TValue>(validators?: Validator<TValue>[]) => {
       validator.onMount && ("onMount" as const),
     ].filter(Truthy);
 
-    const validatorWithKey = { ...validator, key: ValidatorKeys++ };
+    const validatorWithKey = {...validator, key: ValidatorKeys++};
     for (const event of events) {
       if (validatorWithKey.isAsync) {
         groupedValidators[event].async.push(validatorWithKey);
@@ -108,7 +110,8 @@ export const groupValidators = <TValue>(validators?: Validator<TValue>[]) => {
   }
 
   return groupedValidators;
-};
+}
+
 
 /**
  * Validate a given value with all validators for a given event
@@ -120,7 +123,7 @@ export const groupValidators = <TValue>(validators?: Validator<TValue>[]) => {
  * @param isValidating Signal to store whether the form is running async validation right now
  * @param accumulateErrors Whether to accumulate errors or stop on the first one
  */
-export const validateWithValidators = async <TValue>(
+export async function validateWithValidators<TValue>(
   value: TValue,
   event: ValidatorEvents,
   validatorMap: Record<
@@ -134,7 +137,7 @@ export const validateWithValidators = async <TValue>(
   errorMap: Signal<Partial<Record<ValidatorEvents, ValidationError>>>,
   isValidating: Signal<boolean>,
   accumulateErrors?: boolean,
-) => {
+) {
   // Get the relevant validators
   const validators = validatorMap[event];
   // Copy the current errors, so no error is lost
@@ -173,7 +176,7 @@ export const validateWithValidators = async <TValue>(
     const validate = async () =>
       validator.validate(value, abortController.signal).then((error) => {
         // If the validation was aborted during the async validation we just ignore the result
-        if(abortController.signal.aborted) return;
+        if (abortController.signal.aborted) return;
 
         errors[event] = error;
         // If we don't want to accumulate errors and there is an error, we abort the validation of other async validators this round
@@ -204,7 +207,7 @@ export const validateWithValidators = async <TValue>(
   // We only want to await anything if there are async validators
   if (asyncValidationPromises.length) {
     // If we want to accumulate errors, we await all async validators, if not, we await the first one
-    if(accumulateErrors) {
+    if (accumulateErrors) {
       await Promise.all(asyncValidationPromises)
     } else {
       await Promise.race(asyncValidationPromises)

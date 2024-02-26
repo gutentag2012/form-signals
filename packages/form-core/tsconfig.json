@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "Bundler",
+    "declaration": false
   },
   "include": ["./src/**/*.ts", "vite.config.ts"]
 }

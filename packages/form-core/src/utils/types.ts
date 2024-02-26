@@ -1,3 +1,6 @@
+type MaxIterationLength = 15
+type MaxTupleLength = 99
+
 type CountTo<
 	MaxLength extends number,
 	Res extends Array<number> = [],
@@ -15,7 +18,8 @@ type IndicesOf<
 	  ? IndicesOf<RestTuple, Acc | RestTuple["length"]>
 	  : Acc;
 
-type TupleMaxLength = CountTo<99>[number];
+type TupleMaxLength = CountTo<MaxTupleLength>[number];
+
 // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
 type IsTuple<T> = T extends readonly any[] & { length: infer Length }
 	? // This checks if the length of a given array is a specific number, if so it is a tuple... Therefore, this also is limited to 99 elements
@@ -27,28 +31,26 @@ type IsTuple<T> = T extends readonly any[] & { length: infer Length }
 type CombinePath<
 	T,
 	Path,
-	MaxDepth extends number = 10,
 	DepthCheck extends unknown[] = [],
 > = Path extends keyof T & (number | string)
-	? `${Path}.${Paths<T[Path], MaxDepth, [...DepthCheck, unknown]>}`
+	? `${Path}.${Paths<T[Path], [...DepthCheck, unknown]>}`
 	: never;
 
 export type Paths<
 	T,
-	MaxDepth extends number = 10,
 	DepthCheck extends unknown[] = [],
-> = DepthCheck["length"] extends MaxDepth
+> = DepthCheck["length"] extends MaxIterationLength
 	? never
 	: T extends Date
 	  ? never
 	  : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
 		  T extends readonly any[] & IsTuple<T>
-		  ? IndicesOf<T> | CombinePath<T, IndicesOf<T>, MaxDepth, DepthCheck>
+		  ? IndicesOf<T> | CombinePath<T, IndicesOf<T>, DepthCheck>
 		  : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
 			  T extends any[]
-			  ? `${number}` | CombinePath<T, number, MaxDepth, DepthCheck>
+			  ? `${number}` | CombinePath<T, number, DepthCheck>
 			  : T extends object
-				  ? (keyof T & string) | CombinePath<T, keyof T, MaxDepth, DepthCheck>
+				  ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
 				  : never;
 
 // biome-ignore lint/suspicious/noExplicitAny: This is a type helper

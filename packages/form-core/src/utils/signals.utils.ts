@@ -4,12 +4,15 @@ import {pathToParts} from "./access.utils";
 
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
 let arrayKey = 0;
-export const makeArrayEntry = <T>(
+
+export function makeArrayEntry<T>(
   value: T,
-): { key: number; signal: SignalifiedData<T> } => ({
-  key: arrayKey++,
-  signal: deepSignalifyValue(value),
-})
+): { key: number; signal: SignalifiedData<T> } {
+  return {
+    key: arrayKey++,
+    signal: deepSignalifyValue(value),
+  };
+}
 
 type SignalifiedTuple<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -38,7 +41,7 @@ export type SignalifiedData<T> = Signal<
     : T
 >;
 
-export const deepSignalifyValue = <T>(value: T): SignalifiedData<T> => {
+export function deepSignalifyValue<T>(value: T): SignalifiedData<T> {
   if (
     value instanceof Date ||
     typeof value !== "object" ||
@@ -60,7 +63,7 @@ export const deepSignalifyValue = <T>(value: T): SignalifiedData<T> => {
       ]),
     ),
   ) as SignalifiedData<T>;
-};
+}
 
 function unSignalifyStep<T>(peekedValue: SignalifiedData<T>[keyof SignalifiedData<T>], unSignalify: (value: SignalifiedData<T>) => T): T {
   if (Array.isArray(peekedValue)) {
@@ -76,22 +79,22 @@ function unSignalifyStep<T>(peekedValue: SignalifiedData<T>[keyof SignalifiedDat
   ) as T;
 }
 
-export const unSignalifyValue = <T>(value: SignalifiedData<T>): T => {
+export function unSignalifyValue<T>(value: SignalifiedData<T>): T {
   const peekedValue = typeof value === "object" && value instanceof Signal ? value.peek() : value;
 
   return unSignalifyStep(peekedValue, unSignalifyValue);
 }
 
-export const unSignalifyValueSubscribed = <T>(value: SignalifiedData<T>): T => {
+export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
   const peekedValue = typeof value === "object" && value instanceof Signal ? value.value : value;
 
   return unSignalifyStep(peekedValue, unSignalifyValueSubscribed);
 }
 
-export const getSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
+export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
-): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined => {
+): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
   if (!path || !obj?.peek()) {
     return undefined;
   }
@@ -116,12 +119,12 @@ export const getSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
   }
 
   return value;
-};
+}
 
-export const removeSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
+export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
-) => {
+) {
   if (!path || !obj.peek()) {
     return;
   }
@@ -141,16 +144,16 @@ export const removeSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
     arrayCopy.splice(part, 1);
     parent.value = arrayCopy as typeof parent["value"];
   } else {
-    const { [part as keyof TValue]: _, ...rest } = peekedValue;
+    const {[part as keyof TValue]: _, ...rest} = peekedValue;
     parent.value = rest as typeof parent["value"];
   }
-};
+}
 
-export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
+export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
   value: ValueAtPath<TValue, TPath> | undefined,
-): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined => {
+): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
   if (!path || !obj) {
     return undefined;
   }
@@ -200,4 +203,4 @@ export const setSignalValueAtPath = <TValue, TPath extends Paths<TValue>>(
     current = element.peek()[part];
   }
   return current;
-};
+}

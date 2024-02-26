@@ -45,8 +45,8 @@ interface FieldLogicOptions<TData, TName extends Paths<TData>> {
   };
   /**
    * Whether the value should be preserved once the field is unmounted. <br/>
-   * If true, this field will not run validations and not accept any changes to its value through its handlers. It however can still be submitted and will run validations on submit.
-   * @note The signal value will not be locked when unmounted, so if you change the value directly through the signal it will be updated in the form.
+   * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on submit.
+   * @note The signal value will not be locked when unmounted, so if you change the value directly through the signal, it will be updated in the form.
    */
   preserveValueOnUnmount?: boolean;
 }
@@ -102,43 +102,43 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
 
 
   //region State
-  public get isMounted() {
+  public get isMounted(): boolean {
     return this._isMounted;
   }
   /**
    * The reactive signal of the field value, you can get, subscribe and set the value of the field with this signal.
    */
-  public get signal() {
+  public get signal(): SignalifiedData<ValueAtPath<TData, TName>> {
     return this._form.getValueForPath(this._name);
   }
 
-  public get name() {
+  public get name(): TName {
     return this._name;
   }
 
-  public get isValidating() {
+  public get isValidating(): ReadonlySignal<boolean> {
     return this._isValidatingReadOnly;
   }
 
-  public get errors() {
+  public get errors(): ReadonlySignal<Array<ValidationError>> {
     return this._errors;
   }
 
-  public get isValid() {
+  public get isValid(): ReadonlySignal<boolean> {
     return this._isValid;
   }
 
-  public get isTouched() {
+  public get isTouched(): ReadonlySignal<boolean> {
     return this._isTouchedReadOnly;
   }
 
-  public get isDirty() {
+  public get isDirty(): ReadonlySignal<boolean> {
     return this._isDirty;
   }
   //endregion
 
   //region Lifecycle
-  public async mount() {
+  public async mount(): Promise<void> {
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
     this._unsubscribeFromChangeEffect = effect(async () => {
@@ -160,7 +160,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     await this.validateForEvent("onMount");
   }
 
-  public unmount() {
+  public unmount(): void {
     this._isTouched.value = false;
     this._isMounted = false;
 
@@ -182,7 +182,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: SignalifiedData<ValueAtPath<TData, TName>>,
-  ) {
+  ): void | Promise<void> {
     if(!this._isMounted) return;
     const value = unSignalifyValue(checkValue ?? this.signal);
     return validateWithValidators(value, event, this._validators, this._asyncValidationState, this._errorMap, this._isValidating, this._options?.accumulateErrors);
@@ -197,7 +197,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   public handleChange(
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     if(!this._isMounted) return;
     batch(() => {
       this.signal.value = newValue;
@@ -210,7 +210,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   /**
    * Handle a blur event on the field. This will set the field as touched and run all validators for the onBlur event.
    */
-  public async handleBlur() {
+  public async handleBlur(): Promise<void> {
     if(!this._isMounted) return;
     this._isTouched.value = true;
     await this.validateForEvent("onBlur");
@@ -218,9 +218,9 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   }
 
   /**
-   * Handle a submit event on the field. This will run all validators for the onSubmit event.
+   * Handle a submit-event on the field. This will run all validators for the onSubmit event.
    */
-  public async handleSubmit() {
+  public async handleSubmit(): Promise<void> {
     await this.validateForEvent("onSubmit");
 
     // If there are any errors, we don't want to submit the form
@@ -230,14 +230,14 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     return this.signal.value;
   }
 
-  public async handleTouched() {
+  public handleTouched(): void {
     this._isTouched.value = true;
   }
   //endregion
 
   //region Array Helpers
   /**
-   * Insert a value into an array. If the field is not an array it will throw an error. For readonly arrays you can only insert values at existing indexes with the correct types.
+   * Insert a value into an array. If the field is not an array, it will throw an error. For readonly arrays you can only insert values at existing indexes with the correct types.
    * This method should not be used to update the value of an array item, use `field.signal.value[index].value = newValue` instead.
    * @param index The index to insert the value at (if there already is a value at this index, it will be overwritten without triggering a reactive update of that value and the array item key will change)
    * @param value The value to insert
@@ -253,7 +253,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
@@ -268,7 +268,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
       ? ValueAtPath<TData, TName>[number]
       : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.pushValueToArray(this._name, value, options)
   }
 
@@ -282,7 +282,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.removeValueFromArray(this._name, index, options)
   }
 
@@ -318,12 +318,12 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
           : never
         : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
   //endregion
 
-  public reset() {
+  public reset(): void {
     this._errorMap.value = {};
     this._isTouched.value = false;
     this._isValidating.value = false;
@@ -331,7 +331,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     this.signal.value = (deepSignalifyValue(this.defaultValue) as SignalifiedData<ValueAtPath<TData, TName>>).peek();
   }
 
-  public get defaultValue() {
+  public get defaultValue(): ValueAtPath<TData, TName> | undefined {
     return (
       this._options?.defaultValue ??
       this._form.getDefaultValueForPath(this._name)
