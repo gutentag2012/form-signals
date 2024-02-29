@@ -9,8 +9,11 @@
 			"recommended": true,
 			"suspicious": {
 				"noArrayIndexKey": "off"
-			}
-		}
+			},
+      "nursery": {
+        "useImportType": "warn"
+      }
+    }
 	},
 	"formatter": {
 		"enabled": true
