@@ -1,52 +1,50 @@
-import {batch, Signal} from "@preact/signals";
-import {Truthy} from "./utils";
+import { type Signal, batch } from '@preact/signals'
+import { Truthy } from './utils'
 
 //region Types
 interface ValidatorBase {
   /**
-   * Whether the validator should run on change
-   * @default false
+   * Whether this validator should not run when the value changes
    */
-  onChange?: boolean;
+  disableOnChangeValidation?: boolean
   /**
-   * Whether the validator should run on blur
-   * @default false
+   * Whether this validator should not run when the input loses focus
    */
-  onBlur?: boolean;
+  disableOnBlurValidation?: boolean
   /**
-   * Whether the validator should run on submit
-   * @default true
+   * Whether this validator should run when the form is submitted
    */
-  onSubmit?: boolean;
-  /**
-   * TODO Think of a way to reset errors made by this validation
-   * Whether the validator should run on mount (this cannot be overwritten by other validations)
-   * @default false
-   */
-  onMount?: boolean;
+  validateOnMount?: boolean
 }
 
-export type ValidatorEvents = keyof ValidatorBase;
-export type ValidationError = string | undefined | null | false;
-export type WithKey = { key: number };
+export const ValidatorEventsArray = [
+  'onChange',
+  'onBlur',
+  'onSubmit',
+  'onMount',
+] as const
+export type ValidatorEvents = (typeof ValidatorEventsArray)[number]
+
+export type ValidationError = string | undefined | null | false
+export type WithKey = { key: number }
 
 export interface ValidatorSync<TValue> extends ValidatorBase {
-  isAsync?: false;
-  validate: (value: TValue) => ValidationError;
+  isAsync?: false
+  validate: (value: TValue) => ValidationError
 }
 
 export interface ValidatorAsync<TValue> extends ValidatorBase {
-  isAsync: true;
+  isAsync: true
   validate: (
     value: TValue,
     abortSignal: AbortSignal,
-  ) => Promise<ValidationError>;
-  debounceMs?: number;
+  ) => Promise<ValidationError>
+  debounceMs?: number
 }
-export type Validator<TValue> = ValidatorSync<TValue> | ValidatorAsync<TValue>;
+export type Validator<TValue> = ValidatorSync<TValue> | ValidatorAsync<TValue>
 //endregion
 
-let ValidatorKeys = 0;
+let ValidatorKeys = 0
 
 /**
  * Resets the validator keys to 0.
@@ -54,9 +52,8 @@ let ValidatorKeys = 0;
  * @internal
  */
 export function resetValidatorKeys() {
-  ValidatorKeys = 0;
+  ValidatorKeys = 0
 }
-
 
 /**
  * Groups validators by their events for easier access
@@ -67,8 +64,8 @@ export function groupValidators<TValue>(validators?: Validator<TValue>[]) {
   const groupedValidators: Record<
     ValidatorEvents,
     {
-      sync: Array<ValidatorSync<TValue> & WithKey>;
-      async: Array<ValidatorAsync<TValue> & WithKey>;
+      sync: Array<ValidatorSync<TValue> & WithKey>
+      async: Array<ValidatorAsync<TValue> & WithKey>
     }
   > = {
     onChange: {
@@ -87,31 +84,30 @@ export function groupValidators<TValue>(validators?: Validator<TValue>[]) {
       sync: [],
       async: [],
     },
-  };
+  }
 
-  if (!validators) return groupedValidators;
+  if (!validators) return groupedValidators
 
   for (const validator of validators) {
     const events = [
-      validator.onChange && ("onChange" as const),
-      validator.onBlur && ("onBlur" as const),
-      (validator.onSubmit ?? true) && ("onSubmit" as const),
-      validator.onMount && ("onMount" as const),
-    ].filter(Truthy);
+      validator.onChange && ('onChange' as const),
+      validator.onBlur && ('onBlur' as const),
+      (validator.onSubmit ?? true) && ('onSubmit' as const),
+      validator.onMount && ('onMount' as const),
+    ].filter(Truthy)
 
-    const validatorWithKey = {...validator, key: ValidatorKeys++};
+    const validatorWithKey = { ...validator, key: ValidatorKeys++ }
     for (const event of events) {
       if (validatorWithKey.isAsync) {
-        groupedValidators[event].async.push(validatorWithKey);
+        groupedValidators[event].async.push(validatorWithKey)
       } else {
-        groupedValidators[event].sync.push(validatorWithKey);
+        groupedValidators[event].sync.push(validatorWithKey)
       }
     }
   }
 
-  return groupedValidators;
+  return groupedValidators
 }
-
 
 /**
  * Validate a given value with all validators for a given event
@@ -129,8 +125,8 @@ export async function validateWithValidators<TValue>(
   validatorMap: Record<
     ValidatorEvents,
     {
-      sync: Array<ValidatorSync<TValue> & WithKey>;
-      async: Array<ValidatorAsync<TValue> & WithKey>;
+      sync: Array<ValidatorSync<TValue> & WithKey>
+      async: Array<ValidatorAsync<TValue> & WithKey>
     }
   >,
   asyncValidationState: Record<number, AbortController>,
@@ -139,36 +135,36 @@ export async function validateWithValidators<TValue>(
   accumulateErrors?: boolean,
 ) {
   // Get the relevant validators
-  const validators = validatorMap[event];
+  const validators = validatorMap[event]
   // Copy the current errors, so no error is lost
   const errors: Partial<Record<ValidatorEvents, ValidationError>> = {
     ...errorMap.peek(),
-  };
+  }
 
   //region Sync validators
   for (const validator of validators.sync) {
     // Validate the value in order
-    errors[event] = validator.validate(value);
+    errors[event] = validator.validate(value)
     // If there is an error, and we don't want to accumulate errors, we stop the validation
     if (errors[event] && !accumulateErrors) {
       return batch(() => {
-        isValidating.value = false;
-        errorMap.value = errors;
-      });
+        isValidating.value = false
+        errorMap.value = errors
+      })
     }
   }
   //endregion
 
   //region Async validators
   // Create a new AbortController for this round of async validation
-  const abortController = new AbortController();
+  const abortController = new AbortController()
   // If there are async validators, we are validating
-  isValidating.value = !!validators.async.length;
+  isValidating.value = !!validators.async.length
 
   const asyncValidationPromises = validators.async.map(async (validator) => {
     // Abort the previous async validation for this validator and assign the new one
-    asyncValidationState[validator.key]?.abort();
-    asyncValidationState[validator.key] = abortController;
+    asyncValidationState[validator.key]?.abort()
+    asyncValidationState[validator.key] = abortController
 
     /**
      * Validate the value with the async validator and assign the error to the error object
@@ -176,18 +172,18 @@ export async function validateWithValidators<TValue>(
     const validate = async () =>
       validator.validate(value, abortController.signal).then((error) => {
         // If the validation was aborted during the async validation we just ignore the result
-        if (abortController.signal.aborted) return;
+        if (abortController.signal.aborted) return
 
-        errors[event] = error;
+        errors[event] = error
         // If we don't want to accumulate errors and there is an error, we abort the validation of other async validators this round
         if (errors[event] && !accumulateErrors) {
-          abortController.abort();
+          abortController.abort()
         }
-      });
+      })
 
     // If there is no debounce, we validate immediately
     if (!validator.debounceMs) {
-      return validate();
+      return validate()
     }
 
     return new Promise<string | undefined>((resolve) => {
@@ -195,14 +191,14 @@ export async function validateWithValidators<TValue>(
       setTimeout(async () => {
         // If the validation was aborted before this debouncing, we resolve
         if (abortController.signal.aborted) {
-          return resolve(undefined);
+          return resolve(undefined)
         }
 
-        await validate();
-        resolve(undefined);
-      }, validator.debounceMs);
-    });
-  });
+        await validate()
+        resolve(undefined)
+      }, validator.debounceMs)
+    })
+  })
 
   // We only want to await anything if there are async validators
   if (asyncValidationPromises.length) {
@@ -217,7 +213,7 @@ export async function validateWithValidators<TValue>(
 
   // Assign the final errors
   batch(() => {
-    isValidating.value = false;
-    errorMap.value = errors;
-  });
+    isValidating.value = false
+    errorMap.value = errors
+  })
 }

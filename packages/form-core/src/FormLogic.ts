@@ -1,64 +1,72 @@
 import {
+  type ReadonlySignal,
+  batch,
+  computed,
+  effect,
+  signal,
+} from '@preact/signals'
+import type { FieldLogic } from './FieldLogic'
+import {
+  type Paths,
+  type SignalifiedData,
+  type ValidationError,
+  type Validator,
+  type ValidatorAsync,
+  type ValidatorEvents,
+  type ValidatorSync,
+  type ValueAtPath,
+  type WithKey,
   deepSignalifyValue,
+  equalityUtils,
   getSignalValueAtPath,
+  getValueAtPath,
+  groupValidators,
   makeArrayEntry,
   removeSignalValueAtPath,
-  setSignalValueAtPath, SignalifiedData,
+  setSignalValueAtPath,
+  setValueAtPath,
   unSignalifyValue,
-} from "./utils/signals.utils";
-import { Paths, ValueAtPath } from "./utils/types";
-import {batch, computed, effect, ReadonlySignal, signal} from "@preact/signals";
-import { FieldLogic } from "./FieldLogic";
-import {
-  groupValidators,
-  validateWithValidators, ValidationError,
-  Validator,
-  ValidatorAsync,
-  ValidatorEvents,
-  ValidatorSync,
-  WithKey,
-} from "./utils/validation";
-import {equalityUtils} from "./utils/equality.utils";
-import {getValueAtPath, setValueAtPath} from "./utils/access.utils";
+  validateWithValidators,
+} from './utils'
 
-type FormLogicOptions<TData> = {
+export type FormLogicOptions<TData> = {
   /**
    * Validators to run on the whole form
    */
-  validators?: Validator<TData>[];
+  validators?: Validator<TData>[]
   /**
    * If true, all errors on validators will be accumulated and validation will not stop on the first error
    */
-  accumulateErrors?: boolean;
+  accumulateErrors?: boolean
   /**
    * Default values for the form
    */
-  defaultValues?: TData;
-  onSubmit?: (data: TData) => void | Promise<void>;
-};
+  defaultValues?: TData
+  onSubmit?: (data: TData) => void | Promise<void>
+}
 
 export class FormLogic<TData> {
   /**
    * Single source of truth for the form data
    * @private
    */
-  private readonly _data: SignalifiedData<TData>;
+  private readonly _data: SignalifiedData<TData>
   private readonly _jsonData = computed(() => {
     const unSignalifyValue = <T>(value: SignalifiedData<T>): T => {
       const currentValue =
-        typeof value === "object" && "value" in value ? value.value : value;
+        typeof value === 'object' && 'value' in value ? value.value : value
 
       if (Array.isArray(currentValue)) {
-        return currentValue.map((entry) => unSignalifyValue(entry.signal)) as T;
+        return currentValue.map((entry) => unSignalifyValue(entry.signal)) as T
       }
 
       if (
         currentValue instanceof Date ||
-        typeof currentValue !== "object" ||
+        typeof currentValue !== 'object' ||
         currentValue === null ||
         currentValue === undefined
       ) {
-        return currentValue as T;
+        return currentValue as T
       }
 
       return Object.fromEntries(
@@ -66,10 +74,10 @@ export class FormLogic<TData> {
           key,
           unSignalifyValue(value),
         ]),
-      ) as T;
-    };
-    return unSignalifyValue(this._data);
-  });
+      ) as T
+    }
+    return unSignalifyValue(this._data)
+  })
 
   /**
    * Errors specific for the whole form
@@ -77,184 +85,199 @@ export class FormLogic<TData> {
    */
   private readonly _errorMap = signal<
     Partial<Record<ValidatorEvents, ValidationError>>
-  >({});
+  >({})
   /**
    * @NOTE on errors
    * Each validator can trigger its own errors and can override only its own errors
    * Each list of errors is stored with a key that is unique to the validator, therefore, only this validator can override it
    */
   private readonly _errors = computed(() => {
-    const errorMap = this._errorMap.value;
-    return Object.values(errorMap).flat().filter(Boolean);
-  });
-  private readonly _isValidForm = computed(() => !this._errors.value.length);
+    const errorMap = this._errorMap.value
+    return Object.values(errorMap).flat().filter(Boolean)
+  })
+  private readonly _isValidForm = computed(() => !this._errors.value.length)
   private readonly _isValidFields = computed(() => {
-    const fields = this.fields;
-    return fields.every((field) => field.isValid.value);
-  });
+    const fields = this.fields
+    return fields.every((field) => field.isValid.value)
+  })
   private readonly _isValid = computed(
     () => this._isValidForm.value && this._isValidFields.value,
-  );
+  )
 
   private readonly _isTouched = computed(() => {
-    return this.fields.some((field) => field.isTouched.value);
-  });
+    return this.fields.some((field) => field.isTouched.value)
+  })
 
   private readonly _isDirty = computed(() => {
-    const defaultValues = (this._options?.defaultValues ?? {}) as TData;
+    const defaultValues = (this._options?.defaultValues ?? {}) as TData
     // Get any possible default value overrides from the fields
     for (const field of this.fields) {
       setValueAtPath(defaultValues, field.name, field.defaultValue)
     }
 
     return !equalityUtils(defaultValues, this._jsonData.value)
-  });
+  })
 
-  private readonly _submitCountSuccessful = signal(0);
-  private readonly _submitCountSuccessfulReadOnly = computed(() => this._submitCountSuccessful.value);
-  private readonly _submitCountUnsuccessful = signal(0);
-  private readonly _submitCountUnsuccessfulReadOnly = computed(() => this._submitCountUnsuccessful.value);
+  private readonly _submitCountSuccessful = signal(0)
+  private readonly _submitCountSuccessfulReadOnly = computed(
+    () => this._submitCountSuccessful.value,
+  )
+  private readonly _submitCountUnsuccessful = signal(0)
+  private readonly _submitCountUnsuccessfulReadOnly = computed(
+    () => this._submitCountUnsuccessful.value,
+  )
   private readonly _submitCount = computed(
     () =>
       this._submitCountSuccessful.value + this._submitCountUnsuccessful.value,
-  );
+  )
 
-  private readonly _isValidatingForm = signal(false);
-  private readonly _isValidatingFormReadOnly = computed(() => this._isValidatingForm.value);
+  private readonly _isValidatingForm = signal(false)
+  private readonly _isValidatingFormReadOnly = computed(
+    () => this._isValidatingForm.value,
+  )
   private readonly _isValidatingFields = computed(() => {
-    return this.fields.some((field) => field.isValidating.value);
-  });
+    return this.fields.some((field) => field.isValidating.value)
+  })
   private readonly _isValidating = computed(
     () => this._isValidatingForm.value || this._isValidatingFields.value,
-  );
+  )
 
-  private readonly _isSubmitting = signal(false);
-  private readonly _isSubmittingReadOnly = computed(() => this._isSubmitting.value);
+  private readonly _isSubmitting = signal(false)
+  private readonly _isSubmittingReadOnly = computed(
+    () => this._isSubmitting.value,
+  )
   private readonly _isSubmitted = computed(() => {
-    return !this._isSubmitting.value && this._submitCount.value > 0;
-  });
+    return !this._isSubmitting.value && this._submitCount.value > 0
+  })
 
   private readonly _canSubmit = computed(() => {
-    return !this._isSubmitting.value && !this._isValidating.value && this._isValid.value;
+    return (
+      !this._isSubmitting.value &&
+      !this._isValidating.value &&
+      this._isValid.value
+    )
   })
 
   /**
    * Map of all the fields in the form
    * @private
    */
-  private readonly _fields: Map<Paths<TData>, FieldLogic<TData, Paths<TData>>>;
+  private readonly _fields: Map<Paths<TData>, FieldLogic<TData, Paths<TData>>>
 
   private readonly _validators: Record<
     ValidatorEvents,
     {
-      sync: Array<ValidatorSync<TData> & WithKey>;
-      async: Array<ValidatorAsync<TData> & WithKey>;
+      sync: Array<ValidatorSync<TData> & WithKey>
+      async: Array<ValidatorAsync<TData> & WithKey>
     }
-  >;
-  private readonly _asyncValidationState: Record<number, AbortController> = {};
+  >
+  private readonly _asyncValidationState: Record<number, AbortController> = {}
 
-  private _unsubscribeFromChangeEffect?: () => void;
-  private _isMounted = false;
+  private _unsubscribeFromChangeEffect?: () => void
+  private _isMounted = false
 
   constructor(private readonly _options?: FormLogicOptions<TData>) {
     if (this._options?.defaultValues) {
-      this._data = deepSignalifyValue(this._options.defaultValues);
+      this._data = deepSignalifyValue(this._options.defaultValues)
     } else {
-      this._data = signal({}) as SignalifiedData<TData>;
+      this._data = signal({}) as SignalifiedData<TData>
     }
-    this._fields = new Map();
+    this._fields = new Map()
 
-    this._validators = groupValidators(this._options?.validators);
+    this._validators = groupValidators(this._options?.validators)
   }
 
   //region State
   public get data(): SignalifiedData<TData> {
     // This is not really always the full data, but this way you get type safety
-    return this._data;
+    return this._data
   }
 
   public get json(): ReadonlySignal<TData> {
     // This is not really always the full data, but this way you get type safety
-    return this._jsonData;
+    return this._jsonData
   }
 
   public get errors(): ReadonlySignal<Array<ValidationError>> {
-    return this._errors;
+    return this._errors
   }
 
   public get fields(): Array<FieldLogic<TData, Paths<TData>>> {
-    return Array.from(this._fields.values());
+    return Array.from(this._fields.values())
   }
 
   public get isValidForm(): ReadonlySignal<boolean> {
-    return this._isValidForm;
+    return this._isValidForm
   }
 
   public get isValidFields(): ReadonlySignal<boolean> {
-    return this._isValidFields;
+    return this._isValidFields
   }
 
   public get isValid(): ReadonlySignal<boolean> {
-    return this._isValid;
+    return this._isValid
   }
 
   public get isTouched(): ReadonlySignal<boolean> {
-    return this._isTouched;
+    return this._isTouched
   }
 
   public get isDirty(): ReadonlySignal<boolean> {
-    return this._isDirty;
+    return this._isDirty
   }
 
   /**
    * The amount of times the form finished submission successfully
    */
   public get submitCountSuccessful(): ReadonlySignal<number> {
-    return this._submitCountSuccessfulReadOnly;
+    return this._submitCountSuccessfulReadOnly
   }
 
   /**
    * The amount of times the form finished submission with either validation errors or a failing onSubmit function
    */
   public get submitCountUnsuccessful(): ReadonlySignal<number> {
-    return this._submitCountUnsuccessfulReadOnly;
+    return this._submitCountUnsuccessfulReadOnly
   }
 
   /**
    * The amount of times the form finished submission, regardless of the outcome
    */
   public get submitCount(): ReadonlySignal<number> {
-    return this._submitCount;
+    return this._submitCount
   }
 
   public get isValidatingForm(): ReadonlySignal<boolean> {
-    return this._isValidatingFormReadOnly;
+    return this._isValidatingFormReadOnly
   }
 
   public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields;
+    return this._isValidatingFields
   }
 
   public get isValidating(): ReadonlySignal<boolean> {
-    return this._isValidating;
+    return this._isValidating
   }
 
   public get isSubmitting(): ReadonlySignal<boolean> {
-    return this._isSubmittingReadOnly;
+    return this._isSubmittingReadOnly
   }
 
   public get isSubmitted(): ReadonlySignal<boolean> {
-    return this._isSubmitted;
+    return this._isSubmitted
   }
 
   public get canSubmit(): ReadonlySignal<boolean> {
-    return this._canSubmit;
+    return this._canSubmit
   }
 
-  public validateForEvent(event: ValidatorEvents, checkValue?: TData): void | Promise<void> {
-    if (!this._isMounted && event !== "onSubmit") return;
+  public validateForEvent(
+    event: ValidatorEvents,
+    checkValue?: TData,
+  ): void | Promise<void> {
+    if (!this._isMounted && event !== 'onSubmit') return
 
-    const value = checkValue ?? unSignalifyValue(this.data);
+    const value = checkValue ?? unSignalifyValue(this.data)
     return validateWithValidators(
       value,
       event,
@@ -263,89 +286,89 @@ export class FormLogic<TData> {
       this._errorMap,
       this._isValidatingForm,
       this._options?.accumulateErrors,
-    );
+    )
   }
   //endregion
 
   //region Functions
   public handleBlur = async (): Promise<void> => {
-    if (!this._isMounted) return;
-    await this.validateForEvent("onBlur");
+    if (!this._isMounted) return
+    await this.validateForEvent('onBlur')
   }
 
   public handleSubmit = async (): Promise<void> => {
-    if (!this._isMounted || !this.canSubmit.peek()) return;
+    if (!this._isMounted || !this.canSubmit.peek()) return
 
     // TODO Only await if the the validators are async
     const onFinished = (successful: boolean) => {
       batch(() => {
         if (successful) {
-          this._submitCountSuccessful.value++;
+          this._submitCountSuccessful.value++
         } else {
-          this._submitCountUnsuccessful.value++;
+          this._submitCountUnsuccessful.value++
         }
-        this._isSubmitting.value = false;
-      });
-    };
-
-    this._isSubmitting.value = true;
-    await Promise.all([
-      this.validateForEvent("onSubmit"),
-      ...this.fields.map((field) => field.handleSubmit()),
-    ]);
-
-    if (!this._isValid.peek()) {
-      onFinished(false);
-      return;
+        this._isSubmitting.value = false
+      })
     }
 
-    const currentJson = this._jsonData.peek();
+    this._isSubmitting.value = true
+    await Promise.all([
+      this.validateForEvent('onSubmit'),
+      ...this.fields.map((field) => field.handleSubmit()),
+    ])
+
+    if (!this._isValid.peek()) {
+      onFinished(false)
+      return
+    }
+
+    const currentJson = this._jsonData.peek()
 
     if (this._options?.onSubmit) {
       try {
-        const res = Promise.resolve(this._options.onSubmit(currentJson));
+        const res = Promise.resolve(this._options.onSubmit(currentJson))
 
         await res.then((res) => {
-          onFinished(true);
-          return res;
-        });
+          onFinished(true)
+          return res
+        })
       } catch (e) {
-        onFinished(false);
-        throw e;
+        onFinished(false)
+        throw e
       }
     } else {
-      onFinished(true);
+      onFinished(true)
     }
-  };
+  }
   //endregion
 
   //region Lifecycle
   public async mount(): Promise<void> {
     // Once mounted, we want to listen to all changes to the form
-    this._unsubscribeFromChangeEffect?.();
+    this._unsubscribeFromChangeEffect?.()
     this._unsubscribeFromChangeEffect = effect(async () => {
-      const currentJson = this._jsonData.value;
+      const currentJson = this._jsonData.value
       // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
 
       // Clear all onSubmit errors when the value changes
-      const { onSubmit: _, ...errors } = this._errorMap.peek();
-      this._errorMap.value = errors;
+      const { onSubmit: _, ...errors } = this._errorMap.peek()
+      this._errorMap.value = errors
 
       if (!this._isMounted) {
-        return;
+        return
       }
 
-      await this.validateForEvent("onChange", currentJson as TData);
-    });
+      await this.validateForEvent('onChange', currentJson as TData)
+    })
 
-    this._isMounted = true;
-    await this.validateForEvent("onMount");
+    this._isMounted = true
+    await this.validateForEvent('onMount')
   }
 
   public unmount(): void {
-    this._isMounted = false;
+    this._isMounted = false
 
-    this._unsubscribeFromChangeEffect?.();
+    this._unsubscribeFromChangeEffect?.()
   }
   //endregion
 
@@ -356,20 +379,20 @@ export class FormLogic<TData> {
     defaultValues?: ValueAtPath<TData, TPath>,
   ): void {
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
-    if (this._fields.has(path)) return;
+    if (this._fields.has(path)) return
 
-    this._fields.set(path, field);
-    if (defaultValues === undefined) return;
-    setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues);
+    this._fields.set(path, field)
+    if (defaultValues === undefined) return
+    setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
 
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
     preserveValue?: boolean,
   ): void {
-    if (preserveValue) return;
-    this._fields.delete(path);
-    removeSignalValueAtPath(this._data, path);
+    if (preserveValue) return
+    this._fields.delete(path)
+    removeSignalValueAtPath(this._data, path)
   }
   //endregion
 
@@ -377,41 +400,46 @@ export class FormLogic<TData> {
   public getDefaultValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): ValueAtPath<TData, TPath> | undefined {
-    return getValueAtPath<TData, TPath>(this._options?.defaultValues, path);
+    return getValueAtPath<TData, TPath>(this._options?.defaultValues, path)
   }
 
   public getValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    const value = getSignalValueAtPath<TData, TPath>(this._data, path);
-    if (value) return value;
+    const value = getSignalValueAtPath<TData, TPath>(this._data, path)
+    if (value) return value
 
     const createdValue = setSignalValueAtPath<TData, TPath>(
       this._data,
       path,
       this.getDefaultValueForPath(path),
-    );
-    if (!createdValue) throw new Error(`Could not create value for path "${path}"`);
-    return createdValue;
+    )
+    if (!createdValue)
+      throw new Error(`Could not create value for path "${path}"`)
+    return createdValue
   }
 
   public getFieldForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): FieldLogic<TData, TPath> {
-    return this._fields.get(path) as FieldLogic<TData, TPath>;
+    return this._fields.get(path) as FieldLogic<TData, TPath>
   }
 
   public reset(): void {
-    this._data.value = (deepSignalifyValue(this._options?.defaultValues ?? {}) as SignalifiedData<TData>).peek();
+    this._data.value = (
+      deepSignalifyValue(
+        this._options?.defaultValues ?? {},
+      ) as SignalifiedData<TData>
+    ).peek()
     for (const field of this.fields) {
-      field.reset();
+      field.reset()
     }
 
-    this._submitCountUnsuccessful.value = 0;
-    this._submitCountSuccessful.value = 0;
-    this._isValidatingForm.value = false;
-    this._isSubmitting.value = false;
-    this._errorMap.value = {};
+    this._submitCountUnsuccessful.value = 0
+    this._submitCountSuccessful.value = 0
+    this._isValidatingForm.value = false
+    this._isSubmitting.value = false
+    this._errorMap.value = {}
   }
   //endregion
 
@@ -431,26 +459,25 @@ export class FormLogic<TData> {
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
     const signal = this.getValueForPath(name)
-    const currentValue = signal.value;
+    const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
-      console.error(`Tried to insert a value into a non-array field at ${name}`);
-      return;
+      console.error(`Tried to insert a value into a non-array field at ${name}`)
+      return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
-      Array<any>;
-    arrayCopy[index] = makeArrayEntry(value);
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    arrayCopy[index] = makeArrayEntry(value)
     batch(() => {
-      signal.value = arrayCopy as typeof currentValue;
+      signal.value = arrayCopy as typeof currentValue
       if (options?.shouldTouch) {
         this.getFieldForPath(name)?.handleTouched()
       }
-    });
+    })
   }
 
   /**
@@ -468,21 +495,20 @@ export class FormLogic<TData> {
     options?: { shouldTouch?: boolean },
   ): void {
     const signal = this.getValueForPath(name)
-    const currentValue = signal.value;
+    const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
-      console.error(`Tried to push a value into a non-array field at ${name}`);
-      return;
+      console.error(`Tried to push a value into a non-array field at ${name}`)
+      return
     }
 
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
-      Array<any>;
-    arrayCopy.push(makeArrayEntry(value));
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    arrayCopy.push(makeArrayEntry(value))
     batch(() => {
-      signal.value = arrayCopy as typeof currentValue;
+      signal.value = arrayCopy as typeof currentValue
       if (options?.shouldTouch) {
         this.getFieldForPath(name)?.handleTouched()
       }
-    });
+    })
   }
 
   /**
@@ -491,6 +517,8 @@ export class FormLogic<TData> {
    * @param name The name of the field
    * @param index The index of the value to remove
    * @param options Options for the remove
+   *
+   * TODO Add a helper to remove a value from a signal array by key
    */
   public removeValueFromArray<TName extends Paths<TData>>(
     name: TName,
@@ -499,19 +527,21 @@ export class FormLogic<TData> {
     options?: { shouldTouch?: boolean },
   ): void {
     const signal = this.getValueForPath(name)
-    const currentValue = signal.value;
+    const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
-      console.error(`Tried to remove a value from a non-array field at path ${name}`);
-      return;
+      console.error(
+        `Tried to remove a value from a non-array field at path ${name}`,
+      )
+      return
     }
     batch(() => {
       signal.value = [...currentValue].filter(
         (_, i) => i !== index,
-      ) as typeof currentValue;
+      ) as typeof currentValue
       if (options?.shouldTouch) {
         this.getFieldForPath(name)?.handleTouched()
       }
-    });
+    })
   }
 
   /**
@@ -521,13 +551,17 @@ export class FormLogic<TData> {
    * @param indexB The index of the second value to swap
    * @param options Options for the swap
    */
-  public swapValuesInArray<TName extends Paths<TData>, IndexA extends number, IndexB extends number>(
+  public swapValuesInArray<
+    TName extends Paths<TData>,
+    IndexA extends number,
+    IndexB extends number,
+  >(
     name: TName,
     // biome-ignore lint/suspicious/noExplicitAny: This could be any array
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -539,7 +573,7 @@ export class FormLogic<TData> {
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -550,23 +584,22 @@ export class FormLogic<TData> {
     options?: { shouldTouch?: boolean },
   ): void {
     const signal = this.getValueForPath(name)
-    const currentValue = signal.value;
+    const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
-      console.error(`Tried to swap values in a non-array field at path ${name}`);
-      return;
+      console.error(`Tried to swap values in a non-array field at path ${name}`)
+      return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
-      Array<any>;
-    const temp = arrayCopy[indexA];
-    arrayCopy[indexA] = arrayCopy[indexB];
-    arrayCopy[indexB] = temp;
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    const temp = arrayCopy[indexA]
+    arrayCopy[indexA] = arrayCopy[indexB]
+    arrayCopy[indexB] = temp
 
     batch(() => {
-      signal.value = arrayCopy as typeof currentValue;
+      signal.value = arrayCopy as typeof currentValue
       if (options?.shouldTouch) {
         this.getFieldForPath(name)?.handleTouched()
       }
-    });
+    })
   }
   //endregion
 }

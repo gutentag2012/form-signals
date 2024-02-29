@@ -1,177 +1,197 @@
-import { type FormLogic } from "./FormLogic";
-import { Paths, ValueAtPath } from "./utils/types";
 import {
+  type ReadonlySignal,
   batch,
   computed,
   effect,
-  ReadonlySignal,
   signal,
-} from "@preact/signals";
+} from '@preact/signals'
+import type { FormLogic } from './FormLogic'
 import {
-  groupValidators, validateWithValidators,
-  ValidationError,
-  Validator,
-  ValidatorAsync,
-  ValidatorEvents,
-  ValidatorSync,
-  WithKey
-} from "./utils/validation";
-import {
+  type Paths,
+  type SignalifiedData,
+  type ValidationError,
+  type ValidatorAsync,
+  type ValidatorEvents,
+  type ValidatorSync,
+  type ValueAtPath,
+  type WithKey,
   deepSignalifyValue,
-  SignalifiedData,
+  equalityUtils,
+  groupValidators,
   unSignalifyValue,
-} from "./utils/signals.utils";
-import { equalityUtils } from "./utils/equality.utils";
+  validateWithValidators,
+} from './utils'
 
-interface FieldLogicOptions<TData, TName extends Paths<TData>> {
+export type FieldLogicOptions<TData, TName extends Paths<TData>> = {
   /**
-   * Validators to run on fields
+   * Validator for the value of the field.
+   * TODO This should also already set errors while async validation is still ongoing
    */
-  validators?: Validator<ValueAtPath<TData, TName>>[];
+  validator?: ValidatorSync<ValueAtPath<TData, TName>>
+  /**
+   * Async validator for the value of the field, this will be run after the sync validator if both are set.
+   */
+  validatorAsync?: ValidatorAsync<ValueAtPath<TData, TName>>
   /**
    * If true, all errors on validators will be accumulated and validation will not stop on the first error
    */
-  accumulateErrors?: boolean;
+  accumulateErrors?: boolean
+
   /**
    * Default value for the field
    */
-  defaultValue?: ValueAtPath<TData, TName>;
+  defaultValue?: ValueAtPath<TData, TName>
+
   /**
    * Initial state for the field
    */
   defaultState?: {
-    isTouched?: boolean;
-    errors?: Partial<Record<ValidatorEvents, ValidationError>>;
-  };
+    isTouched?: boolean
+    errors?: Partial<Record<ValidatorEvents, ValidationError>>
+  }
+
   /**
    * Whether the value should be preserved once the field is unmounted. <br/>
    * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on submit.
    * @note The signal value will not be locked when unmounted, so if you change the value directly through the signal, it will be updated in the form.
    */
-  preserveValueOnUnmount?: boolean;
+  preserveValueOnUnmount?: boolean
 }
 
 export class FieldLogic<TData, TName extends Paths<TData>> {
   //region State
-  private readonly _isTouched = signal(false);
-  private readonly _isTouchedReadOnly = computed(() => this._isTouched.value);
+  private readonly _isTouched = signal(false)
+  private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
 
-  private readonly _isValidating = signal(false);
+  private readonly _isValidating = signal(false)
   private readonly _isValidatingReadOnly = computed(
     () => this._isValidating.value,
-  );
+  )
 
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
-    () => !equalityUtils(this.defaultValue, unSignalifyValue(this.signal.value)),
-  );
+    () =>
+      !equalityUtils(this.defaultValue, unSignalifyValue(this.signal.value)),
+  )
 
-  private readonly _errorMap = signal<Partial<Record<ValidatorEvents, ValidationError>>>({});
+  private readonly _errorMap = signal<
+    Partial<Record<ValidatorEvents, ValidationError>>
+  >({})
+  // TODO This should always be an array that has [syncError, asyncError] as long as both validators are present
   private readonly _errors = computed(() => {
-    const errorMap = this._errorMap.value;
-    return Object.values(errorMap).flat().filter(Boolean);
-  });
-  private readonly _isValid = computed(() => !this._errors.value.length);
+    const errorMap = this._errorMap.value
+    return Object.values(errorMap).flat().filter(Boolean)
+  })
+  private readonly _isValid = computed(() => !this._errors.value.length)
   //endregion
 
   private readonly _validators: Record<
     ValidatorEvents,
     {
-      sync: Array<ValidatorSync<ValueAtPath<TData, TName>> & WithKey>;
-      async: Array<ValidatorAsync<ValueAtPath<TData, TName>> & WithKey>;
+      sync: Array<ValidatorSync<ValueAtPath<TData, TName>> & WithKey>
+      async: Array<ValidatorAsync<ValueAtPath<TData, TName>> & WithKey>
     }
-  >;
-  private readonly _asyncValidationState: Record<number, AbortController> = {};
+  >
+  private readonly _asyncValidationState: Record<number, AbortController> = {}
 
-  private _unsubscribeFromChangeEffect?: () => void;
-  private _isMounted = false;
+  private _unsubscribeFromChangeEffect?: () => void
 
   constructor(
     private readonly _form: FormLogic<TData>,
     private readonly _name: TName,
     private readonly _options?: FieldLogicOptions<TData, TName>,
   ) {
-    this._form.registerField(_name, this, _options?.defaultValue);
+    this._form.registerField(_name, this, _options?.defaultValue)
 
-    if (_options?.defaultState?.isTouched) this._isTouched.value = true;
+    if (_options?.defaultState?.isTouched) this._isTouched.value = true
     if (_options?.defaultState?.errors) {
-      this._errorMap.value = _options.defaultState.errors;
+      this._errorMap.value = _options.defaultState.errors
     }
 
-    this._validators = groupValidators(this._options?.validators);
+    this._validators = groupValidators(this._options?.validators)
   }
 
+  private _isMounted = false
 
   //region State
   public get isMounted(): boolean {
-    return this._isMounted;
+    return this._isMounted
   }
   /**
    * The reactive signal of the field value, you can get, subscribe and set the value of the field with this signal.
    */
   public get signal(): SignalifiedData<ValueAtPath<TData, TName>> {
-    return this._form.getValueForPath(this._name);
+    return this._form.getValueForPath(this._name)
   }
 
   public get name(): TName {
-    return this._name;
+    return this._name
   }
 
   public get isValidating(): ReadonlySignal<boolean> {
-    return this._isValidatingReadOnly;
+    return this._isValidatingReadOnly
   }
 
   public get errors(): ReadonlySignal<Array<ValidationError>> {
-    return this._errors;
+    return this._errors
   }
 
   public get isValid(): ReadonlySignal<boolean> {
-    return this._isValid;
+    return this._isValid
   }
 
   public get isTouched(): ReadonlySignal<boolean> {
-    return this._isTouchedReadOnly;
+    return this._isTouchedReadOnly
   }
 
   public get isDirty(): ReadonlySignal<boolean> {
-    return this._isDirty;
+    return this._isDirty
   }
   //endregion
 
+  public get defaultValue(): ValueAtPath<TData, TName> | undefined {
+    return (
+      this._options?.defaultValue ??
+      this._form.getDefaultValueForPath(this._name)
+    )
+  }
+
   //region Lifecycle
   public async mount(): Promise<void> {
+    if (this._isMounted) return
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
     this._unsubscribeFromChangeEffect = effect(async () => {
-      const currentValue = this.signal.value;
+      const currentValue = this.signal.value
 
       // Clear all onSubmit errors when the value changes
-      const { onSubmit: _, ...errors } = this._errorMap.peek();
-      this._errorMap.value = errors;
+      const { onSubmit: _, ...errors } = this._errorMap.peek()
+      this._errorMap.value = errors
 
       if (!this._isMounted) {
-        return;
+        return
       }
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEvent("onChange", currentValue);
+      await this.validateForEvent('onChange', currentValue)
     })
 
-    this._isMounted = true;
-    await this.validateForEvent("onMount");
+    this._isMounted = true
+    await this.validateForEvent('onMount')
   }
+  //endregion
 
   public unmount(): void {
-    this._isTouched.value = false;
-    this._isMounted = false;
+    if (!this._isMounted) return
+    this._isTouched.value = false
+    this._isMounted = false
 
-    this._unsubscribeFromChangeEffect?.();
+    this._unsubscribeFromChangeEffect?.()
 
     this._form.unregisterField(
       this._name,
       this._options?.preserveValueOnUnmount,
-    );
+    )
   }
-  //endregion
 
   //region Handlers
   /**
@@ -183,9 +203,17 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     event: ValidatorEvents,
     checkValue?: SignalifiedData<ValueAtPath<TData, TName>>,
   ): void | Promise<void> {
-    if(!this._isMounted) return;
-    const value = unSignalifyValue(checkValue ?? this.signal);
-    return validateWithValidators(value, event, this._validators, this._asyncValidationState, this._errorMap, this._isValidating, this._options?.accumulateErrors);
+    if (!this._isMounted) return
+    const value = unSignalifyValue(checkValue ?? this.signal)
+    return validateWithValidators(
+      value,
+      event,
+      this._validators,
+      this._asyncValidationState,
+      this._errorMap,
+      this._isValidating,
+      this._options?.accumulateErrors,
+    )
   }
 
   /**
@@ -198,42 +226,42 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if(!this._isMounted) return;
+    if (!this._isMounted) return
     batch(() => {
-      this.signal.value = newValue;
+      this.signal.value = newValue
       if (options?.shouldTouch) {
-        this._isTouched.value = true;
+        this._isTouched.value = true
       }
-    });
+    })
   }
 
   /**
    * Handle a blur event on the field. This will set the field as touched and run all validators for the onBlur event.
    */
   public async handleBlur(): Promise<void> {
-    if(!this._isMounted) return;
-    this._isTouched.value = true;
-    await this.validateForEvent("onBlur");
-    await this._form.handleBlur();
+    if (!this._isMounted) return
+    this._isTouched.value = true
+    await this.validateForEvent('onBlur')
+    await this._form.handleBlur()
   }
 
   /**
    * Handle a submit-event on the field. This will run all validators for the onSubmit event.
    */
   public async handleSubmit(): Promise<void> {
-    await this.validateForEvent("onSubmit");
+    await this.validateForEvent('onSubmit')
 
     // If there are any errors, we don't want to submit the form
     if (!this.isValid.value) {
-      return;
+      return
     }
-    return this.signal.value;
-  }
-
-  public handleTouched(): void {
-    this._isTouched.value = true;
+    return this.signal.value
   }
   //endregion
+
+  public handleTouched(): void {
+    this._isTouched.value = true
+  }
 
   //region Array Helpers
   /**
@@ -249,7 +277,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -285,6 +313,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   ): void {
     this._form.removeValueFromArray(this._name, index, options)
   }
+  //endregion
 
   /**
    * Swap two values in an array. If the field is not an array it will throw an error. You should also not swap values in a readonly array, this is also intended to give type errors.
@@ -297,7 +326,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -309,7 +338,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -321,20 +350,16 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
   ): void {
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
-  //endregion
 
   public reset(): void {
-    this._errorMap.value = {};
-    this._isTouched.value = false;
-    this._isValidating.value = false;
+    this._errorMap.value = {}
+    this._isTouched.value = false
+    this._isValidating.value = false
 
-    this.signal.value = (deepSignalifyValue(this.defaultValue) as SignalifiedData<ValueAtPath<TData, TName>>).peek();
-  }
-
-  public get defaultValue(): ValueAtPath<TData, TName> | undefined {
-    return (
-      this._options?.defaultValue ??
-      this._form.getDefaultValueForPath(this._name)
-    );
+    this.signal.value = (
+      deepSignalifyValue(this.defaultValue) as SignalifiedData<
+        ValueAtPath<TData, TName>
+      >
+    ).peek()
   }
 }
