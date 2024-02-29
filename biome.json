@@ -10,12 +10,16 @@
 			"suspicious": {
 				"noArrayIndexKey": "off"
 			},
-      "nursery": {
-        "useImportType": "warn"
-      }
-    }
+			"nursery": {
+				"useImportType": "warn"
+			}
+		}
 	},
 	"formatter": {
 		"enabled": true
+	},
+	"files": {
+		"ignore": ["**/node_modules/**", "**/dist/**", "**/coverage/**", "*.d.ts"],
+		"include": ["packages", "examples"]
 	}
 }

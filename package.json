@@ -6,7 +6,8 @@
   "type": "module",
   "namespace": "signal-forms",
   "scripts": {
-    "style:fix": "pnpm dlx @biomejs/biome check"
+    "style": "pnpm dlx @biomejs/biome check .",
+    "style:fix": "pnpm dlx @biomejs/biome check --apply ."
   },
   "devDependencies": {
     "@biomejs/biome": "^1.5.3",
