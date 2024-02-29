@@ -8,8 +8,27 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import type { Signal } from '@preact/signals-react'
 
 const Select = SelectPrimitive.Root
+
+type SelectSignalProps = Omit<
+  SelectPrimitive.SelectProps,
+  'value' | 'onValueChange'
+> & {
+  value: Signal<string>
+}
+const SelectSignal = ({ value, ...props }: SelectSignalProps) => {
+  return (
+    <SelectPrimitive.Root
+      value={value.value}
+      onValueChange={(newValue) => {
+        value.value = newValue
+      }}
+      {...props}
+    />
+  )
+}
 
 const SelectGroup = SelectPrimitive.Group
 
@@ -150,6 +169,7 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
 export {
   Select,
+  SelectSignal,
   SelectGroup,
   SelectValue,
   SelectTrigger,

@@ -1,6 +1,8 @@
 import * as React from 'react'
 
+import { InputProps } from '@/components/ui/input.tsx'
 import { cn } from '@/lib/utils'
+import type { Signal } from '@preact/signals-react'
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
@@ -21,4 +23,22 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 )
 Textarea.displayName = 'Textarea'
 
-export { Textarea }
+export interface TextareaSignalProps
+  extends Omit<TextareaProps, 'value' | 'onChange'> {
+  value: Signal<string>
+}
+
+const TextareaSignal = ({ value, ...props }, ref) => {
+  return (
+    <Textarea
+      value={value.value}
+      onChange={(e) => {
+        value.value = e.target.value
+      }}
+      {...props}
+    />
+  )
+}
+TextareaSignal.displayName = 'TextareaSignal'
+
+export { Textarea, TextareaSignal }

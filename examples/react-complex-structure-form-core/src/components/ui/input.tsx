@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import type { Signal } from '@preact/signals'
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
@@ -22,4 +23,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 )
 Input.displayName = 'Input'
 
-export { Input }
+export interface InputSignalProps
+  extends Omit<InputProps, 'value' | 'onChange'> {
+  value: Signal<string>
+}
+
+const InputSignal = ({ value, ...props }: InputSignalProps) => {
+  return (
+    <Input
+      {...props}
+      value={value.value}
+      onChange={(e) => {
+        value.value = e.target.value
+      }}
+    />
+  )
+}
+InputSignal.displayName = 'InputSignal'
+
+export { Input, InputSignal }
