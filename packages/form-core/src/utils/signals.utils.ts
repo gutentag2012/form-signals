@@ -1,17 +1,18 @@
-import {signal, Signal} from "@preact/signals";
-import {Paths, ValueAtPath} from "./types";
-import {pathToParts} from "./access.utils";
+import { Signal, signal } from '@preact/signals'
+import { pathToParts } from './access.utils'
+import type { Paths, ValueAtPath } from './types'
 
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
-let arrayKey = 0;
+let arrayKey = 0
 
-export function makeArrayEntry<T>(
-  value: T,
-): { key: number; signal: SignalifiedData<T> } {
+export function makeArrayEntry<T>(value: T): {
+  key: number
+  signal: SignalifiedData<T>
+} {
   return {
     key: arrayKey++,
     signal: deepSignalifyValue(value),
-  };
+  }
 }
 
 type SignalifiedTuple<
@@ -23,10 +24,10 @@ type SignalifiedTuple<
   ? Acc
   : Tuple extends readonly [infer Curr, ...infer RestTuple]
     ? SignalifiedTuple<
-      RestTuple,
-      [...Acc, { key: number; signal: SignalifiedData<Curr> }]
-    >
-    : never;
+        RestTuple,
+        [...Acc, { key: number; signal: SignalifiedData<Curr> }]
+      >
+    : never
 
 export type SignalifiedData<T> = Signal<
   T extends object
@@ -35,24 +36,24 @@ export type SignalifiedData<T> = Signal<
       : T extends Array<infer U>
         ? Array<{ key: number; signal: SignalifiedData<U> }>
         : // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        T extends readonly any[]
+          T extends readonly any[]
           ? SignalifiedTuple<T>
           : { [K in keyof T]: SignalifiedData<T[K]> }
     : T
->;
+>
 
 export function deepSignalifyValue<T>(value: T): SignalifiedData<T> {
   if (
     value instanceof Date ||
-    typeof value !== "object" ||
+    typeof value !== 'object' ||
     value === null ||
     value === undefined
   ) {
-    return signal(value) as SignalifiedData<T>;
+    return signal(value) as SignalifiedData<T>
   }
 
   if (Array.isArray(value)) {
-    return signal(value.map(makeArrayEntry)) as SignalifiedData<T>;
+    return signal(value.map(makeArrayEntry)) as SignalifiedData<T>
   }
 
   return signal(
@@ -62,33 +63,46 @@ export function deepSignalifyValue<T>(value: T): SignalifiedData<T> {
         deepSignalifyValue(value),
       ]),
     ),
-  ) as SignalifiedData<T>;
+  ) as SignalifiedData<T>
 }
 
-function unSignalifyStep<T>(peekedValue: SignalifiedData<T>[keyof SignalifiedData<T>], unSignalify: (value: SignalifiedData<T>) => T): T {
+function unSignalifyStep<T>(
+  peekedValue: SignalifiedData<T>[keyof SignalifiedData<T>],
+  unSignalify: (value: SignalifiedData<T>) => T,
+): T {
   if (Array.isArray(peekedValue)) {
-    return peekedValue.map((entry) => unSignalify(entry.signal)) as T;
+    return peekedValue.map((entry) => unSignalify(entry.signal)) as T
   }
 
-  if (peekedValue instanceof Date || typeof peekedValue !== "object" || peekedValue === null || peekedValue === undefined) {
-    return peekedValue as T;
+  if (
+    peekedValue instanceof Date ||
+    typeof peekedValue !== 'object' ||
+    peekedValue === null ||
+    peekedValue === undefined
+  ) {
+    return peekedValue as T
   }
 
   return Object.fromEntries(
-    Object.entries(peekedValue).map(([key, value]) => [key, unSignalify(value)]),
-  ) as T;
+    Object.entries(peekedValue).map(([key, value]) => [
+      key,
+      unSignalify(value),
+    ]),
+  ) as T
 }
 
 export function unSignalifyValue<T>(value: SignalifiedData<T>): T {
-  const peekedValue = typeof value === "object" && value instanceof Signal ? value.peek() : value;
+  const peekedValue =
+    typeof value === 'object' && value instanceof Signal ? value.peek() : value
 
-  return unSignalifyStep(peekedValue, unSignalifyValue);
+  return unSignalifyStep(peekedValue, unSignalifyValue)
 }
 
 export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
-  const peekedValue = typeof value === "object" && value instanceof Signal ? value.value : value;
+  const peekedValue =
+    typeof value === 'object' && value instanceof Signal ? value.value : value
 
-  return unSignalifyStep(peekedValue, unSignalifyValueSubscribed);
+  return unSignalifyStep(peekedValue, unSignalifyValueSubscribed)
 }
 
 export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
@@ -96,29 +110,29 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   path: TPath,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
   if (!path || !obj?.peek()) {
-    return undefined;
+    return undefined
   }
-  const parts = pathToParts(path as string);
+  const parts = pathToParts(path as string)
 
   // biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
-  let value: any = obj;
+  let value: any = obj
   for (const part of parts) {
-    const valuePeek = value.peek();
+    const valuePeek = value.peek()
 
     // The current object must be given, and the part must be included in the object
     if (
-      typeof valuePeek !== "object" ||
+      typeof valuePeek !== 'object' ||
       valuePeek === null ||
       !(part in valuePeek)
     ) {
-      return undefined;
+      return undefined
     }
 
     // Since arrays have nested in the signal, we need to access its signal
-    value = typeof part === "number" ? valuePeek[part].signal : valuePeek[part];
+    value = typeof part === 'number' ? valuePeek[part].signal : valuePeek[part]
   }
 
-  return value;
+  return value
 }
 
 export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
@@ -126,26 +140,28 @@ export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   path: TPath,
 ) {
   if (!path || !obj.peek()) {
-    return;
+    return
   }
-  const parts = pathToParts(path as string);
-  const parentPath = parts.slice(0, -1).join(".");
+  const parts = pathToParts(path as string)
+  const parentPath = parts.slice(0, -1).join('.')
 
   const parent =
-    parts.length === 1 ? obj : getSignalValueAtPath(obj, parentPath as Paths<TValue>);
+    parts.length === 1
+      ? obj
+      : getSignalValueAtPath(obj, parentPath as Paths<TValue>)
   if (!parent) {
-    return;
+    return
   }
   const peekedValue = parent.peek()
 
-  const part = parts[parts.length - 1];
-  if (typeof part === "number" && Array.isArray(peekedValue)) {
-    const arrayCopy = [...peekedValue];
-    arrayCopy.splice(part, 1);
-    parent.value = arrayCopy as typeof parent["value"];
+  const part = parts[parts.length - 1]
+  if (typeof part === 'number' && Array.isArray(peekedValue)) {
+    const arrayCopy = [...peekedValue]
+    arrayCopy.splice(part, 1)
+    parent.value = arrayCopy as (typeof parent)['value']
   } else {
-    const {[part as keyof TValue]: _, ...rest} = peekedValue;
-    parent.value = rest as typeof parent["value"];
+    const { [part as keyof TValue]: _, ...rest } = peekedValue
+    parent.value = rest as (typeof parent)['value']
   }
 }
 
@@ -155,52 +171,51 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   value: ValueAtPath<TValue, TPath> | undefined,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
   if (!path || !obj) {
-    return undefined;
+    return undefined
   }
-  const parts = pathToParts(path as string);
+  const parts = pathToParts(path as string)
 
   if (!obj.peek()) {
     // biome-ignore lint/suspicious/noExplicitAny: We are building an arbitrary object here, therefore, it has no specific type
-    obj.value = {} as any;
+    obj.value = {} as any
   }
 
-  let current: Signal = obj;
+  let current: Signal = obj
   for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
+    const part = parts[i]
 
-    const nextPart = parts[i + 1];
-    const element =
-      "signal" in current ? (current.signal as Signal) : current;
+    const nextPart = parts[i + 1]
+    const element = 'signal' in current ? (current.signal as Signal) : current
 
     // If the current part is already included in the current value, we can continue with that value
     if (!!element.peek() && part in element.peek() && nextPart !== undefined) {
-      current = element.peek()[part];
-      continue;
+      current = element.peek()[part]
+      continue
     }
 
     const newValue =
       nextPart === undefined
         ? deepSignalifyValue(value)
-        : typeof nextPart === "number"
+        : typeof nextPart === 'number'
           ? signal([])
-          : signal({});
+          : signal({})
 
     // If the current part is a number, then we need to set the value in an array
-    if (typeof part === "number") {
+    if (typeof part === 'number') {
       // We know the value is not already included, so we can insert it at the part
-      const arrayCopy = [...element.peek()];
+      const arrayCopy = [...element.peek()]
       // We need to signalify the value before inserting it
-      arrayCopy[part] = makeArrayEntry(value);
-      element.value = arrayCopy;
+      arrayCopy[part] = makeArrayEntry(value)
+      element.value = arrayCopy
     } else {
       // We know the value is not already included, so we can insert it at the part
       element.value = {
         ...element.peek(),
         [part]: newValue,
-      };
+      }
     }
 
-    current = element.peek()[part];
+    current = element.peek()[part]
   }
-  return current;
+  return current
 }
