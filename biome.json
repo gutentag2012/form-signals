@@ -15,7 +15,8 @@
         "noArrayIndexKey": "off"
       },
       "nursery": {
-        "useImportType": "warn"
+        "useImportType": "warn",
+        "noUnusedImports": "warn"
       }
     }
   },
