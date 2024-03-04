@@ -23,7 +23,7 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
-      external: ['@preact/signals'],
+      external: ['@preact/signals-core'],
       output: {
         preserveModules: true,
       },
