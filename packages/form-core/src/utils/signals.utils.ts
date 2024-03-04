@@ -1,4 +1,4 @@
-import { Signal, signal } from '@preact/signals'
+import { Signal, signal } from '@preact/signals-core'
 import { pathToParts } from './access.utils'
 import type { Paths, ValueAtPath } from './types'
 

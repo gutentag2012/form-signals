@@ -1,4 +1,4 @@
-import { effect } from '@preact/signals'
+import { effect } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import {
   deepSignalifyValue,
