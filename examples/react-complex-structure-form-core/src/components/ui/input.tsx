@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
-import type { Signal } from '@preact/signals'
+import type { Signal } from '@preact/signals-core'
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}

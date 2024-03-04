@@ -43,10 +43,9 @@ import {
   type Paths,
   type ValueAtPath,
 } from '@form-signals/form-core'
-import { type Signal, useSignal, useSignalEffect } from '@preact/signals-react'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type Signal, useSignal } from '@preact/signals-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { z } from 'zod'
 import { Button } from './components/ui/button'
 import './index.css'
 

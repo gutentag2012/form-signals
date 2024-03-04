@@ -1,6 +1,5 @@
 import * as React from 'react'
 
-import { InputProps } from '@/components/ui/input.tsx'
 import { cn } from '@/lib/utils'
 import type { Signal } from '@preact/signals-react'
 

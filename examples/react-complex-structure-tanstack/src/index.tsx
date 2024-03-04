@@ -1,4 +1,3 @@
-import { BehaviourCheck } from '@/BehaviourCheck.tsx'
 import { DatePicker } from '@/components/DatePicker.tsx'
 import {
   Card,
@@ -36,7 +35,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types.ts'
-import type { DeepKeys } from '@tanstack/form-core'
 import { type FieldApi, useForm } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
 import { useRef, useState } from 'react'
