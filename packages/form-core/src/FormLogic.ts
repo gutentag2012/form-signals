@@ -1,47 +1,58 @@
 import {
   type ReadonlySignal,
+  type Signal,
   batch,
   computed,
   effect,
   signal,
-} from '@preact/signals'
+} from '@preact/signals-core'
 import type { FieldLogic } from './FieldLogic'
 import {
   type Paths,
   type SignalifiedData,
   type ValidationError,
-  type Validator,
+  type ValidationErrorMap,
   type ValidatorAsync,
   type ValidatorEvents,
   type ValidatorSync,
   type ValueAtPath,
-  type WithKey,
   deepSignalifyValue,
   equalityUtils,
   getSignalValueAtPath,
   getValueAtPath,
-  groupValidators,
   makeArrayEntry,
   removeSignalValueAtPath,
   setSignalValueAtPath,
   setValueAtPath,
   unSignalifyValue,
-  validateWithValidators,
+  unSignalifyValueSubscribed,
+  validateWithValidators, clearSubmitEventErrors,
 } from './utils'
 
 export type FormLogicOptions<TData> = {
   /**
-   * Validators to run on the whole form
+   * Synchronous validator for the value of the field.
    */
-  validators?: Validator<TData>[]
+  validator?: ValidatorSync<TData>
   /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error
+   * Async validator for the value of the field, this will be run after the sync validator if both are set.
+   */
+  validatorAsync?: ValidatorAsync<TData>
+  /**
+   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
+   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
    */
   accumulateErrors?: boolean
+
   /**
    * Default values for the form
    */
   defaultValues?: TData
+
+  /**
+   * Callback for when the form is submitted
+   * @param data The data at the time of submission
+   */
   onSubmit?: (data: TData) => void | Promise<void>
 }
 
@@ -51,51 +62,27 @@ export class FormLogic<TData> {
    * @private
    */
   private readonly _data: SignalifiedData<TData>
-  private readonly _jsonData = computed(() => {
-    const unSignalifyValue = <T>(value: SignalifiedData<T>): T => {
-      const currentValue =
-        typeof value === 'object' && 'value' in value ? value.value : value
-
-      if (Array.isArray(currentValue)) {
-        return currentValue.map((entry) => unSignalifyValue(entry.signal)) as T
-      }
-
-      if (
-        currentValue instanceof Date ||
-        typeof currentValue !== 'object' ||
-        currentValue === null ||
-        currentValue === undefined
-      ) {
-        return currentValue as T
-      }
-
-      return Object.fromEntries(
-        Object.entries(currentValue).map(([key, value]) => [
-          key,
-          unSignalifyValue(value),
-        ]),
-      ) as T
-    }
-    return unSignalifyValue(this._data)
-  })
+  private readonly _jsonData = computed(() =>
+    unSignalifyValueSubscribed(this._data),
+  )
 
   /**
    * Errors specific for the whole form
    * @private
    */
-  private readonly _errorMap = signal<
-    Partial<Record<ValidatorEvents, ValidationError>>
-  >({})
+  private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
   /**
    * @NOTE on errors
    * Each validator can trigger its own errors and can override only its own errors
    * Each list of errors is stored with a key that is unique to the validator, therefore, only this validator can override it
    */
   private readonly _errors = computed(() => {
-    const errorMap = this._errorMap.value
-    return Object.values(errorMap).flat().filter(Boolean)
+    const { sync, async } = this._errorMap.value
+    return [sync, async] as const
   })
-  private readonly _isValidForm = computed(() => !this._errors.value.length)
+  private readonly _isValidForm = computed(
+    () => !this._errors.value.filter(Boolean).length,
+  )
   private readonly _isValidFields = computed(() => {
     const fields = this.fields
     return fields.every((field) => field.isValid.value)
@@ -163,16 +150,12 @@ export class FormLogic<TData> {
    * @private
    */
   private readonly _fields: Map<Paths<TData>, FieldLogic<TData, Paths<TData>>>
+  // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
+  private _currentlyRegisteringFields = 0
 
-  private readonly _validators: Record<
-    ValidatorEvents,
-    {
-      sync: Array<ValidatorSync<TData> & WithKey>
-      async: Array<ValidatorAsync<TData> & WithKey>
-    }
-  >
-  private readonly _asyncValidationState: Record<number, AbortController> = {}
-
+  private readonly _previousAbortController: Signal<
+    AbortController | undefined
+  > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
   private _isMounted = false
 
@@ -183,8 +166,6 @@ export class FormLogic<TData> {
       this._data = signal({}) as SignalifiedData<TData>
     }
     this._fields = new Map()
-
-    this._validators = groupValidators(this._options?.validators)
   }
 
   //region State
@@ -198,7 +179,7 @@ export class FormLogic<TData> {
     return this._jsonData
   }
 
-  public get errors(): ReadonlySignal<Array<ValidationError>> {
+  public get errors(): ReadonlySignal<readonly [ValidationError, ValidationError]> {
     return this._errors
   }
 
@@ -281,8 +262,9 @@ export class FormLogic<TData> {
     return validateWithValidators(
       value,
       event,
-      this._validators,
-      this._asyncValidationState,
+      this._options?.validator,
+      this._options?.validatorAsync,
+      this._previousAbortController,
       this._errorMap,
       this._isValidatingForm,
       this._options?.accumulateErrors,
@@ -312,6 +294,8 @@ export class FormLogic<TData> {
     }
 
     this._isSubmitting.value = true
+
+    await Promise.all(this.fields.map((field) => field.handleBlur()))
     await Promise.all([
       this.validateForEvent('onSubmit'),
       ...this.fields.map((field) => field.handleSubmit()),
@@ -348,15 +332,18 @@ export class FormLogic<TData> {
     this._unsubscribeFromChangeEffect?.()
     this._unsubscribeFromChangeEffect = effect(async () => {
       const currentJson = this._jsonData.value
-      // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
-
-      // Clear all onSubmit errors when the value changes
-      const { onSubmit: _, ...errors } = this._errorMap.peek()
-      this._errorMap.value = errors
 
       if (!this._isMounted) {
         return
       }
+
+      if(this._currentlyRegisteringFields > 0) {
+        this._currentlyRegisteringFields--
+        return
+      }
+      // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
+      // Clear all onSubmit errors when the value changes
+      clearSubmitEventErrors(this._errorMap)
 
       await this.validateForEvent('onChange', currentJson as TData)
     })
@@ -380,6 +367,8 @@ export class FormLogic<TData> {
   ): void {
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
     if (this._fields.has(path)) return
+
+    this._currentlyRegisteringFields++
 
     this._fields.set(path, field)
     if (defaultValues === undefined) return
@@ -459,7 +448,7 @@ export class FormLogic<TData> {
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -470,7 +459,7 @@ export class FormLogic<TData> {
       console.error(`Tried to insert a value into a non-array field at ${name}`)
       return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
     arrayCopy[index] = makeArrayEntry(value)
     batch(() => {
       signal.value = arrayCopy as typeof currentValue
@@ -501,7 +490,7 @@ export class FormLogic<TData> {
       return
     }
 
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
     arrayCopy.push(makeArrayEntry(value))
     batch(() => {
       signal.value = arrayCopy as typeof currentValue
@@ -561,7 +550,7 @@ export class FormLogic<TData> {
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -573,7 +562,7 @@ export class FormLogic<TData> {
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -589,7 +578,7 @@ export class FormLogic<TData> {
       console.error(`Tried to swap values in a non-array field at path ${name}`)
       return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
     const temp = arrayCopy[indexA]
     arrayCopy[indexA] = arrayCopy[indexB]
     arrayCopy[indexB] = temp

@@ -1,31 +1,31 @@
 import {
   type ReadonlySignal,
+  type Signal,
   batch,
   computed,
   effect,
   signal,
-} from '@preact/signals'
+} from '@preact/signals-core'
 import type { FormLogic } from './FormLogic'
 import {
   type Paths,
   type SignalifiedData,
   type ValidationError,
+  type ValidationErrorMap,
   type ValidatorAsync,
   type ValidatorEvents,
   type ValidatorSync,
   type ValueAtPath,
-  type WithKey,
   deepSignalifyValue,
   equalityUtils,
-  groupValidators,
   unSignalifyValue,
-  validateWithValidators,
+  unSignalifyValueSubscribed,
+  validateWithValidators, clearSubmitEventErrors,
 } from './utils'
 
 export type FieldLogicOptions<TData, TName extends Paths<TData>> = {
   /**
-   * Validator for the value of the field.
-   * TODO This should also already set errors while async validation is still ongoing
+   * Synchronous validator for the value of the field.
    */
   validator?: ValidatorSync<ValueAtPath<TData, TName>>
   /**
@@ -33,9 +33,15 @@ export type FieldLogicOptions<TData, TName extends Paths<TData>> = {
    */
   validatorAsync?: ValidatorAsync<ValueAtPath<TData, TName>>
   /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error
+   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
+   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
    */
   accumulateErrors?: boolean
+  /**
+   * Whether this validator should run when a nested value changes
+   * TODO Add tests
+   */
+  validateOnNestedChange?: boolean
 
   /**
    * Default value for the field
@@ -47,7 +53,7 @@ export type FieldLogicOptions<TData, TName extends Paths<TData>> = {
    */
   defaultState?: {
     isTouched?: boolean
-    errors?: Partial<Record<ValidatorEvents, ValidationError>>
+    errors?: Partial<ValidationErrorMap>
   }
 
   /**
@@ -58,41 +64,40 @@ export type FieldLogicOptions<TData, TName extends Paths<TData>> = {
   preserveValueOnUnmount?: boolean
 }
 
+// TODO Add async annotations so you only need to await if it is really needed
 export class FieldLogic<TData, TName extends Paths<TData>> {
-  //region State
+  //region Description
   private readonly _isTouched = signal(false)
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
 
+  private readonly _isDirty: ReadonlySignal<boolean> = computed(
+    () =>
+      !equalityUtils(
+        this.defaultValue,
+        unSignalifyValueSubscribed(this.signal.value),
+      ),
+  )
+  //endregion
+
+  //region External Validation State
   private readonly _isValidating = signal(false)
   private readonly _isValidatingReadOnly = computed(
     () => this._isValidating.value,
   )
 
-  private readonly _isDirty: ReadonlySignal<boolean> = computed(
-    () =>
-      !equalityUtils(this.defaultValue, unSignalifyValue(this.signal.value)),
-  )
-
-  private readonly _errorMap = signal<
-    Partial<Record<ValidatorEvents, ValidationError>>
-  >({})
-  // TODO This should always be an array that has [syncError, asyncError] as long as both validators are present
+  private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
   private readonly _errors = computed(() => {
-    const errorMap = this._errorMap.value
-    return Object.values(errorMap).flat().filter(Boolean)
+    const { sync, async } = this._errorMap.value
+    return [sync, async] as const
   })
-  private readonly _isValid = computed(() => !this._errors.value.length)
+  private readonly _isValid = computed(
+    () => !this._errors.value.filter(Boolean).length,
+  )
   //endregion
 
-  private readonly _validators: Record<
-    ValidatorEvents,
-    {
-      sync: Array<ValidatorSync<ValueAtPath<TData, TName>> & WithKey>
-      async: Array<ValidatorAsync<ValueAtPath<TData, TName>> & WithKey>
-    }
-  >
-  private readonly _asyncValidationState: Record<number, AbortController> = {}
-
+  private readonly _previousAbortController: Signal<
+    AbortController | undefined
+  > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
 
   constructor(
@@ -106,10 +111,10 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     if (_options?.defaultState?.errors) {
       this._errorMap.value = _options.defaultState.errors
     }
-
-    this._validators = groupValidators(this._options?.validators)
   }
+  //endregion
 
+  //region Internal State
   private _isMounted = false
 
   //region State
@@ -131,7 +136,7 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     return this._isValidatingReadOnly
   }
 
-  public get errors(): ReadonlySignal<Array<ValidationError>> {
+  public get errors(): ReadonlySignal<readonly [ValidationError, ValidationError]> {
     return this._errors
   }
 
@@ -160,12 +165,11 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
     if (this._isMounted) return
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
-    this._unsubscribeFromChangeEffect = effect(async () => {
-      const currentValue = this.signal.value
-
+    const runOnChangeValidation = async (
+      currentValue: ValueAtPath<TData, TName>,
+    ) => {
       // Clear all onSubmit errors when the value changes
-      const { onSubmit: _, ...errors } = this._errorMap.peek()
-      this._errorMap.value = errors
+      clearSubmitEventErrors(this._errorMap)
 
       if (!this._isMounted) {
         return
@@ -173,9 +177,20 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
 
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEvent('onChange', currentValue)
-    })
-
+    }
+    if (this._options?.validateOnNestedChange) {
+      this._unsubscribeFromChangeEffect = effect(async () => {
+        const currentValue = unSignalifyValueSubscribed(this.signal)
+        await runOnChangeValidation(currentValue)
+      })
+    } else {
+      this._unsubscribeFromChangeEffect = effect(async () => {
+        const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(this.signal.value)
+        await runOnChangeValidation(currentValue)
+      })
+    }
     this._isMounted = true
+
     await this.validateForEvent('onMount')
   }
   //endregion
@@ -201,15 +216,16 @@ export class FieldLogic<TData, TName extends Paths<TData>> {
    */
   public validateForEvent(
     event: ValidatorEvents,
-    checkValue?: SignalifiedData<ValueAtPath<TData, TName>>,
+    checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
     if (!this._isMounted) return
-    const value = unSignalifyValue(checkValue ?? this.signal)
+    const value = checkValue ?? unSignalifyValue(this.signal)
     return validateWithValidators(
       value,
       event,
-      this._validators,
-      this._asyncValidationState,
+      this._options?.validator,
+      this._options?.validatorAsync,
+      this._previousAbortController,
       this._errorMap,
       this._isValidating,
       this._options?.accumulateErrors,

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
-import { Truthy } from './utils/utils'
+import { Truthy } from './utils/internal.utils'
 
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
@@ -12,7 +12,7 @@ describe('FormLogic', () => {
 
     expect(form.data.value).toStrictEqual({})
     expect(form.json.value).toStrictEqual({})
-    expect(form.errors.value).toStrictEqual([])
+    expect(form.errors.value).toStrictEqual([undefined, undefined])
 
     expect(form.isValidForm.value).toBe(true)
     expect(form.isValidFields.value).toBe(true)
@@ -133,11 +133,7 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'default',
         },
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-          },
-        ],
+        validator: (value) => (value.name === 'test' ? undefined : 'error'),
       })
       await form.mount()
 
@@ -157,15 +153,10 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'default',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (value) => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return value.name === 'test' ? undefined : 'error'
-            },
-          },
-        ],
+        validatorAsync: async (value) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return value.name === 'test' ? undefined : 'error'
+        },
       })
       await form.mount()
 
@@ -183,15 +174,10 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'default',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async () => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return undefined
-            },
-          },
-        ],
+        validatorAsync: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return undefined
+        },
       })
       await form.mount()
 
@@ -208,17 +194,10 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'default',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async () => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return undefined
-            },
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
+        validatorAsync: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return undefined
+        },
       })
       await form.mount()
 
@@ -234,11 +213,7 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'default',
         },
-        validators: [
-          {
-            validate: () => 'error',
-          },
-        ],
+        validator: () => 'error',
       })
       await form.mount()
 
@@ -255,13 +230,7 @@ describe('FormLogic', () => {
     it('should be invalid if any field is invalid', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
-        validators: [
-          {
-            validate: (v) => v.length >= 3 && 'error',
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
+        validator: (v) => v.length >= 3 && 'error',
       })
       field.mount()
 
@@ -276,15 +245,13 @@ describe('FormLogic', () => {
 
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
-        validators: [
-          {
-            validate: (v) =>
-              new Promise((r) =>
-                setTimeout(() => r(v.length >= 3 && 'error'), 100),
-              ),
-            isAsync: true,
-          },
-        ],
+        validatorAsync: {
+          validate: (v) =>
+            new Promise((r) =>
+              setTimeout(() => r(v.length >= 3 && 'error'), 100),
+            ),
+          disableOnChangeValidation: true,
+        },
       })
       await field.mount()
 
@@ -303,76 +270,68 @@ describe('FormLogic', () => {
   describe('validation', () => {
     it('should trigger submit validation for all fields on submit as well as the form', async () => {
       const form = new FormLogic<{ name: string; other: string }>({
-        validators: [
-          {
-            validate: (value) => {
-              return [
-                !value.name && 'name is required',
-                !value.other && 'other is required',
-              ]
-                .filter(Truthy)
-                .join(',')
-            },
+        validator: {
+          validate: (value) => {
+            return [
+              !value.name && 'name is required',
+              !value.other && 'other is required',
+            ]
+              .filter(Truthy)
+              .join(',')
           },
-        ],
+        },
       })
       const field1 = new FieldLogic(form, 'name', {
-        validators: [{ validate: () => 'error' }],
+        validator: () => 'error',
       })
       const field2 = new FieldLogic(form, 'other', {
-        validators: [{ validate: () => 'error' }],
+        validator: () => 'error',
       })
       await form.mount()
       await field1.mount()
       await field2.mount()
 
-      expect(form.errors.value).toEqual([])
-      expect(field1.errors.value).toEqual([])
-      expect(field2.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(field1.errors.value).toEqual([undefined, undefined])
+      expect(field2.errors.value).toEqual([undefined, undefined])
       await form.handleSubmit()
-      expect(field1.errors.value).toEqual(['error'])
-      expect(field2.errors.value).toEqual(['error'])
-      expect(form.errors.value).toEqual(['name is required,other is required'])
+      expect(field1.errors.value).toEqual(['error', undefined])
+      expect(field2.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual([
+        'name is required,other is required',
+        undefined,
+      ])
     })
     it('should validate on change if any of the values within the form changed', () => {
       const form = new FormLogic<{ name: string }>({
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
+        validator: (value) => (value.name === 'test' ? undefined : 'error'),
       })
       form.mount()
       const field = new FieldLogic(form, 'name')
       field.mount()
 
       field.handleChange('test')
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
       field.handleChange('testA')
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
     })
     it('should validate on blur if any of the fields within the form blurred', async () => {
       const form = new FormLogic<{ name: string }>({
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-            onBlur: true,
-            onSubmit: false,
-          },
-        ],
+        validator: {
+          validate: (value) => (value.name === 'test' ? undefined : 'error'),
+          disableOnChangeValidation: true,
+        },
       })
       await form.mount()
       const field = new FieldLogic(form, 'name')
       await field.mount()
 
       await field.handleBlur()
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
       field.handleChange('test')
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
       await field.handleBlur()
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
     })
     it('should validate on mount', async () => {
       const form = new FormLogic({
@@ -380,47 +339,39 @@ describe('FormLogic', () => {
           name: 'test',
           other: undefined,
         },
-        validators: [
-          {
-            validate: (value) => {
-              return [
-                !value.name && 'name is required',
-                !value.other && 'other is required',
-              ]
-                .filter(Truthy)
-                .join(',')
-            },
-            onMount: true,
-            onSubmit: false,
+        validator: {
+          validate: (value) => {
+            return [
+              !value.name && 'name is required',
+              !value.other && 'other is required',
+            ]
+              .filter(Truthy)
+              .join(',')
           },
-        ],
+          validateOnMount: true,
+        },
       })
       await form.mount()
 
-      expect(form.errors.value).toEqual(['other is required'])
+      expect(form.errors.value).toEqual(['other is required', undefined])
     })
     it('should work with async validators', async () => {
       vi.useFakeTimers()
       const form = new FormLogic<{ name: string }>({
-        validators: [
-          {
-            isAsync: true,
-            validate: async () => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return 'error'
-            },
-          },
-        ],
+        validatorAsync: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return 'error'
+        },
       })
 
       const validationPromise = form.validateForEvent('onSubmit')
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
       expect(form.isValidating.value).toBe(true)
 
       await vi.advanceTimersToNextTimerAsync()
       await validationPromise
 
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual([undefined, 'error'])
       expect(form.isValidating.value).toBe(false)
 
       vi.useRealTimers()
@@ -433,19 +384,14 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'test',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (value) => {
-              validateFn(value.name)
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return value.name === 'test' ? undefined : 'error'
-            },
-            onChange: true,
-            onSubmit: false,
-            debounceMs: 100,
+        validatorAsync: {
+          validate: async (value) => {
+            validateFn(value.name)
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            return value.name === 'test' ? undefined : 'error'
           },
-        ],
+          debounceMs: 100,
+        },
       })
       form.mount()
 
@@ -454,7 +400,7 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'value2'
       await vi.advanceTimersByTime(200)
 
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
       expect(validateFn).toHaveBeenCalledOnce()
 
       vi.useRealTimers()
@@ -464,24 +410,23 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'test',
         },
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-          },
-        ],
+        validator: {
+          validate: (value) => (value.name === 'test' ? undefined : 'error'),
+          disableOnChangeValidation: true,
+        },
       })
       await form.mount()
 
       form.data.value.name.value = 'test'
       await form.handleSubmit()
-      expect(form.errors.peek()).toEqual([])
+      expect(form.errors.peek()).toEqual([undefined, undefined])
 
       form.data.value.name.value = 'asd'
       await form.handleSubmit()
-      expect(form.errors.peek()).toEqual(['error'])
+      expect(form.errors.peek()).toEqual(['error', undefined])
 
       form.data.value.name.value = 'asdd'
-      expect(form.errors.peek()).toEqual([])
+      expect(form.errors.peek()).toEqual([undefined, undefined])
     })
     it('should only accept the first validator if there are multiple sync validators for the same event', () => {
       const validateFn = vi.fn(() => 'error')
@@ -489,90 +434,66 @@ describe('FormLogic', () => {
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate: validateFn,
-            onChange: true,
-          },
-          {
-            validate: validateFn,
-            onChange: true,
-          },
-        ],
+        validator: validateFn,
       })
       form.mount()
 
       form.data.value.name.value = 'test'
 
       expect(validateFn).toHaveBeenCalledOnce()
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
     })
     it('should reset the change errors after change', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-            onBlur: false,
-            onSubmit: false,
-            onMount: false,
-            onChange: true,
-          },
-        ],
+        validator: (value) => (value.name === 'test' ? undefined : 'error'),
       })
       form.mount()
 
       form.data.value.name.value = 'test1'
 
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
       form.data.value.name.value = 'test'
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
     })
     it('should reset the blur errors after blur', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-            onChange: false,
-            onSubmit: false,
-            onMount: false,
-            onBlur: true,
-          },
-        ],
+        validator: {
+          validate: (value) => (value.name === 'test' ? undefined : 'error'),
+          disableOnChangeValidation: true,
+        },
       })
       form.mount()
       form.handleBlur()
 
-      expect(form.errors.value).toEqual(['error'])
       form.data.value.name.value = 'test'
+      expect(form.errors.value).toEqual(['error', undefined])
       form.handleBlur()
 
-      expect(form.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
     })
     it('should not reset the blur errors if no new blur occurred', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-            onBlur: true,
-          },
-        ],
+        validator: {
+          validate: (value) => (value.name === 'test' ? undefined : 'error'),
+          disableOnChangeValidation: true,
+        },
       })
       form.mount()
       form.handleBlur()
 
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
       form.data.value.name.value = 'test'
 
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
     })
     it('should abort async validations if there was another validation before the promise resolved', async () => {
       vi.useFakeTimers()
@@ -581,17 +502,12 @@ describe('FormLogic', () => {
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (value, abortSignal) => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              if (abortSignal.aborted) return 'aborted'
-              validateFn(value)
-              return value.name === 'test' ? undefined : 'error'
-            },
-          },
-        ],
+        validatorAsync: async (value, abortSignal) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          if (abortSignal.aborted) return 'aborted'
+          validateFn(value)
+          return value.name === 'test' ? undefined : 'error'
+        },
       })
       form.mount()
 
@@ -607,100 +523,6 @@ describe('FormLogic', () => {
 
       vi.useRealTimers()
     })
-    it('should abort other async validations if one validation failed unless configured otherwise', async () => {
-      vi.useFakeTimers()
-      const validateCalledFn = vi.fn()
-      const validateRanFn = vi.fn()
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (_, abortSignal) => {
-              validateCalledFn()
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              if (abortSignal.aborted) return 'aborted'
-              validateRanFn()
-              return 'error'
-            },
-          },
-          {
-            isAsync: true,
-            validate: async (_, abortSignal) => {
-              validateCalledFn()
-              await new Promise((resolve) => setTimeout(resolve, 200))
-              if (abortSignal.aborted) return 'aborted'
-              validateRanFn()
-              return 'error'
-            },
-          },
-        ],
-      })
-      form.mount()
-
-      form.data.value.name.value = 'test1'
-      const promise = form.handleSubmit()
-      await vi.advanceTimersToNextTimerAsync()
-      await vi.advanceTimersToNextTimerAsync()
-      await promise
-
-      expect(validateCalledFn).toHaveBeenCalledTimes(2)
-      expect(validateRanFn).toHaveBeenCalledTimes(1)
-
-      vi.useRealTimers()
-    })
-    it('should abort other debounced async validations if one validation failed unless configured otherwise', async () => {
-      vi.useFakeTimers()
-      const validateCalledFn = vi.fn()
-      const validateRanFn = vi.fn()
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (_, abortSignal) => {
-              validateCalledFn()
-              await new Promise((resolve) => setTimeout(resolve, 150))
-              if (abortSignal.aborted) return 'aborted'
-              validateRanFn()
-              return 'error'
-            },
-            debounceMs: 100,
-          },
-          {
-            isAsync: true,
-            validate: async (_, abortSignal) => {
-              validateCalledFn()
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              if (abortSignal.aborted) return 'aborted'
-              validateRanFn()
-              return 'error'
-            },
-            debounceMs: 50,
-          },
-        ],
-      })
-      form.mount()
-
-      form.data.value.name.value = 'test1'
-      const promise = form.handleSubmit()
-      // Debounced first
-      await vi.advanceTimersByTimeAsync(50)
-      // Debounced second + finished first
-      await vi.advanceTimersByTimeAsync(100)
-      // Finished second
-      await vi.advanceTimersByTimeAsync(150)
-      await promise
-
-      expect(validateCalledFn).toHaveBeenCalledTimes(2)
-      expect(validateRanFn).toHaveBeenCalledTimes(1)
-
-      vi.useRealTimers()
-    })
     it('should not run async validations if the sync validation already failed unless configured otherwise', async () => {
       vi.useFakeTimers()
       const validateFn = vi.fn()
@@ -708,19 +530,12 @@ describe('FormLogic', () => {
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async (value) => {
-              validateFn(value)
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return value.name === 'test' ? undefined : 'error'
-            },
-          },
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-          },
-        ],
+        validatorAsync: async (value) => {
+          validateFn(value)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return value.name === 'test' ? undefined : 'error'
+        },
+        validator: (value) => (value.name === 'test' ? undefined : 'error'),
       })
       await form.mount()
 
@@ -741,19 +556,12 @@ describe('FormLogic', () => {
           name: '',
         },
         accumulateErrors: true,
-        validators: [
-          {
-            isAsync: true,
-            validate: async (value) => {
-              validateFn(value)
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return value.name === 'test' ? undefined : 'error'
-            },
-          },
-          {
-            validate: (value) => (value.name === 'test' ? undefined : 'error'),
-          },
-        ],
+        validatorAsync: async (value) => {
+          validateFn(value)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return value.name === 'test' ? undefined : 'error'
+        },
+        validator: (value) => (value.name === 'test' ? undefined : 'error'),
       })
       await form.mount()
 
@@ -766,27 +574,22 @@ describe('FormLogic', () => {
 
       vi.useRealTimers()
     })
-    it('should allow a validator to run on every event', () => {
+    it('should allow a validator to run on every event', async () => {
       const validate = vi.fn(() => undefined)
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate,
-            onBlur: true,
-            onChange: true,
-            onSubmit: true,
-            onMount: true,
-          },
-        ],
+        validator: {
+          validate,
+          validateOnMount: true,
+        },
       })
       form.mount()
 
       form.handleBlur()
       form.data.value.name.value = 'test'
-      form.handleSubmit()
+      await form.handleSubmit()
 
       expect(validate).toHaveBeenCalledTimes(4)
     })
@@ -796,16 +599,12 @@ describe('FormLogic', () => {
         defaultValues: {
           name: '',
         },
-        validators: [
-          {
-            validate,
-            onMount: true,
-            onSubmit: true,
-            onChange: true,
-            onBlur: true,
-          },
-        ],
+        validator: {
+          validate,
+        },
       })
+      await form.mount()
+      await form.unmount()
 
       form.data.value.name.value = 'asd'
       await form.handleBlur()
@@ -835,15 +634,10 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'test',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async () => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return undefined
-            },
-          },
-        ],
+        validatorAsync: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return undefined
+        },
         onSubmit: handleSubmit,
       })
       await form.mount()
@@ -864,17 +658,10 @@ describe('FormLogic', () => {
         defaultValues: {
           name: 'test',
         },
-        validators: [
-          {
-            isAsync: true,
-            validate: async () => {
-              await new Promise((resolve) => setTimeout(resolve, 100))
-              return undefined
-            },
-            onSubmit: false,
-            onChange: true,
-          },
-        ],
+        validatorAsync: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return undefined
+        },
         onSubmit: handleSubmit,
       })
       await form.mount()
@@ -960,24 +747,6 @@ describe('FormLogic', () => {
     })
   })
   describe('helperMethods', () => {
-    it('should not validate changes when unmounted', async () => {
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: 'test',
-        },
-        validators: [
-          {
-            validate: () => 'error',
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
-      })
-      await form.mount()
-      await form.unmount()
-      form.data.value.name.value = 'test1'
-      expect(form.errors.value).toEqual([])
-    })
     it('should reset to the default state', async () => {
       const form = new FormLogic({
         defaultValues: {
@@ -986,23 +755,17 @@ describe('FormLogic', () => {
             value: 1,
           },
         },
-        validators: [
-          {
-            validate: () => 'error',
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
+        validator: {
+          validate: () => 'error',
+          disableOnBlurValidation: true,
+        },
       })
       await form.mount()
       const field = new FieldLogic(form, 'deep.value' as const, {
-        validators: [
-          {
-            validate: () => 'error',
-            onChange: true,
-            onSubmit: false,
-          },
-        ],
+        validator: {
+          validate: (value) => (value === 1 ? undefined : 'error'),
+        disableOnBlurValidation: true,
+        },
       })
       await field.mount()
       await field.handleBlur()
@@ -1014,8 +777,8 @@ describe('FormLogic', () => {
 
       expect(form.data.value.name.value).toBe('test1')
       expect(form.data.value.deep.value.value.value).toBe(2)
-      expect(form.errors.value).toEqual(['error'])
-      expect(field.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['error', undefined])
+      expect(field.errors.value).toEqual(['error', undefined])
       expect(form.isTouched.value).toBe(true)
       expect(form.isDirty.value).toBe(true)
       expect(form.submitCount.value).toBe(1)
@@ -1024,8 +787,8 @@ describe('FormLogic', () => {
 
       expect(form.data.value.name.value).toBe('test')
       expect(form.data.value.deep.value.value.value).toBe(1)
-      expect(form.errors.value).toEqual([])
-      expect(field.errors.value).toEqual([])
+      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(field.errors.value).toEqual([undefined, undefined])
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
       expect(form.submitCount.value).toBe(0)

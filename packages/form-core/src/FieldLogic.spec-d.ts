@@ -1,4 +1,4 @@
-import type { Signal } from '@preact/signals'
+import type { Signal } from '@preact/signals-core'
 import { assertType, describe, expectTypeOf, it } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
@@ -220,56 +220,63 @@ describe('FieldLogic (types)', () => {
   })
   //endregion
   //region validator
-  it('should infer the type of the value from the validator', () => {
+  it('should infer the type of the value from the configured validator', () => {
     const form = new FormLogic<{ name: string }>()
     new FieldLogic(form, 'name', {
-      validators: [
-        {
-          validate: (value) => {
-            assertType<string>(value)
-            return undefined
-          },
+      validator: {
+        validate: (value) => {
+          assertType<string>(value)
+          return undefined
         },
-      ],
+      },
     })
   })
-  it('should infer the type of the value from the async validator', () => {
+  it('should infer the type of the value from the validator function', () => {
     const form = new FormLogic<{ name: string }>()
     new FieldLogic(form, 'name', {
-      validators: [
-        {
-          isAsync: true,
-          validate: async (value) => {
-            assertType<string>(value)
-            return undefined
-          },
+      validator: (value) => {
+        assertType<string>(value)
+        return undefined
+      },
+    })
+  })
+  it('should infer the type of the value from the configured async validator', () => {
+    const form = new FormLogic<{ name: string }>()
+    new FieldLogic(form, 'name', {
+      validatorAsync: {
+        validate: async (value, abortSignal) => {
+          assertType<string>(value)
+          assertType<AbortSignal>(abortSignal)
+          return undefined
         },
-      ],
+      },
+    })
+  })
+  it('should infer the type of the value from the async validator function', () => {
+    const form = new FormLogic<{ name: string }>()
+    new FieldLogic(form, 'name', {
+      validatorAsync: async (value, abortSignal) => {
+        assertType<string>(value)
+        assertType<AbortSignal>(abortSignal)
+        return undefined
+      },
     })
   })
   it('should infer the nested array type of the value form the validator', () => {
     const form = new FormLogic<{ names: { lastNames: string[] } }>()
     new FieldLogic(form, 'names.lastNames.0' as const, {
-      validators: [
-        {
-          validate: (value) => {
-            assertType<string>(value)
-            return undefined
-          },
-        },
-      ],
+      validator: (value) => {
+        assertType<string>(value)
+        return undefined
+      },
     })
     it('should use the unsignalified value for the validator', () => {
       const form = new FormLogic<{ name: { first: string; last: string } }>()
       new FieldLogic(form, 'name' as const, {
-        validators: [
-          {
-            validate: (value) => {
-              assertType<{ first: string; last: string }>(value)
-              return undefined
-            },
-          },
-        ],
+        validator: (value) => {
+          assertType<{ first: string; last: string }>(value)
+          return undefined
+        },
       })
     })
   })
