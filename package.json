@@ -7,7 +7,11 @@
   "namespace": "signal-forms",
   "scripts": {
     "style": "pnpm dlx @biomejs/biome check .",
-    "style:fix": "pnpm dlx @biomejs/biome check --apply ."
+    "style:fix": "pnpm dlx @biomejs/biome check --apply .",
+    "test": "nx run-many --target=test --all",
+    "test:core": "nx test @signal-forms/form-core",
+    "build": "nx run-many --target=build --all",
+    "build:core": "nx build @signal-forms/form-core"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.5.3",

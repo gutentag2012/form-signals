@@ -4,5 +4,13 @@
   "affected": {
     "defaultBase": "master"
   },
-  "nxCloudAccessToken": "MGEwN2EyOTYtMjhmZS00NmM5LWFhMDMtNTVmYzRiMjkxMmUyfHJlYWQtd3JpdGU="
+  "targetDefaults": {
+    "build": {
+      "cache": false
+    },
+    "test": {
+      "cache": true
+    }
+  },
+  "cacheDirectory": "node_modules/.cache"
 }

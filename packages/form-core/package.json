@@ -42,5 +42,9 @@
   "keywords": [
     "signals",
     "form"
-  ]
+  ],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest"
+  }
 }
