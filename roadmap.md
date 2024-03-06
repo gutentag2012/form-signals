@@ -9,6 +9,7 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **form-react**: Add FormProvider to provide form state to form fields
 - [ ] **form-react**: Add useField hook to access form field state and validation
 - [ ] **form-react**: Add useForm hook to access form state and validation
+- [ ] **form-validation-adapter-zod**: Add Validation adapter for zod
 - [ ] **examples-react**: Add example for complex nested form
 - [ ] **examples-react**: Add example for async form setup
 - [ ] **examples-react**: Add example for async default values
