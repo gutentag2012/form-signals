@@ -19,7 +19,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    exclude: ['**/*.spec.ts', '**/*.spec-d.ts'],
     sourcemap: true,
     minify: false,
     rollupOptions: {
