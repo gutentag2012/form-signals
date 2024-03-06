@@ -281,4 +281,29 @@ describe('FieldLogic (types)', () => {
     })
   })
   //endregion
+  //region transform
+  it("should infer the type of the value from the configured transformer", () => {
+    const form = new FormLogic<{ name: string }>()
+    const field = new FieldLogic(form, 'name', {
+      transformFromBinding: (value: number) => {
+        assertType<number>(value)
+        return value.toString()
+      },
+      transformToBinding: (value: string) => {
+        assertType<string>(value)
+        return parseInt(value)
+      }
+    })
+
+    assertType<string>(field.signal.value)
+    assertType<number>(field.transformedSignal.value)
+    assertType<(newValue: number, options: never) => void>(field.handleChangeBound)
+  })
+  it('should have never type for transformedSignal if no transformers are given', () => {
+    const form = new FormLogic<{ name: string }>()
+    const field = new FieldLogic(form, 'name')
+
+    assertType<never>(field.transformedSignal.value)
+  });
+  // endregion
 })

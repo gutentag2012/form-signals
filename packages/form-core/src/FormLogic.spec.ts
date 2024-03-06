@@ -1,18 +1,18 @@
-import { describe, expect, it, vi } from 'vitest'
-import { FieldLogic } from './FieldLogic'
-import { FormLogic } from './FormLogic'
-import { Truthy } from './utils/internal.utils'
+import {describe, expect, it, vi} from 'vitest'
+import {FieldLogic} from './FieldLogic'
+import {FormLogic} from './FormLogic'
+import {Truthy} from './utils/internal.utils'
 
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
     const form = new FormLogic()
     form.mount()
 
-    expect(form.fields.length).toBe(0)
+    expect(form.fields.peek().length).toBe(0)
 
     expect(form.data.value).toStrictEqual({})
     expect(form.json.value).toStrictEqual({})
-    expect(form.errors.value).toStrictEqual([undefined, undefined])
+    expect(form.errors.value).toStrictEqual([])
 
     expect(form.isValidForm.value).toBe(true)
     expect(form.isValidFields.value).toBe(true)
@@ -38,17 +38,17 @@ describe('FormLogic', () => {
     it('should have a list of all fields registered on it', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
-      expect(form.fields.length).toBe(1)
-      expect(form.fields[0]).toBe(field)
+      expect(form.fields.peek().length).toBe(1)
+      expect(form.fields.peek()[0]).toBe(field)
     })
     it('should loose a field once it is unmounted without preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
       field.mount()
-      expect(form.fields.length).toBe(1)
+      expect(form.fields.peek().length).toBe(1)
 
       field.unmount()
-      expect(form.fields.length).toBe(0)
+      expect(form.fields.peek().length).toBe(0)
     })
     it('should keep a field once it is unmounted if preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
@@ -56,18 +56,18 @@ describe('FormLogic', () => {
         preserveValueOnUnmount: true,
       })
       field.mount()
-      expect(form.fields.length).toBe(1)
+      expect(form.fields.peek().length).toBe(1)
 
       field.unmount()
-      expect(form.fields.length).toBe(1)
+      expect(form.fields.peek().length).toBe(1)
     })
     it('should no register a field that is already registered', () => {
       const form = new FormLogic<{ name: string }>()
       new FieldLogic(form, 'name')
-      expect(form.fields.length).toBe(1)
+      expect(form.fields.peek().length).toBe(1)
 
       new FieldLogic(form, 'name')
-      expect(form.fields.length).toBe(1)
+      expect(form.fields.peek().length).toBe(1)
     })
     it('should set the value of the form if a field with default value is registered', () => {
       const form = new FormLogic<{ name: string }>()
@@ -126,6 +126,112 @@ describe('FormLogic', () => {
 
       field.handleChange('default')
       expect(form.isDirty.value).toBe(false)
+    })
+    it('should also consider newly added fields when calculating touched and dirty', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          other: 'default',
+        },
+      })
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+
+      const newField = new FieldLogic(form, 'other')
+      newField.mount()
+
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+
+      field.handleBlur()
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(false)
+
+      newField.handleChange('value')
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(true)
+    })
+    it('should not consider removed fields when calculating touched and dirty', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          other: 'default',
+        },
+      })
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+
+      const newField = new FieldLogic(form, 'other')
+      newField.mount()
+
+      newField.handleBlur()
+      newField.handleChange('value')
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(true)
+
+      newField.unmount()
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+    })
+    it('should consider removed fields when calculating touched and dirty when configured', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          other: 'default',
+        },
+      })
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+
+      const newField = new FieldLogic(form, 'other', {
+        preserveValueOnUnmount: true,
+      })
+      newField.mount()
+
+      newField.handleBlur()
+      newField.handleChange('value')
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(true)
+
+      newField.unmount()
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(true)
+    })
+    it('should stay dirty but not touched when removed field sets value to undefined', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          other: 'default',
+        },
+      })
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(false)
+
+      const newField = new FieldLogic(form, 'other', {
+        deleteValueOnUnmount: true,
+      })
+      newField.mount()
+
+      newField.handleBlur()
+      newField.handleChange('value')
+      expect(form.isTouched.value).toBe(true)
+      expect(form.isDirty.value).toBe(true)
+
+      newField.unmount()
+      expect(form.isTouched.value).toBe(false)
+      expect(form.isDirty.value).toBe(true)
     })
 
     it('should increment the submit count on submit', async () => {
@@ -220,6 +326,33 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.canSubmit.value).toBe(false)
     })
+    it("should not can submit if a form field is invalid, unmounted and did preserve its value", async () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        preserveValueOnUnmount: true,
+        validator: {
+          validate: () => 'error',
+          validateOnMount: true,
+        },
+      })
+      await field.mount()
+      expect(form.canSubmit.value).toBe(false)
+      field.unmount()
+      expect(form.canSubmit.value).toBe(false)
+    })
+    it("should can submit if a form field is invalid, unmounted and didn't preserve its value", async () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        validator: {
+          validate: () => 'error',
+          validateOnMount: true,
+        },
+      })
+      await field.mount()
+      expect(form.canSubmit.value).toBe(false)
+      field.unmount()
+      expect(form.canSubmit.value).toBe(true)
+    })
   })
   describe('state (fields)', () => {
     it('should be valid if all fields are valid', () => {
@@ -291,16 +424,13 @@ describe('FormLogic', () => {
       await field1.mount()
       await field2.mount()
 
-      expect(form.errors.value).toEqual([undefined, undefined])
-      expect(field1.errors.value).toEqual([undefined, undefined])
-      expect(field2.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
+      expect(field1.errors.value).toEqual([])
+      expect(field2.errors.value).toEqual([])
       await form.handleSubmit()
-      expect(field1.errors.value).toEqual(['error', undefined])
-      expect(field2.errors.value).toEqual(['error', undefined])
-      expect(form.errors.value).toEqual([
-        'name is required,other is required',
-        undefined,
-      ])
+      expect(field1.errors.value).toEqual(['error'])
+      expect(field2.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual(['name is required,other is required'])
     })
     it('should validate on change if any of the values within the form changed', () => {
       const form = new FormLogic<{ name: string }>({
@@ -311,9 +441,9 @@ describe('FormLogic', () => {
       field.mount()
 
       field.handleChange('test')
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
       field.handleChange('testA')
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
     })
     it('should validate on blur if any of the fields within the form blurred', async () => {
       const form = new FormLogic<{ name: string }>({
@@ -327,11 +457,11 @@ describe('FormLogic', () => {
       await field.mount()
 
       await field.handleBlur()
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
       field.handleChange('test')
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
       await field.handleBlur()
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
     })
     it('should validate on mount', async () => {
       const form = new FormLogic({
@@ -353,7 +483,7 @@ describe('FormLogic', () => {
       })
       await form.mount()
 
-      expect(form.errors.value).toEqual(['other is required', undefined])
+      expect(form.errors.value).toEqual(['other is required'])
     })
     it('should work with async validators', async () => {
       vi.useFakeTimers()
@@ -365,13 +495,13 @@ describe('FormLogic', () => {
       })
 
       const validationPromise = form.validateForEvent('onSubmit')
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
       expect(form.isValidating.value).toBe(true)
 
       await vi.advanceTimersToNextTimerAsync()
       await validationPromise
 
-      expect(form.errors.value).toEqual([undefined, 'error'])
+      expect(form.errors.value).toEqual(['error'])
       expect(form.isValidating.value).toBe(false)
 
       vi.useRealTimers()
@@ -400,7 +530,7 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'value2'
       await vi.advanceTimersByTime(200)
 
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
       expect(validateFn).toHaveBeenCalledOnce()
 
       vi.useRealTimers()
@@ -419,14 +549,14 @@ describe('FormLogic', () => {
 
       form.data.value.name.value = 'test'
       await form.handleSubmit()
-      expect(form.errors.peek()).toEqual([undefined, undefined])
+      expect(form.errors.peek()).toEqual([])
 
       form.data.value.name.value = 'asd'
       await form.handleSubmit()
-      expect(form.errors.peek()).toEqual(['error', undefined])
+      expect(form.errors.peek()).toEqual(['error'])
 
       form.data.value.name.value = 'asdd'
-      expect(form.errors.peek()).toEqual([undefined, undefined])
+      expect(form.errors.peek()).toEqual([])
     })
     it('should only accept the first validator if there are multiple sync validators for the same event', () => {
       const validateFn = vi.fn(() => 'error')
@@ -441,7 +571,7 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'test'
 
       expect(validateFn).toHaveBeenCalledOnce()
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
     })
     it('should reset the change errors after change', () => {
       const form = new FormLogic<{ name: string }>({
@@ -454,9 +584,9 @@ describe('FormLogic', () => {
 
       form.data.value.name.value = 'test1'
 
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
       form.data.value.name.value = 'test'
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
     })
     it('should reset the blur errors after blur', () => {
       const form = new FormLogic<{ name: string }>({
@@ -472,10 +602,10 @@ describe('FormLogic', () => {
       form.handleBlur()
 
       form.data.value.name.value = 'test'
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
       form.handleBlur()
 
-      expect(form.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
     })
     it('should not reset the blur errors if no new blur occurred', () => {
       const form = new FormLogic<{ name: string }>({
@@ -490,10 +620,10 @@ describe('FormLogic', () => {
       form.mount()
       form.handleBlur()
 
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
       form.data.value.name.value = 'test'
 
-      expect(form.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
     })
     it('should abort async validations if there was another validation before the promise resolved', async () => {
       vi.useFakeTimers()
@@ -611,6 +741,57 @@ describe('FormLogic', () => {
       await form.handleSubmit()
 
       expect(validate).toHaveBeenCalledTimes(0)
+    })
+    it('should show errors for fields that are unmounted and preserved their value', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: '',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        preserveValueOnUnmount: true,
+        validator: {
+          validate: () => 'error',
+        },
+      })
+      field.mount()
+
+      form.data.value.name.value = 'test1'
+
+      expect(field.errors.value).toEqual(['error'])
+      expect(form.mountedFieldErrors.value).toEqual(['error'])
+      expect(form.unmountedFieldErrors.value).toEqual([])
+      field.unmount()
+
+      expect(field.errors.value).toEqual(['error'])
+      expect(form.mountedFieldErrors.value).toEqual([])
+      expect(form.unmountedFieldErrors.value).toEqual(['error'])
+    })
+    it('should not show errors for fields that are unmounted and did not preserve their value', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: '',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: {
+          validate: () => 'error',
+        },
+      })
+      field.mount()
+
+      form.data.value.name.value = 'test1'
+
+      expect(field.errors.value).toEqual(['error'])
+      expect(form.mountedFieldErrors.value).toEqual(['error'])
+      expect(form.unmountedFieldErrors.value).toEqual([])
+      field.unmount()
+
+      expect(field.errors.value).toEqual([])
+      expect(form.mountedFieldErrors.value).toEqual([])
+      expect(form.unmountedFieldErrors.value).toEqual([])
     })
   })
   describe('handleSubmit', () => {
@@ -764,7 +945,7 @@ describe('FormLogic', () => {
       const field = new FieldLogic(form, 'deep.value' as const, {
         validator: {
           validate: (value) => (value === 1 ? undefined : 'error'),
-        disableOnBlurValidation: true,
+          disableOnBlurValidation: true,
         },
       })
       await field.mount()
@@ -777,8 +958,8 @@ describe('FormLogic', () => {
 
       expect(form.data.value.name.value).toBe('test1')
       expect(form.data.value.deep.value.value.value).toBe(2)
-      expect(form.errors.value).toEqual(['error', undefined])
-      expect(field.errors.value).toEqual(['error', undefined])
+      expect(form.errors.value).toEqual(['error'])
+      expect(field.errors.value).toEqual(['error'])
       expect(form.isTouched.value).toBe(true)
       expect(form.isDirty.value).toBe(true)
       expect(form.submitCount.value).toBe(1)
@@ -787,8 +968,8 @@ describe('FormLogic', () => {
 
       expect(form.data.value.name.value).toBe('test')
       expect(form.data.value.deep.value.value.value).toBe(1)
-      expect(form.errors.value).toEqual([undefined, undefined])
-      expect(field.errors.value).toEqual([undefined, undefined])
+      expect(form.errors.value).toEqual([])
+      expect(field.errors.value).toEqual([])
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
       expect(form.submitCount.value).toBe(0)

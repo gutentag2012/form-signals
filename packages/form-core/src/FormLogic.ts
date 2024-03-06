@@ -15,7 +15,7 @@ import {
   type ValidatorAsync,
   type ValidatorEvents,
   type ValidatorSync,
-  type ValueAtPath,
+  type ValueAtPath,clearSubmitEventErrors,
   deepSignalifyValue,
   equalityUtils,
   getSignalValueAtPath,
@@ -26,8 +26,9 @@ import {
   setValueAtPath,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  validateWithValidators, clearSubmitEventErrors,
+  validateWithValidators,
 } from './utils'
+import {Truthy} from "./utils/internal.utils";
 
 export type FormLogicOptions<TData> = {
   /**
@@ -67,6 +68,14 @@ export class FormLogic<TData> {
   )
 
   /**
+   * Map of all the fields in the form
+   * @private
+   */
+// biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
+private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>> = signal(new Map())
+  private readonly _fieldsArray = computed(() => Array.from(this._fields.value.values()))
+
+  /**
    * Errors specific for the whole form
    * @private
    */
@@ -78,27 +87,30 @@ export class FormLogic<TData> {
    */
   private readonly _errors = computed(() => {
     const { sync, async } = this._errorMap.value
-    return [sync, async] as const
+    return [sync, async].filter(Truthy)
+  })
+  private readonly _mountedFieldErrors = computed(() => {
+    const mountedFields = this._fieldsArray.value.filter((field) => field.isMounted.value)
+    return mountedFields.flatMap(field => field.errors.value).filter(Truthy)
+  })
+  private readonly _unmountedFieldErrors = computed(() => {
+    const unmountedFields = this._fieldsArray.value.filter((field) => !field.isMounted.value)
+    return unmountedFields.flatMap(field => field.errors.value).filter(Truthy)
   })
   private readonly _isValidForm = computed(
     () => !this._errors.value.filter(Boolean).length,
   )
-  private readonly _isValidFields = computed(() => {
-    const fields = this.fields
-    return fields.every((field) => field.isValid.value)
-  })
+  private readonly _isValidFields = computed(() => this._fieldsArray.value.every((field) => field.isValid.value))
   private readonly _isValid = computed(
     () => this._isValidForm.value && this._isValidFields.value,
   )
 
-  private readonly _isTouched = computed(() => {
-    return this.fields.some((field) => field.isTouched.value)
-  })
+  private readonly _isTouched = computed(() => this._fieldsArray.value.some((field) => field.isTouched.value))
 
   private readonly _isDirty = computed(() => {
     const defaultValues = (this._options?.defaultValues ?? {}) as TData
     // Get any possible default value overrides from the fields
-    for (const field of this.fields) {
+    for (const field of this._fieldsArray.value) {
       setValueAtPath(defaultValues, field.name, field.defaultValue)
     }
 
@@ -122,13 +134,6 @@ export class FormLogic<TData> {
   private readonly _isValidatingFormReadOnly = computed(
     () => this._isValidatingForm.value,
   )
-  private readonly _isValidatingFields = computed(() => {
-    return this.fields.some((field) => field.isValidating.value)
-  })
-  private readonly _isValidating = computed(
-    () => this._isValidatingForm.value || this._isValidatingFields.value,
-  )
-
   private readonly _isSubmitting = signal(false)
   private readonly _isSubmittingReadOnly = computed(
     () => this._isSubmitting.value,
@@ -136,7 +141,6 @@ export class FormLogic<TData> {
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
-
   private readonly _canSubmit = computed(() => {
     return (
       !this._isSubmitting.value &&
@@ -144,20 +148,13 @@ export class FormLogic<TData> {
       this._isValid.value
     )
   })
-
-  /**
-   * Map of all the fields in the form
-   * @private
-   */
-  private readonly _fields: Map<Paths<TData>, FieldLogic<TData, Paths<TData>>>
   // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
   private _currentlyRegisteringFields = 0
-
   private readonly _previousAbortController: Signal<
     AbortController | undefined
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
-  private _isMounted = false
+  private _isMounted = signal(false)
 
   constructor(private readonly _options?: FormLogicOptions<TData>) {
     if (this._options?.defaultValues) {
@@ -165,7 +162,16 @@ export class FormLogic<TData> {
     } else {
       this._data = signal({}) as SignalifiedData<TData>
     }
-    this._fields = new Map()
+  }
+
+  private _isValidatingFields = computed(() => this._fieldsArray.value.some((field) => field.isValidating.value))
+
+  private readonly _isValidating = computed(
+    () => this._isValidatingForm.value || this._isValidatingFields.value,
+  )
+
+  public get isValidatingFields(): ReadonlySignal<boolean> {
+    return this._isValidatingFields
   }
 
   //region State
@@ -179,12 +185,21 @@ export class FormLogic<TData> {
     return this._jsonData
   }
 
-  public get errors(): ReadonlySignal<readonly [ValidationError, ValidationError]> {
+  public get errors(): ReadonlySignal<Array<ValidationError>> {
     return this._errors
   }
 
-  public get fields(): Array<FieldLogic<TData, Paths<TData>>> {
-    return Array.from(this._fields.values())
+  public get mountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
+    return this._mountedFieldErrors
+  }
+
+  public get unmountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
+    return this._unmountedFieldErrors
+  }
+
+// biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
+  public get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>> {
+    return this._fieldsArray
   }
 
   public get isValidForm(): ReadonlySignal<boolean> {
@@ -232,10 +247,6 @@ export class FormLogic<TData> {
     return this._isValidatingFormReadOnly
   }
 
-  public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields
-  }
-
   public get isValidating(): ReadonlySignal<boolean> {
     return this._isValidating
   }
@@ -256,7 +267,7 @@ export class FormLogic<TData> {
     event: ValidatorEvents,
     checkValue?: TData,
   ): void | Promise<void> {
-    if (!this._isMounted && event !== 'onSubmit') return
+    if (!this._isMounted.peek() && event !== 'onSubmit') return
 
     const value = checkValue ?? unSignalifyValue(this.data)
     return validateWithValidators(
@@ -274,12 +285,12 @@ export class FormLogic<TData> {
 
   //region Functions
   public handleBlur = async (): Promise<void> => {
-    if (!this._isMounted) return
+    if (!this._isMounted.peek()) return
     await this.validateForEvent('onBlur')
   }
 
   public handleSubmit = async (): Promise<void> => {
-    if (!this._isMounted || !this.canSubmit.peek()) return
+    if (!this._isMounted.peek() || !this.canSubmit.peek()) return
 
     // TODO Only await if the the validators are async
     const onFinished = (successful: boolean) => {
@@ -295,10 +306,10 @@ export class FormLogic<TData> {
 
     this._isSubmitting.value = true
 
-    await Promise.all(this.fields.map((field) => field.handleBlur()))
+    await Promise.all(this._fieldsArray.peek().map((field) => field.handleBlur()))
     await Promise.all([
       this.validateForEvent('onSubmit'),
-      ...this.fields.map((field) => field.handleSubmit()),
+      ...this._fieldsArray.peek().map((field) => field.handleSubmit()),
     ])
 
     if (!this._isValid.peek()) {
@@ -333,7 +344,7 @@ export class FormLogic<TData> {
     this._unsubscribeFromChangeEffect = effect(async () => {
       const currentJson = this._jsonData.value
 
-      if (!this._isMounted) {
+      if (!this._isMounted.peek()) {
         return
       }
 
@@ -348,29 +359,32 @@ export class FormLogic<TData> {
       await this.validateForEvent('onChange', currentJson as TData)
     })
 
-    this._isMounted = true
+    this._isMounted.value = true
     await this.validateForEvent('onMount')
   }
 
   public unmount(): void {
-    this._isMounted = false
+    this._isMounted.value = false
 
     this._unsubscribeFromChangeEffect?.()
   }
   //endregion
 
   //region Field helpers
-  public registerField<TPath extends Paths<TData>>(
+  public registerField<TPath extends Paths<TData>, TBoundValue>(
     path: TPath,
-    field: FieldLogic<TData, TPath>,
+    field: FieldLogic<TData, TPath, TBoundValue>,
     defaultValues?: ValueAtPath<TData, TPath>,
   ): void {
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
-    if (this._fields.has(path)) return
+    if (this._fields.peek().has(path)) return
 
     this._currentlyRegisteringFields++
 
-    this._fields.set(path, field)
+    const newMap = new Map(this._fields.peek())
+    newMap.set(path, field)
+    this._fields.value = newMap
+
     if (defaultValues === undefined) return
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
@@ -378,10 +392,21 @@ export class FormLogic<TData> {
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
     preserveValue?: boolean,
+    deleteValue?: boolean
   ): void {
     if (preserveValue) return
-    this._fields.delete(path)
-    removeSignalValueAtPath(this._data, path)
+
+    const defaultValue = this.getDefaultValueForPath(path)
+
+    const newMap = new Map(this._fields.peek())
+    newMap.delete(path)
+    this._fields.value = newMap
+
+    if(deleteValue) {
+      removeSignalValueAtPath(this._data, path)
+    } else {
+      setSignalValueAtPath(this._data, path, defaultValue)
+    }
   }
   //endregion
 
@@ -411,7 +436,7 @@ export class FormLogic<TData> {
   public getFieldForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): FieldLogic<TData, TPath> {
-    return this._fields.get(path) as FieldLogic<TData, TPath>
+    return this._fields.peek().get(path) as FieldLogic<TData, TPath, never>
   }
 
   public reset(): void {
@@ -420,7 +445,7 @@ export class FormLogic<TData> {
         this._options?.defaultValues ?? {},
       ) as SignalifiedData<TData>
     ).peek()
-    for (const field of this.fields) {
+    for (const field of this._fieldsArray.peek()) {
       field.reset()
     }
 
