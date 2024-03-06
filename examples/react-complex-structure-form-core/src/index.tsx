@@ -15,7 +15,6 @@ import {
 import { Input, InputSignal } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
   SelectContent,
   SelectItem,
   SelectSignal,
@@ -41,9 +40,14 @@ import {
   type FieldLogicOptions,
   FormLogic,
   type Paths,
-  type ValueAtPath,
+  type ValidationError,
 } from '@form-signals/form-core'
-import { type Signal, useSignal } from '@preact/signals-react'
+import {
+  signal,
+  type Signal,
+  useComputed,
+  useSignal,
+} from '@preact/signals-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
@@ -53,10 +57,19 @@ const emptyDefaultValues = {
   name: '',
   description: '',
   validRange: [undefined, undefined],
-  prices: {},
+  prices: {
+    EUR: [
+      {
+        count: 1,
+        price: 20,
+        taxRate: 19,
+      },
+    ],
+  },
   variants: [],
 } satisfies Product
 
+const selectedCurrency = signal('EUR')
 // TODO Typesafety is not where I want/need it
 const form = new FormLogic<Product>({
   defaultValues: emptyDefaultValues,
@@ -64,20 +77,24 @@ const form = new FormLogic<Product>({
     console.log('submit', values)
   },
 })
+form.mount()
 const subForm = new FormLogic<Product['prices'][string][number]>({
   defaultValues: {
+    count: 1,
+    price: 30,
     taxRate: 19,
   },
   onSubmit: (values) => {
-    console.log('submit sub form', values)
+    // TODO Add transformer to field to handle this string to number conversion
+    // TODO Also add a field transformer to handle default values to form values
+    form.pushValueToArray(`prices.${selectedCurrency.peek()}`, values)
   },
 })
+subForm.mount()
 
-// TODO Fix stuff currently noted
 // TODO Add react bindings before doing more
 
 export const Index = () => {
-  const selectedCurrency = useSignal('EUR')
   const selectedVariant = useSignal(0)
 
   const justAddedOption = useSignal(false)
@@ -94,31 +111,27 @@ export const Index = () => {
 
       <form
         className="flex flex-col gap-4 w-full"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
           e.stopPropagation()
-          void form.handleSubmit()
+          await form.handleSubmit()
         }}
       >
         <h5 className="text-lg font-bold">General</h5>
 
         <FormField
-          name="name"
-          validators={[
-            {
-              validate: (value) =>
-                value.length <= 5 && 'Value must be longer than 5 characters',
-              onChange: true,
-              onBlur: true,
-            },
-          ]}
+          name={'name' as const}
+          form={form}
+          validator={(value) =>
+            value.length <= 5 && 'Value must be longer than 5 characters'
+          }
         >
           {(field) => (
             <FormTextInput label="Name" maxLength={45} field={field} />
           )}
         </FormField>
 
-        <FormField name="description">
+        <FormField name="description" form={form}>
           {(field) => (
             <div>
               <Label>Description</Label>
@@ -134,59 +147,64 @@ export const Index = () => {
           )}
         </FormField>
 
-        <div className="flex flex-row gap-2">
-          {/*TODO Allow parent field + allow to subscribe to child values*/}
+        <div>
+          <div className="flex flex-row gap-2">
+            <FormField
+              form={form}
+              name={'validRange.0' as const}
+              validator={(value) => {
+                if (value === undefined) return 'Value is required'
+                return undefined
+              }}
+            >
+              {(field) => (
+                <div className="flex flex-col gap-1 flex-1">
+                  <Label htmlFor={field.name}>Valid from</Label>
+                  <DatePicker
+                    id={field.name}
+                    variant="outline"
+                    value={field.signal}
+                    onBlur={() => field.handleBlur()}
+                  />
+                  <ErrorText errors={field.errors} />
+                </div>
+              )}
+            </FormField>
+            <FormField
+              form={form}
+              name={'validRange.1' as const}
+              validator={(value) => {
+                if (value === undefined) return 'Value is required'
+                return undefined
+              }}
+            >
+              {(field) => (
+                <div className="flex flex-col gap-1 flex-1">
+                  <Label htmlFor={field.name}>Valid until</Label>
+                  <DatePicker
+                    id={field.name}
+                    variant="outline"
+                    value={field.signal}
+                    onBlur={() => field.handleBlur()}
+                  />
+                  <ErrorText errors={field.errors} />
+                </div>
+              )}
+            </FormField>
+          </div>
+          {/* TODO Maybe support only validator fields */}
           <FormField
-            name="validRange.0"
-            validators={[
-              {
-                validate: (value) => {
-                  if (value === undefined) return 'Value is required'
-                  return undefined
-                },
-                onChange: true,
-                onBlur: true,
-              },
-            ]}
+            form={form}
+            name={'validRange' as const}
+            validateOnNestedChange
+            validator={(value) => {
+              if (!value[0] || !value[1]) return
+              if (value[0] > value[1])
+                return 'Valid from must be before valid until'
+              return undefined
+            }}
           >
-            {(field) => (
-              <div className="flex flex-col gap-1 flex-1">
-                <Label htmlFor={field.name}>Valid from</Label>
-                <DatePicker
-                  id={field.name}
-                  variant="outline"
-                  value={field.signal}
-                  onBlur={() => field.handleBlur()}
-                />
-                <ErrorText errors={field.errors} />
-              </div>
-            )}
-          </FormField>
-          <FormField
-            name="validRange.1"
-            validators={[
-              {
-                validate: (value) => {
-                  if (value === undefined) return 'Value is required'
-                  return undefined
-                },
-                onChange: true,
-                onBlur: true,
-              },
-            ]}
-          >
-            {(field) => (
-              <div className="flex flex-col gap-1 flex-1">
-                <Label htmlFor={field.name}>Valid until</Label>
-                <DatePicker
-                  id={field.name}
-                  variant="outline"
-                  value={field.signal}
-                  onBlur={() => field.handleBlur()}
-                />
-                <ErrorText errors={field.errors} />
-              </div>
-            )}
+            {(field) => <ErrorText errors={field.errors} />}
           </FormField>
         </div>
 
@@ -216,25 +234,16 @@ export const Index = () => {
             </TableHeader>
             <TableBody>
               {/* TODO Validate rising count */}
+              {/*TODO When having and error on one tab and then navigating away and to it, the error is not visible anymore*/}
               <FormField
-                name={`prices.${selectedCurrency.value}`}
+                form={form}
+                name={`prices.${selectedCurrency.value}` as const}
                 preserveValueOnUnmount
-                defaultValue={
-                  selectedCurrency.value === 'EUR'
-                    ? [{ count: 1, price: 20, taxRate: 19 }]
-                    : []
-                }
-                validators={[
-                  {
-                    validate: (value) => {
-                      if (!value?.length)
-                        return 'At least one price is required'
-                      return undefined
-                    },
-                    onChange: true,
-                    onMount: true,
-                  },
-                ]}
+                validator={(value) => {
+                  if (value && !value.length)
+                    return 'At least one price is required'
+                  return undefined
+                }}
               >
                 {(field) => (
                   <>
@@ -247,60 +256,99 @@ export const Index = () => {
             <TableFooter>
               <TableRow disableHoverStyle>
                 <TableCell className="align-top">
-                  <FormField name="minCount">
+                  <FormField
+                    name={'count' as const}
+                    form={subForm}
+                    validator={(value) => {
+                      if (value <= 0) return 'Value must be greater than 0'
+                      return undefined
+                    }}
+                    transformToBinding={(value) => `${value}`}
+                    transformFromBinding={(value: string) => parseFloat(value)}
+                  >
                     {(field) => (
-                      <InputSignal
-                        value={field.signal}
-                        id={field.name}
-                        name={field.name}
-                        type="number"
-                        placeholder="Min Count"
-                      />
+                      <>
+                        <Label htmlFor={field.name}>Min Count</Label>
+                        <InputSignal
+                          value={field.transformedSignal}
+                          id={field.name}
+                          name={field.name}
+                          type="number"
+                          placeholder="Min Count"
+                        />
+                        <ErrorText errors={field.errors} />
+                      </>
                     )}
                   </FormField>
-                  <Label htmlFor="new-min-count">Min Count</Label>
-                  <Input
-                    id="new-min-count"
-                    name="new-min-count"
-                    type="number"
-                    placeholder="Min Count"
-                  />
-                  {false && (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {'field.state.meta.errors'}
-                    </p>
-                  )}
                 </TableCell>
                 <TableCell className="align-top">
-                  <Label htmlFor="new-price">New price</Label>
-                  <Input
-                    id="new-price"
-                    name="new-price"
-                    type="number"
-                    placeholder="Price"
-                  />
-                  {false && (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {'field.state.meta.errors'}
-                    </p>
-                  )}
+                  <FormField
+                    name={'price' as const}
+                    form={subForm}
+                    validator={(value) => {
+                      if (value <= 0) return 'Value must be greater than 0'
+                      return undefined
+                    }}
+                    transformToBinding={(value) => `${value}`}
+                    transformFromBinding={(value: string) => parseFloat(value)}
+                  >
+                    {(field) => (
+                      <>
+                        <Label htmlFor={field.name}>New price</Label>
+                        <InputSignal
+                          value={field.transformedSignal}
+                          id={field.name}
+                          name={field.name}
+                          type="number"
+                          placeholder="Price"
+                        />
+                        <ErrorText errors={field.errors} />
+                      </>
+                    )}
+                  </FormField>
                 </TableCell>
                 <TableCell className="align-top">
-                  <Label htmlFor="new-tax-rate">Tax Rate</Label>
-                  <Select defaultValue="19">
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="19">19%</SelectItem>
-                      <SelectItem value="7">7%</SelectItem>
-                      <SelectItem value="0">0%</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    name={'taxRate' as const}
+                    form={subForm}
+                    validator={(value) => {
+                      if (value !== 19 && value !== 7 && value !== 0)
+                        return 'Value must be 19, 7 or 0'
+                      return undefined
+                    }}
+                    transformToBinding={(value) => `${value}`}
+                    transformFromBinding={(value: string) => parseFloat(value)}
+                  >
+                    {(field) => (
+                      <>
+                        <Label htmlFor={field.name}>Tax Rate</Label>
+                        <SelectSignal
+                          name={field.name}
+                          value={field.transformedSignal}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="19">19%</SelectItem>
+                            <SelectItem value="7">7%</SelectItem>
+                            <SelectItem value="0">0%</SelectItem>
+                          </SelectContent>
+                        </SelectSignal>
+                        <ErrorText errors={field.errors} />
+                      </>
+                    )}
+                  </FormField>
                 </TableCell>
 
                 <TableCell align="right" className="align-top">
-                  <Button className="mt-5" type="button" variant="outline">
+                  <Button
+                    className="mt-5"
+                    type="button"
+                    variant="outline"
+                    disabled={!subForm.canSubmit.value}
+                    onClick={() => subForm.handleSubmit()}
+                  >
                     Add new price
                   </Button>
                 </TableCell>
@@ -313,8 +361,10 @@ export const Index = () => {
         <h5 className="text-lg font-bold">Variants</h5>
 
         <Tabs
-          value={selectedVariant.toString()}
-          onValueChange={(value) => setSelectedVariant(+value)}
+          value={selectedVariant.value.toString()}
+          onValueChange={(value) => {
+            selectedVariant.value = +value
+          }}
         >
           <TabsList>
             {emptyDefaultValues.variants?.map(({ name }, index) => (
@@ -347,7 +397,7 @@ export const Index = () => {
                     <Input
                       type="text"
                       placeholder="Option"
-                      autoFocus={justAddedOption.current && optionIndex === 1}
+                      autoFocus={justAddedOption.value && optionIndex === 1}
                     />
                   ))}
                   <Input
@@ -367,10 +417,18 @@ export const Index = () => {
           ))}
         </Tabs>
 
+        <pre>
+          {JSON.stringify({
+            isValid: form.isValid.value,
+            isValidForm: form.isValidForm.value,
+            isValidFields: form.isValidFields.value,
+          })}
+        </pre>
+
         <Button
           className="mt-2 max-w-[280px]"
           type="submit"
-          disabled={form.canSubmit.value}
+          disabled={!form.canSubmit.value}
         >
           Save configuration
         </Button>
@@ -386,7 +444,7 @@ export const Index = () => {
         </CardHeader>
         <CardContent>
           <Collapsible>
-            <CollapsibleTrigger>
+            <CollapsibleTrigger asChild>
               <Button variant="secondary" type="button">
                 + Show values
               </Button>
@@ -397,14 +455,11 @@ export const Index = () => {
           </Collapsible>
         </CardContent>
         <CardFooter className="flex flex-row gap-2">
-          <Button variant="outline" onClick={() => form.validate('submit')}>
-            Force Validate Form
-          </Button>
           <Button
             variant="outline"
-            onClick={() => form.validateAllFields('submit')}
+            onClick={() => form.validateForEvent('onSubmit')}
           >
-            Force Validate Fields
+            Force Validate Form
           </Button>
           <Button variant="destructive" onClick={() => form.reset()}>
             Reset
@@ -421,7 +476,7 @@ export const Index = () => {
  */
 const PriceTableBody = ({
   field,
-}: { field: FieldLogic<Product, `prices.${string}`> }) => {
+}: { field: FieldLogic<Product, `prices.${string}`, unknown> }) => {
   return field.signal.value?.map((arrayEntry, index) => (
     <TableRow key={arrayEntry.key}>
       {/* TODO This might not be so nice to deal with (being forced to use nested signals) */}
@@ -441,7 +496,9 @@ const PriceTableBody = ({
   ))
 }
 
-const PriceTableErrorText = ({ errors }: { errors: Signal<Array<string>> }) => {
+const PriceTableErrorText = ({
+  errors,
+}: { errors: Signal<Array<ValidationError>> }) => {
   if (!errors.value.length) return null
   return (
     <TableRow disableHoverStyle>
@@ -452,12 +509,13 @@ const PriceTableErrorText = ({ errors }: { errors: Signal<Array<string>> }) => {
   )
 }
 
-type FormFieldProps<TName extends Paths<Product>> = {
+type FormFieldProps<TData, TName extends Paths<TData>, TBoundValue> = {
+  form: FormLogic<TData>
   name: TName
-  children: (field: FieldLogic<ValueAtPath<Product, TName>, TName>) => ReactNode
-} & FieldLogicOptions<Product, TName>
+  children: (field: FieldLogic<TData, TName, TBoundValue>) => ReactNode
+} & FieldLogicOptions<TData, TName, TBoundValue>
 
-const useEqualityMemorizedValue = (newValue: unknown) => {
+const useEqualityMemorizedValue = <T,>(newValue: T) => {
   const [value, setValue] = useState(newValue)
 
   useEffect(() => {
@@ -474,37 +532,35 @@ const useEqualityMemorizedValue = (newValue: unknown) => {
   return value
 }
 
-const FormField = <TName extends Paths<Product>>({
+const FormField = <TData, TName extends Paths<TData>, TBoundValue>({
+  form,
   name,
   children,
   ...options
-}: FormFieldProps<TName>) => {
+}: FormFieldProps<TData, TName, TBoundValue>) => {
   const memoName = useEqualityMemorizedValue(name)
   const memoOptions = useEqualityMemorizedValue(options)
-  const [field, setField] = useState<FieldLogic<Product, TName>>()
+  const [field, setField] = useState<FieldLogic<TData, TName, TBoundValue>>()
 
   useEffect(() => {
     const fieldFromForm = form.getFieldForPath(memoName)
     if (fieldFromForm) {
-      console.log('Mounting existing field', memoName)
       setField(fieldFromForm)
       fieldFromForm.mount()
       return () => fieldFromForm.unmount()
     }
-    console.log('Mounting new field', memoName)
     const newField = new FieldLogic(form, memoName, memoOptions)
     setField(newField)
     newField.mount()
     return () => newField.unmount()
-  }, [memoName, memoOptions])
+  }, [form, memoName, memoOptions])
 
-  console.log('Rendering thing', field?.name, !!field)
   if (!field) return null
 
   return children(field)
 }
 
-const ErrorText = ({ errors }: { errors: Signal<Array<string>> }) => {
+const ErrorText = ({ errors }: { errors: Signal<Array<ValidationError>> }) => {
   if (!errors.value.length) return null
   return (
     <p className="text-[0.8rem] font-medium text-destructive">
@@ -513,15 +569,25 @@ const ErrorText = ({ errors }: { errors: Signal<Array<string>> }) => {
   )
 }
 
-const FormTextInput = <TName extends Paths<Product>>({
+const FormTextInput = <TName extends Paths<Product>, TBoundValue>({
   label,
   maxLength,
   field,
 }: {
   label: string
-  field: FieldLogic<Product, TName>
+  field: FieldLogic<Product, TName, TBoundValue>
   maxLength?: number
 }) => {
+  const currentCount = useComputed(() => {
+    if (typeof field.signal.value !== 'string') return 0
+    return field.signal.value.length
+  })
+  const errorText = useComputed(() => {
+    return field.errors.value.join(', ')
+  })
+  const errorClassName = useComputed(() => {
+    return !field.isValid.value ? 'text-destructive' : ''
+  })
   return (
     <div>
       <Label htmlFor={field.name}>{label}</Label>
@@ -538,13 +604,13 @@ const FormTextInput = <TName extends Paths<Product>>({
       <div
         className={cn(
           'flex flex-row justify-between text-[0.8rem] font-medium mb-[-16px]',
-          field.errors.value.length && 'text-destructive',
+          errorClassName.value,
         )}
       >
-        <p>{field.errors.value}</p>
+        <p>{errorText}</p>
         {maxLength && (
           <p>
-            {field.signal.value.length}/{maxLength}
+            {currentCount}/{maxLength}
           </p>
         )}
       </div>

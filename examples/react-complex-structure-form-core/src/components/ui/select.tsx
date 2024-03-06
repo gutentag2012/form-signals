@@ -16,12 +16,12 @@ type SelectSignalProps = Omit<
   SelectPrimitive.SelectProps,
   'value' | 'onValueChange'
 > & {
-  value: Signal<string>
+  value: Signal<string | number>
 }
 const SelectSignal = ({ value, ...props }: SelectSignalProps) => {
-  return (
+   return (
     <SelectPrimitive.Root
-      value={value.value}
+      value={`${value.value}`}
       onValueChange={(newValue) => {
         value.value = newValue
       }}

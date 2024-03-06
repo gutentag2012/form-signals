@@ -53,6 +53,7 @@ const emptyDefaultValues = {
   variants: [],
 } satisfies Product
 
+// TODO Add automatically calculated net/gross price
 export const Index = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('EUR')
   const [selectedVariant, setSelectedVariant] = useState<number>(0)
@@ -77,6 +78,13 @@ export const Index = () => {
     },
     validatorAdapter: zodValidator,
     onSubmit: ({ value }) => {
+      if("priceGross" in value) {
+        // @ts-ignore
+        value.priceNet = value.priceGross / (1 + value.taxRate / 100)
+      } else if("priceNet" in value) {
+        // @ts-ignore
+        value.priceGross = value.priceNet * (1 + value.taxRate / 100)
+      }
       form.pushFieldValue(
         `prices.${selectedCurrency}`,
         value as Product['prices'][string][number],
@@ -345,7 +353,7 @@ export const Index = () => {
                       )}
                     />
                     <newPriceForm.Field
-                      name="price"
+                      name="priceNet"
                       validators={{
                         onChange: z.number().positive(),
                       }}
@@ -358,6 +366,7 @@ export const Index = () => {
                             type="number"
                             placeholder="Price"
                             value={field.state.value ?? ''}
+                            disabled={!!newPriceForm.getFieldValue('priceGross')}
                             onBlur={field.handleBlur}
                             onChange={(e) =>
                               field.handleChange(
@@ -372,6 +381,41 @@ export const Index = () => {
                           )}
                         </TableCell>
                       )}
+                    />
+                    <newPriceForm.Field
+                      name="priceGross"
+                      validators={{
+                        onChange: z.number().positive(),
+                      }}
+                      children={(field) => {
+                        const priceNet = newPriceForm.getFieldValue('priceNet')
+                        // @ts-ignore
+                        const fallbackValue = priceNet ? (priceNet * (1 + newPriceForm.getFieldValue('taxRate') / 100)).toFixed(2) : ''
+                        return (
+                          <TableCell className="align-top">
+                            <Label htmlFor="new-price">New price</Label>
+                            <Input
+                              id="new-price"
+                              name="new-price"
+                              type="number"
+                              placeholder="Price"
+                              value={field.state.value ?? fallbackValue}
+                              disabled={priceNet !== undefined}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(
+                                  e.target.value ? +e.target.value : undefined,
+                                )
+                              }
+                            />
+                            {field.state.meta.errors && (
+                              <p className="text-[0.8rem] font-medium text-destructive">
+                                {field.state.meta.errors}
+                              </p>
+                            )}
+                          </TableCell>
+                        );
+                      }}
                     />
                     <newPriceForm.Field
                       name="taxRate"
