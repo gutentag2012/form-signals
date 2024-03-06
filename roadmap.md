@@ -6,7 +6,6 @@ This document outlines the planned features and improvements for the project. It
 
 - [x] **form-core**: Add FieldLogic to handle form fields state and validation
 - [x] **form-core**: Add FormLogic to handle form state and validation
-- [ ] **logging**: Add internal logging module for errors and traces
 - [ ] **form-react**: Add FormProvider to provide form state to form fields
 - [ ] **form-react**: Add useField hook to access form field state and validation
 - [ ] **form-react**: Add useForm hook to access form state and validation
@@ -17,13 +16,18 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **examples-react**: Add example for form validation
 - [ ] **examples-react**: Add example with hidden fields
 - [ ] **examples-react**: Add example for table sorting
-- [ ] **examples-react**: Add example with nested forms
+- [ ] **examples-react**: Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
+- [ ] **examples-react**: Add example with nested forms (and enter capture without html form element)
+- [ ] **examples-react**: Add example how to use with shadcn/ui form components
 - [ ] **chore**: Extensive jsdoc documentation with examples and links
 
 ## Version 1.1.0
 
 - [ ] **form-core**: Add support for addons
-- [ ] **form-core**: Add support for server side validation
+- [ ] **form-core**: Add support for readonly derived fields
+- [ ] **form-core**: Add support for either or fields
+- [ ] **examples-react**: Add example for readonly derived fields + either or fields (NetPrice, GrossPrice, TaxRate -> Net or Gross is calculated depending on which is entered in the other two fields and disabled)
+- [ ] **form-core**: Add support for form enter capture without html form element
 - [ ] **form-core**: Add support for async default values
 - [ ] **form-core**: Add support for async form setup
 - [ ] **form-core**: Add type support for partial default values
@@ -36,5 +40,6 @@ This document outlines the planned features and improvements for the project. It
 
 ## Version 1.2.0
 
-- [ ] **form-core**: Add support for form enter capture without html form element
+- [ ] **debugger-react**: Add debugger component for react forms
+- [ ] **form-core**: Add support for server side validation
 - [ ] **addon-storage-persistence**: Add addon to persist form state in browser storage (session or local)
