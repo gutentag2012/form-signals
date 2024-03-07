@@ -1,31 +1,31 @@
-import {assertType, describe, expectTypeOf, it} from "vitest";
-import {FormLogic} from "./FormLogic";
-import type {Signal} from "@preact/signals-core";
+import type { Signal } from '@preact/signals-core'
+import { assertType, describe, expectTypeOf, it } from 'vitest'
+import { FormLogic } from './FormLogic'
 
-describe("FormLogic (types)", () => {
+describe('FormLogic (types)', () => {
   //region passing types
   it('should get the correct primitive type for strings', () => {
-    const form = new FormLogic<{name: string}>()
+    const form = new FormLogic<{ name: string }>()
 
     assertType<string>(form.data.value.name.value)
   })
   it('should get the correct primitive type for numbers', () => {
-    const form = new FormLogic<{age: number}>()
+    const form = new FormLogic<{ age: number }>()
 
     assertType<number>(form.data.value.age.value)
   })
   it('should get the correct primitive type for booleans', () => {
-    const form = new FormLogic<{isHuman: boolean}>()
+    const form = new FormLogic<{ isHuman: boolean }>()
 
     assertType<boolean>(form.data.value.isHuman.value)
   })
   it('should get the correct primitive type for dates', () => {
-    const form = new FormLogic<{birthday: Date}>()
+    const form = new FormLogic<{ birthday: Date }>()
 
     assertType<Date>(form.data.value.birthday.value)
   })
   it('should get the correct constant type for strings', () => {
-    const form = new FormLogic<{name: 'John'}>()
+    const form = new FormLogic<{ name: 'John' }>()
 
     assertType<'John'>(form.data.value.name.value)
   })
@@ -61,7 +61,9 @@ describe("FormLogic (types)", () => {
   it('should type the array items with keys and signals separately', () => {
     const form = new FormLogic<{ names: string[] }>()
 
-    assertType<Array<{ key: number; signal: Signal<string> }>>(form.data.value.names.value)
+    assertType<Array<{ key: number; signal: Signal<string> }>>(
+      form.data.value.names.value,
+    )
   })
   it('should type the members of an array', () => {
     const form = new FormLogic<{ names: string[] }>()
@@ -90,20 +92,24 @@ describe("FormLogic (types)", () => {
   it('should not allow to push values into a tuple', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
 
-    expectTypeOf(form.pushValueToArray<"names">).parameter(1).toBeNever()
+    expectTypeOf(form.pushValueToArray<'names'>)
+      .parameter(1)
+      .toBeNever()
   })
   it('should not allow to remove values from a tuple', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
 
-    expectTypeOf(form.removeValueFromArray<"names">).parameter(1).toBeNever()
+    expectTypeOf(form.removeValueFromArray<'names'>)
+      .parameter(1)
+      .toBeNever()
   })
   it('should only allow to insert the type of the tuple at a specific index', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
 
-    expectTypeOf(form.insertValueInArray<"names", 0>)
+    expectTypeOf(form.insertValueInArray<'names', 0>)
       .parameter(2)
       .toBeString()
-    expectTypeOf(form.insertValueInArray<"names", 1>)
+    expectTypeOf(form.insertValueInArray<'names', 1>)
       .parameter(2)
       .toBeNumber()
   })
@@ -111,11 +117,11 @@ describe("FormLogic (types)", () => {
     const form = new FormLogic<{ names: readonly [string, number, string] }>()
 
     // You cannot swap a string with a number
-    expectTypeOf(form.swapValuesInArray<"names", 0, 1>)
+    expectTypeOf(form.swapValuesInArray<'names', 0, 1>)
       .parameter(1)
       .toBeNever()
     // You can swap two strings
-    expectTypeOf(form.swapValuesInArray<"names", 0, 2>)
+    expectTypeOf(form.swapValuesInArray<'names', 0, 2>)
       .parameter(1)
       .toBeNumber()
   })
@@ -214,7 +220,7 @@ describe("FormLogic (types)", () => {
   it('should infer the nested array type of the value form the validator', () => {
     new FormLogic<{ names: { lastNames: string[] } }>({
       validator: (value) => {
-        assertType<{ names: {lastNames: string[] } }>(value)
+        assertType<{ names: { lastNames: string[] } }>(value)
         return undefined
       },
     })

@@ -1,7 +1,7 @@
-import {describe, expect, it, vi} from 'vitest'
-import {FieldLogic} from './FieldLogic'
-import {FormLogic} from './FormLogic'
-import {Truthy} from './utils/internal.utils'
+import { describe, expect, it, vi } from 'vitest'
+import { FieldLogic } from './FieldLogic'
+import { FormLogic } from './FormLogic'
+import { Truthy } from './utils/internal.utils'
 
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
@@ -326,7 +326,7 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.canSubmit.value).toBe(false)
     })
-    it("should not can submit if a form field is invalid, unmounted and did preserve its value", async () => {
+    it('should not can submit if a form field is invalid, unmounted and did preserve its value', async () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         preserveValueOnUnmount: true,

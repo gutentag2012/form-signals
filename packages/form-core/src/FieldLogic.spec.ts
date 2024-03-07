@@ -551,13 +551,13 @@ describe('FieldLogic', () => {
       vi.useRealTimers()
     })
     it('should not run async validations if the sync validation already failed unless configured otherwise', async () => {
-      const validateSync = vi.fn(() => "error")
-      const validateAsync = vi.fn(async () => "error")
+      const validateSync = vi.fn(() => 'error')
+      const validateAsync = vi.fn(async () => 'error')
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       const field = new FieldLogic(form, 'name', {
         validatorAsync: () => validateAsync(),
-        validator: () => validateSync()
+        validator: () => validateSync(),
       })
       await field.mount()
 
@@ -567,14 +567,14 @@ describe('FieldLogic', () => {
       expect(validateAsync).not.toHaveBeenCalled()
     })
     it('should accumulate other async validations if configured', async () => {
-      const validateSync = vi.fn(() => "error")
-      const validateAsync = vi.fn(async () => "error")
+      const validateSync = vi.fn(() => 'error')
+      const validateAsync = vi.fn(async () => 'error')
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       const field = new FieldLogic(form, 'name', {
         validatorAsync: () => validateAsync(),
         validator: () => validateSync(),
-        accumulateErrors: true
+        accumulateErrors: true,
       })
       await field.mount()
 
@@ -590,7 +590,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         validator: {
           validate,
-          validateOnMount: true
+          validateOnMount: true,
         },
       })
       field.mount()
@@ -608,7 +608,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         validator: {
           validate,
-          validateOnMount: true
+          validateOnMount: true,
         },
       })
 
@@ -650,7 +650,7 @@ describe('FieldLogic', () => {
       form.data.value.name.value.deep.value = 'test1'
       expect(field.errors.value).toEqual([])
     })
-    it("should validate fields that are unmounted but preserve their value", () => {
+    it('should validate fields that are unmounted but preserve their value', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
@@ -658,19 +658,19 @@ describe('FieldLogic', () => {
         validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
-      field.signal.value = "test"
+      field.signal.value = 'test'
       field.unmount()
       expect(field.errors.value).toEqual([])
-      expect(field.signal.value).toEqual("test")
+      expect(field.signal.value).toEqual('test')
     })
-    it("should not validate fields that are unmounted", () => {
+    it('should not validate fields that are unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
         validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
-      field.signal.value = "test"
+      field.signal.value = 'test'
       field.unmount()
       expect(field.errors.value).toEqual([])
       expect(field.signal.value).toBeUndefined()
@@ -959,8 +959,8 @@ describe('FieldLogic', () => {
     it('should reset field state on unmount if not otherwise configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
-          name: "default"
-        }
+          name: 'default',
+        },
       })
       form.mount()
 
@@ -973,19 +973,19 @@ describe('FieldLogic', () => {
       expect(form.data.value.name.value).toBe('value')
       field.unmount()
 
-      expect(form.data.value.name.value).toBe("default")
+      expect(form.data.value.name.value).toBe('default')
       expect(field.isTouched.value).toBe(false)
     })
     it('should delete field state on unmount if configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
-          name: "default"
-        }
+          name: 'default',
+        },
       })
       form.mount()
 
       const field = new FieldLogic(form, 'name', {
-        deleteValueOnUnmount: true
+        deleteValueOnUnmount: true,
       })
       field.mount()
       field.handleBlur()
@@ -1001,8 +1001,8 @@ describe('FieldLogic', () => {
     it('should preserve field state on unmount if configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
-          name: "default"
-        }
+          name: 'default',
+        },
       })
       form.mount()
 
@@ -1067,7 +1067,7 @@ describe('FieldLogic', () => {
     })
   })
   describe('transform', () => {
-    it("should return undefined if no transformers are given", () => {
+    it('should return undefined if no transformers are given', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name')
@@ -1075,11 +1075,11 @@ describe('FieldLogic', () => {
 
       expect(field.transformedSignal.value).toBeUndefined()
     })
-    it("should not write to the form if no transformFromBinding is given", () => {
+    it('should not write to the form if no transformFromBinding is given', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: "test"
-        }
+          name: 'test',
+        },
       })
       form.mount()
       const field = new FieldLogic(form, 'name', {
@@ -1087,69 +1087,69 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.transformedSignal.value = "asd!"
-      expect(field.signal.value).toBe("test")
-      expect(field.transformedSignal.value).toBe("test!")
+      field.transformedSignal.value = 'asd!'
+      expect(field.signal.value).toBe('test')
+      expect(field.transformedSignal.value).toBe('test!')
     })
-    it("should not read from the form if no transformToBinding is given", () => {
+    it('should not read from the form if no transformToBinding is given', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: "test"
-        }
+          name: 'test',
+        },
       })
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        transformFromBinding: (value: string) => value.replace("!", ""),
+        transformFromBinding: (value: string) => value.replace('!', ''),
       })
       field.mount()
 
       expect(field.transformedSignal.value).toBeUndefined()
-      expect(field.signal.value).toBe("test")
+      expect(field.signal.value).toBe('test')
 
-      field.transformedSignal.value = "asd!"
+      field.transformedSignal.value = 'asd!'
 
       expect(field.transformedSignal.value).toBeUndefined()
-      expect(field.signal.value).toBe("asd")
+      expect(field.signal.value).toBe('asd')
     })
-    it("should return a reactive signal which is a transformed representation of the signal when transformers are given", () => {
+    it('should return a reactive signal which is a transformed representation of the signal when transformers are given', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: "test"
-        }
+          name: 'test',
+        },
       })
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        transformFromBinding: (value: string) => value.replace("!", ""),
+        transformFromBinding: (value: string) => value.replace('!', ''),
         transformToBinding: (value) => `${value}!`,
       })
       field.mount()
 
-      expect(field.transformedSignal.value).toBe("test!")
-      expect(field.signal.value).toBe("test")
-      field.transformedSignal.value = "asd!"
+      expect(field.transformedSignal.value).toBe('test!')
+      expect(field.signal.value).toBe('test')
+      field.transformedSignal.value = 'asd!'
 
-      expect(field.transformedSignal.value).toBe("asd!")
-      expect(field.signal.value).toBe("asd")
+      expect(field.transformedSignal.value).toBe('asd!')
+      expect(field.signal.value).toBe('asd')
     })
-    it("should handle changes to the transformed signal", () => {
+    it('should handle changes to the transformed signal', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: "test"
-        }
+          name: 'test',
+        },
       })
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        transformFromBinding: (value: string) => value.replace("!", ""),
+        transformFromBinding: (value: string) => value.replace('!', ''),
         transformToBinding: (value) => `${value}!`,
       })
       field.mount()
 
-      expect(field.transformedSignal.value).toBe("test!")
-      expect(field.signal.value).toBe("test")
-      field.handleChangeBound("asd!")
+      expect(field.transformedSignal.value).toBe('test!')
+      expect(field.signal.value).toBe('test')
+      field.handleChangeBound('asd!')
 
-      expect(field.transformedSignal.value).toBe("asd!")
-      expect(field.signal.value).toBe("asd")
+      expect(field.transformedSignal.value).toBe('asd!')
+      expect(field.signal.value).toBe('asd')
     })
-  });
+  })
 })

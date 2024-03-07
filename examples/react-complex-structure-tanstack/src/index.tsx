@@ -78,10 +78,10 @@ export const Index = () => {
     },
     validatorAdapter: zodValidator,
     onSubmit: ({ value }) => {
-      if("priceGross" in value) {
+      if ('priceGross' in value) {
         // @ts-ignore
         value.priceNet = value.priceGross / (1 + value.taxRate / 100)
-      } else if("priceNet" in value) {
+      } else if ('priceNet' in value) {
         // @ts-ignore
         value.priceGross = value.priceNet * (1 + value.taxRate / 100)
       }
@@ -366,7 +366,9 @@ export const Index = () => {
                             type="number"
                             placeholder="Price"
                             value={field.state.value ?? ''}
-                            disabled={!!newPriceForm.getFieldValue('priceGross')}
+                            disabled={
+                              !!newPriceForm.getFieldValue('priceGross')
+                            }
                             onBlur={field.handleBlur}
                             onChange={(e) =>
                               field.handleChange(
@@ -390,7 +392,12 @@ export const Index = () => {
                       children={(field) => {
                         const priceNet = newPriceForm.getFieldValue('priceNet')
                         // @ts-ignore
-                        const fallbackValue = priceNet ? (priceNet * (1 + newPriceForm.getFieldValue('taxRate') / 100)).toFixed(2) : ''
+                        const fallbackValue = priceNet
+                          ? (
+                              priceNet *
+                              (1 + newPriceForm.getFieldValue('taxRate') / 100)
+                            ).toFixed(2)
+                          : ''
                         return (
                           <TableCell className="align-top">
                             <Label htmlFor="new-price">New price</Label>
@@ -414,7 +421,7 @@ export const Index = () => {
                               </p>
                             )}
                           </TableCell>
-                        );
+                        )
                       }}
                     />
                     <newPriceForm.Field

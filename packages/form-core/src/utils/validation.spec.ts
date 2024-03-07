@@ -146,7 +146,12 @@ describe('validation', () => {
     )
     expect(validatorSync).toHaveBeenCalledWith(value)
     expect(validatorAsync).toHaveBeenCalledWith(value, expect.anything())
-    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: event , async: 'error', asyncErrorEvent: event  })
+    expect(errorMap.value).toEqual({
+      sync: 'error',
+      syncErrorEvent: event,
+      async: 'error',
+      asyncErrorEvent: event,
+    })
   })
   it('should abort async validations if there was another validation before the promise resolved', async () => {
     vi.useFakeTimers()
@@ -189,7 +194,7 @@ describe('validation', () => {
     await Promise.all([promise, promise2])
 
     expect(validate).toHaveBeenCalledOnce()
-    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: event  })
+    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: event })
     expect(asyncValidatorState.value).not.toBeUndefined()
     vi.useRealTimers()
   })
@@ -235,7 +240,7 @@ describe('validation', () => {
     await Promise.all([promise, promise2])
 
     expect(validate).not.toHaveBeenCalledTimes(1)
-    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: event  })
+    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: event })
 
     vi.useRealTimers()
   })
@@ -367,7 +372,7 @@ describe('validation', () => {
     )
 
     expect(validate).toHaveBeenCalled()
-    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: "onMount"  })
+    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: 'onMount' })
   })
   it("should set the validation state while running async validation and reset it when it's done", async () => {
     vi.useFakeTimers()
@@ -398,7 +403,7 @@ describe('validation', () => {
     expect(isValidating.value).toBe(false)
     vi.useRealTimers()
   })
-  it("should not reset the validation state when aborting async validation", async () => {
+  it('should not reset the validation state when aborting async validation', async () => {
     // The reasoning behind this is, that the aborting of a signal is followed by a new validation
     vi.useFakeTimers()
     const value = 'test'
@@ -429,7 +434,7 @@ describe('validation', () => {
     expect(isValidating.value).toBe(true)
     vi.useRealTimers()
   })
-  it("should not validate mount events when validator is unconfigured (a function)", () => {
+  it('should not validate mount events when validator is unconfigured (a function)', () => {
     const value = 'test'
     const validator = vi.fn(() => 'error')
     const asyncValidatorState = signal(undefined)

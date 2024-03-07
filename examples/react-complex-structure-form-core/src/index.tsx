@@ -43,15 +43,14 @@ import {
   type ValidationError,
 } from '@form-signals/form-core'
 import {
-  signal,
   type Signal,
+  signal,
   useComputed,
   useSignal,
 } from '@preact/signals-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
-import {TestComponent, Counter} from "@form-signals/form-react"
 import './index.css'
 
 const emptyDefaultValues = {
@@ -476,8 +475,8 @@ export const Index = () => {
  * @useSignals
  */
 const PriceTableBody = ({
-                          field,
-                        }: { field: FieldLogic<Product, `prices.${string}`, unknown> }) => {
+  field,
+}: { field: FieldLogic<Product, `prices.${string}`, unknown> }) => {
   return field.signal.value?.map((arrayEntry, index) => (
     <TableRow key={arrayEntry.key}>
       {/* TODO This might not be so nice to deal with (being forced to use nested signals) */}
@@ -498,8 +497,8 @@ const PriceTableBody = ({
 }
 
 const PriceTableErrorText = ({
-                               errors,
-                             }: { errors: Signal<Array<ValidationError>> }) => {
+  errors,
+}: { errors: Signal<Array<ValidationError>> }) => {
   if (!errors.value.length) return null
   return (
     <TableRow disableHoverStyle>
@@ -534,11 +533,11 @@ const useEqualityMemorizedValue = <T,>(newValue: T) => {
 }
 
 const FormField = <TData, TName extends Paths<TData>, TBoundValue>({
-                                                                     form,
-                                                                     name,
-                                                                     children,
-                                                                     ...options
-                                                                   }: FormFieldProps<TData, TName, TBoundValue>) => {
+  form,
+  name,
+  children,
+  ...options
+}: FormFieldProps<TData, TName, TBoundValue>) => {
   const memoName = useEqualityMemorizedValue(name)
   const memoOptions = useEqualityMemorizedValue(options)
   const [field, setField] = useState<FieldLogic<TData, TName, TBoundValue>>()
@@ -571,10 +570,10 @@ const ErrorText = ({ errors }: { errors: Signal<Array<ValidationError>> }) => {
 }
 
 const FormTextInput = <TName extends Paths<Product>, TBoundValue>({
-                                                                    label,
-                                                                    maxLength,
-                                                                    field,
-                                                                  }: {
+  label,
+  maxLength,
+  field,
+}: {
   label: string
   field: FieldLogic<Product, TName, TBoundValue>
   maxLength?: number

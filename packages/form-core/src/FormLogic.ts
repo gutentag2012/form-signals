@@ -15,7 +15,8 @@ import {
   type ValidatorAsync,
   type ValidatorEvents,
   type ValidatorSync,
-  type ValueAtPath,clearSubmitEventErrors,
+  type ValueAtPath,
+  clearSubmitEventErrors,
   deepSignalifyValue,
   equalityUtils,
   getSignalValueAtPath,
@@ -28,7 +29,7 @@ import {
   unSignalifyValueSubscribed,
   validateWithValidators,
 } from './utils'
-import {Truthy} from "./utils/internal.utils";
+import { Truthy } from './utils/internal.utils'
 
 export type FormLogicOptions<TData> = {
   /**
@@ -71,9 +72,13 @@ export class FormLogic<TData> {
    * Map of all the fields in the form
    * @private
    */
-// biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
-private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>> = signal(new Map())
-  private readonly _fieldsArray = computed(() => Array.from(this._fields.value.values()))
+  private readonly _fields: Signal<
+    // biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
+    Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>
+  > = signal(new Map())
+  private readonly _fieldsArray = computed(() =>
+    Array.from(this._fields.value.values()),
+  )
 
   /**
    * Errors specific for the whole form
@@ -90,22 +95,30 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     return [sync, async].filter(Truthy)
   })
   private readonly _mountedFieldErrors = computed(() => {
-    const mountedFields = this._fieldsArray.value.filter((field) => field.isMounted.value)
-    return mountedFields.flatMap(field => field.errors.value).filter(Truthy)
+    const mountedFields = this._fieldsArray.value.filter(
+      (field) => field.isMounted.value,
+    )
+    return mountedFields.flatMap((field) => field.errors.value).filter(Truthy)
   })
   private readonly _unmountedFieldErrors = computed(() => {
-    const unmountedFields = this._fieldsArray.value.filter((field) => !field.isMounted.value)
-    return unmountedFields.flatMap(field => field.errors.value).filter(Truthy)
+    const unmountedFields = this._fieldsArray.value.filter(
+      (field) => !field.isMounted.value,
+    )
+    return unmountedFields.flatMap((field) => field.errors.value).filter(Truthy)
   })
   private readonly _isValidForm = computed(
     () => !this._errors.value.filter(Boolean).length,
   )
-  private readonly _isValidFields = computed(() => this._fieldsArray.value.every((field) => field.isValid.value))
+  private readonly _isValidFields = computed(() =>
+    this._fieldsArray.value.every((field) => field.isValid.value),
+  )
   private readonly _isValid = computed(
     () => this._isValidForm.value && this._isValidFields.value,
   )
 
-  private readonly _isTouched = computed(() => this._fieldsArray.value.some((field) => field.isTouched.value))
+  private readonly _isTouched = computed(() =>
+    this._fieldsArray.value.some((field) => field.isTouched.value),
+  )
 
   private readonly _isDirty = computed(() => {
     const defaultValues = (this._options?.defaultValues ?? {}) as TData
@@ -141,13 +154,6 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
-  private readonly _canSubmit = computed(() => {
-    return (
-      !this._isSubmitting.value &&
-      !this._isValidating.value &&
-      this._isValid.value
-    )
-  })
   // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
   private _currentlyRegisteringFields = 0
   private readonly _previousAbortController: Signal<
@@ -164,11 +170,20 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     }
   }
 
-  private _isValidatingFields = computed(() => this._fieldsArray.value.some((field) => field.isValidating.value))
+  private _isValidatingFields = computed(() =>
+    this._fieldsArray.value.some((field) => field.isValidating.value),
+  )
 
   private readonly _isValidating = computed(
     () => this._isValidatingForm.value || this._isValidatingFields.value,
   )
+  private readonly _canSubmit = computed(() => {
+    return (
+      !this._isSubmitting.value &&
+      !this._isValidating.value &&
+      this._isValid.value
+    )
+  })
 
   public get isValidatingFields(): ReadonlySignal<boolean> {
     return this._isValidatingFields
@@ -197,7 +212,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     return this._unmountedFieldErrors
   }
 
-// biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
+  // biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
   public get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>> {
     return this._fieldsArray
   }
@@ -306,7 +321,9 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
 
     this._isSubmitting.value = true
 
-    await Promise.all(this._fieldsArray.peek().map((field) => field.handleBlur()))
+    await Promise.all(
+      this._fieldsArray.peek().map((field) => field.handleBlur()),
+    )
     await Promise.all([
       this.validateForEvent('onSubmit'),
       ...this._fieldsArray.peek().map((field) => field.handleSubmit()),
@@ -348,7 +365,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
         return
       }
 
-      if(this._currentlyRegisteringFields > 0) {
+      if (this._currentlyRegisteringFields > 0) {
         this._currentlyRegisteringFields--
         return
       }
@@ -392,7 +409,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
     preserveValue?: boolean,
-    deleteValue?: boolean
+    deleteValue?: boolean,
   ): void {
     if (preserveValue) return
 
@@ -402,7 +419,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     newMap.delete(path)
     this._fields.value = newMap
 
-    if(deleteValue) {
+    if (deleteValue) {
       removeSignalValueAtPath(this._data, path)
     } else {
       setSignalValueAtPath(this._data, path, defaultValue)
@@ -473,7 +490,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -484,7 +501,8 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
       console.error(`Tried to insert a value into a non-array field at ${name}`)
       return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
+      Array<unknown>
     arrayCopy[index] = makeArrayEntry(value)
     batch(() => {
       signal.value = arrayCopy as typeof currentValue
@@ -515,7 +533,8 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
       return
     }
 
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
+      Array<unknown>
     arrayCopy.push(makeArrayEntry(value))
     batch(() => {
       signal.value = arrayCopy as typeof currentValue
@@ -575,7 +594,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -587,7 +606,7 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -603,7 +622,8 @@ private  readonly _fields: Signal<Map<Paths<TData>, FieldLogic<TData, Paths<TDat
       console.error(`Tried to swap values in a non-array field at path ${name}`)
       return
     }
-    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> & Array<unknown>
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
+      Array<unknown>
     const temp = arrayCopy[indexA]
     arrayCopy[indexA] = arrayCopy[indexB]
     arrayCopy[indexB] = temp

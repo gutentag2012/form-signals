@@ -51,6 +51,9 @@ describe('types', () => {
       'tuple' | 'tuple.0' | 'tuple.1' | 'tuple.1.name'
     >()
   })
+  it("should default to a string if it can't infer the type", () => {
+    expectTypeOf<Paths>().toEqualTypeOf<string>()
+  })
   //endregion
   //region ValueAtPath
   it('should infer the type of a value at a first level path', () => {

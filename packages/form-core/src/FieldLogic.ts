@@ -16,15 +16,20 @@ import {
   type ValidatorEvents,
   type ValidatorSync,
   type ValueAtPath,
+  clearSubmitEventErrors,
   deepSignalifyValue,
   equalityUtils,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  validateWithValidators, clearSubmitEventErrors,
+  validateWithValidators,
 } from './utils'
-import {Truthy} from "./utils/internal.utils";
+import { Truthy } from './utils/internal.utils'
 
-export type FieldLogicOptions<TData, TName extends Paths<TData>, TBoundValue=never> = {
+export type FieldLogicOptions<
+  TData,
+  TName extends Paths<TData>,
+  TBoundValue = never,
+> = {
   /**
    * Synchronous validator for the value of the field.
    */
@@ -83,7 +88,11 @@ export type FieldLogicOptions<TData, TName extends Paths<TData>, TBoundValue=nev
 }
 
 // TODO Add async annotations so you only need to await if it is really needed
-export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
+export class FieldLogic<
+  TData,
+  TName extends Paths<TData>,
+  TBoundValue = never,
+> {
   //region Description
   private readonly _isTouched = signal(false)
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
@@ -132,12 +141,14 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
 
     const baseSignal = this.signal
     const wrappedSignal = computed(() => {
-      if(!_options?.transformToBinding) return undefined
-      return _options.transformToBinding(unSignalifyValueSubscribed(this.signal.value))
+      if (!_options?.transformToBinding) return undefined
+      return _options.transformToBinding(
+        unSignalifyValueSubscribed(this.signal.value),
+      )
     })
     this._transformedSignal = {
       set value(newValue: TBoundValue) {
-        if(!_options?.transformFromBinding) return
+        if (!_options?.transformFromBinding) return
         const transformedValue = _options.transformFromBinding(newValue)
         baseSignal.value = deepSignalifyValue(transformedValue).value
       },
@@ -230,7 +241,9 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
       })
     } else {
       this._unsubscribeFromChangeEffect = effect(async () => {
-        const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(this.signal.value)
+        const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(
+          this.signal.value,
+        )
         await runOnChangeValidation(currentValue)
       })
     }
@@ -244,7 +257,7 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
     if (!this._isMounted.peek()) return
     this._isMounted.value = false
 
-    if(!this._options?.preserveValueOnUnmount) {
+    if (!this._options?.preserveValueOnUnmount) {
       this._resetState()
     }
 
@@ -356,7 +369,7 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -405,7 +418,7 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -417,7 +430,7 @@ export class FieldLogic<TData, TName extends Paths<TData>, TBoundValue=never> {
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
       : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-      ValueAtPath<TData, TName> extends readonly any[]
+        ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName

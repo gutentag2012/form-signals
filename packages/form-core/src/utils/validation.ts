@@ -41,7 +41,10 @@ export type ValidatorSync<TValue> =
   | ValidatorSyncConfigured<TValue>
   | ValidatorSyncFn<TValue>
 
-export type ValidatorAsyncFn<TValue> = (value: TValue, abortSignal: AbortSignal) => Promise<ValidationError> | ValidationError
+export type ValidatorAsyncFn<TValue> = (
+  value: TValue,
+  abortSignal: AbortSignal,
+) => Promise<ValidationError> | ValidationError
 export interface ValidatorAsyncConfigured<TValue> extends ValidatorBase {
   validate: ValidatorAsyncFn<TValue>
   debounceMs?: number

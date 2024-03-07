@@ -36,22 +36,27 @@ type CombinePath<
   ? `${Path}.${Paths<T[Path], [...DepthCheck, unknown]>}`
   : never
 
+const PathDefaultValueSymbol = Symbol('PathDefaultValue')
+export type PathsDefaultValue = typeof PathDefaultValueSymbol
+
 export type Paths<
-  T,
+  T = PathsDefaultValue,
   DepthCheck extends unknown[] = [],
 > = DepthCheck['length'] extends MaxIterationLength
   ? never
-  : T extends Date
-    ? never
-    : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
-      T extends readonly any[] & IsTuple<T>
-      ? IndicesOf<T> | CombinePath<T, IndicesOf<T>, DepthCheck>
+  : T extends PathsDefaultValue
+    ? string
+    : T extends Date
+      ? never
       : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
-        T extends any[]
-        ? `${number}` | CombinePath<T, number, DepthCheck>
-        : T extends object
-          ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
-          : never
+        T extends readonly any[] & IsTuple<T>
+        ? IndicesOf<T> | CombinePath<T, IndicesOf<T>, DepthCheck>
+        : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
+          T extends any[]
+          ? `${number}` | CombinePath<T, number, DepthCheck>
+          : T extends object
+            ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
+            : never
 
 // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
 export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
