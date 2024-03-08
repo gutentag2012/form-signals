@@ -26,7 +26,7 @@ export default defineConfig({
       external: [
         '@preact/signals-core',
         '@preact/signals-react',
-        '@form-signals/form-core',
+        '@signal-forms/form-core',
         'react',
         'react/jsx-runtime',
       ],
