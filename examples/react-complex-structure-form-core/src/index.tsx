@@ -40,14 +40,13 @@ import {
   type FieldLogicOptions,
   FormLogic,
   type Paths,
-  type ValidationError,
 } from '@form-signals/form-core'
 import {
-  type Signal,
-  signal,
-  useComputed,
-  useSignal,
-} from '@preact/signals-react'
+  useFieldContext,
+  useForm,
+  useFormContext,
+} from '@form-signals/form-react'
+import { signal, useComputed, useSignal } from '@preact/signals-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
@@ -68,36 +67,44 @@ const emptyDefaultValues = {
   },
   variants: [],
 } satisfies Product
+const supportedCurrency = ['EUR', 'USD', 'GBP'] as const
 
 const selectedCurrency = signal('EUR')
 // TODO Typesafety is not where I want/need it
-const form = new FormLogic<Product>({
-  defaultValues: emptyDefaultValues,
-  onSubmit: (values) => {
-    console.log('submit', values)
-  },
-})
-form.mount()
-const subForm = new FormLogic<Product['prices'][string][number]>({
-  defaultValues: {
-    count: 1,
-    price: 30,
-    taxRate: 19,
-  },
-  onSubmit: (values) => {
-    // TODO Add transformer to field to handle this string to number conversion
-    // TODO Also add a field transformer to handle default values to form values
-    form.pushValueToArray(`prices.${selectedCurrency.peek()}`, values)
-  },
-})
-subForm.mount()
-
-// TODO Add react bindings before doing more
 
 export const Index = () => {
+  const form = useForm<Product>({
+    defaultValues: emptyDefaultValues,
+    onSubmit: (values) => {
+      console.log('submit', values)
+    },
+  })
+  const subForm = useForm<Product['prices'][string][number]>({
+    defaultValues: {
+      count: 1,
+      price: 30,
+      taxRate: 19,
+    },
+    onSubmit: (values) => {
+      // TODO Add transformer to field to handle this string to number conversion
+      // TODO Also add a field transformer to handle default values to form values
+      form.pushValueToArray(`prices.${selectedCurrency.peek()}`, values)
+    },
+  })
   const selectedVariant = useSignal(0)
-
   const justAddedOption = useSignal(false)
+
+  const currencyCount = useComputed(() => {
+    const count = Object.values(form.json.value.prices).filter(
+      (prices) => !!prices.length,
+    ).length
+
+    if (count === 1) return '1 currency'
+    return `${count} currencies`
+  })
+
+  // TODO The outer layer is rendered if there is an error or if the error is resolved
+  console.log('Render outer')
 
   return (
     <main className="container mt-3">
@@ -109,32 +116,22 @@ export const Index = () => {
         form to update product information.
       </p>
 
-      <form
-        className="flex flex-col gap-4 w-full"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          await form.handleSubmit()
-        }}
-      >
+      <form.FormProvider asForm className="flex flex-col gap-4 w-full">
         <h5 className="text-lg font-bold">General</h5>
 
-        <FormField
-          name={'name' as const}
-          form={form}
+        <form.FieldProvider
+          name="name"
           validator={(value) =>
             value.length <= 5 && 'Value must be longer than 5 characters'
           }
         >
-          {(field) => (
-            <FormTextInput label="Name" maxLength={45} field={field} />
-          )}
-        </FormField>
+          <FormTextInput label="Name" maxLength={45} />
+        </form.FieldProvider>
 
-        <FormField name="description" form={form}>
+        <form.FieldProvider name="description">
           {(field) => (
             <div>
-              <Label>Description</Label>
+              <Label htmlFor={field.name}>Description</Label>
               <TextareaSignal
                 id={field.name}
                 name={field.name}
@@ -145,17 +142,13 @@ export const Index = () => {
               />
             </div>
           )}
-        </FormField>
+        </form.FieldProvider>
 
         <div>
           <div className="flex flex-row gap-2">
-            <FormField
-              form={form}
-              name={'validRange.0' as const}
-              validator={(value) => {
-                if (value === undefined) return 'Value is required'
-                return undefined
-              }}
+            <form.FieldProvider
+              name="validRange.0"
+              validator={(value) => value === undefined && 'Value is required'}
             >
               {(field) => (
                 <div className="flex flex-col gap-1 flex-1">
@@ -166,17 +159,13 @@ export const Index = () => {
                     value={field.signal}
                     onBlur={() => field.handleBlur()}
                   />
-                  <ErrorText errors={field.errors} />
+                  <ErrorText />
                 </div>
               )}
-            </FormField>
-            <FormField
-              form={form}
-              name={'validRange.1' as const}
-              validator={(value) => {
-                if (value === undefined) return 'Value is required'
-                return undefined
-              }}
+            </form.FieldProvider>
+            <form.FieldProvider
+              name="validRange.1"
+              validator={(value) => value === undefined && 'Value is required'}
             >
               {(field) => (
                 <div className="flex flex-col gap-1 flex-1">
@@ -187,25 +176,21 @@ export const Index = () => {
                     value={field.signal}
                     onBlur={() => field.handleBlur()}
                   />
-                  <ErrorText errors={field.errors} />
+                  <ErrorText />
                 </div>
               )}
-            </FormField>
+            </form.FieldProvider>
           </div>
-          {/* TODO Maybe support only validator fields */}
-          <FormField
-            form={form}
-            name={'validRange' as const}
+          <form.FieldProvider
+            name="validRange"
             validateOnNestedChange
             validator={(value) => {
-              if (!value[0] || !value[1]) return
-              if (value[0] > value[1])
-                return 'Valid from must be before valid until'
-              return undefined
+              if (!value[0] || !value[1] || value[0] <= value[1]) return
+              return 'Valid from must be before valid until'
             }}
           >
-            {(field) => <ErrorText errors={field.errors} />}
-          </FormField>
+            <ErrorText />
+          </form.FieldProvider>
         </div>
 
         <h5 className="text-lg font-bold">Prices</h5>
@@ -234,127 +219,132 @@ export const Index = () => {
             </TableHeader>
             <TableBody>
               {/* TODO Validate rising count */}
-              {/*TODO When having and error on one tab and then navigating away and to it, the error is not visible anymore*/}
-              <FormField
-                form={form}
-                name={`prices.${selectedCurrency.value}` as const}
-                preserveValueOnUnmount
-                validator={(value) => {
-                  if (value && !value.length)
-                    return 'At least one price is required'
-                  return undefined
-                }}
-              >
-                {(field) => (
-                  <>
-                    <PriceTableBody field={field} />
-                    <PriceTableErrorText errors={field.errors} />
-                  </>
-                )}
-              </FormField>
+              {/* TODO When having and error on one tab and then navigating away and to it, the error is not visible anymore */}
+              {supportedCurrency.map(
+                (currency) =>
+                  currency === selectedCurrency.value && (
+                    <form.FieldProvider
+                      name={`prices.${currency}`}
+                      preserveValueOnUnmount
+                      validator={(value) =>
+                        !!value &&
+                        !value.length &&
+                        'At least one price is required'
+                      }
+                    >
+                      <PriceTableBody />
+                      <PriceTableErrorText />
+                    </form.FieldProvider>
+                  ),
+              )}
             </TableBody>
             <TableFooter>
               <TableRow disableHoverStyle>
-                <TableCell className="align-top">
-                  <FormField
-                    name={'count' as const}
-                    form={subForm}
-                    validator={(value) => {
-                      if (value <= 0) return 'Value must be greater than 0'
-                      return undefined
-                    }}
-                    transformToBinding={(value) => `${value}`}
-                    transformFromBinding={(value: string) => parseFloat(value)}
-                  >
-                    {(field) => (
-                      <>
-                        <Label htmlFor={field.name}>Min Count</Label>
-                        <InputSignal
-                          value={field.transformedSignal}
-                          id={field.name}
-                          name={field.name}
-                          type="number"
-                          placeholder="Min Count"
-                        />
-                        <ErrorText errors={field.errors} />
-                      </>
-                    )}
-                  </FormField>
-                </TableCell>
-                <TableCell className="align-top">
-                  <FormField
-                    name={'price' as const}
-                    form={subForm}
-                    validator={(value) => {
-                      if (value <= 0) return 'Value must be greater than 0'
-                      return undefined
-                    }}
-                    transformToBinding={(value) => `${value}`}
-                    transformFromBinding={(value: string) => parseFloat(value)}
-                  >
-                    {(field) => (
-                      <>
-                        <Label htmlFor={field.name}>New price</Label>
-                        <InputSignal
-                          value={field.transformedSignal}
-                          id={field.name}
-                          name={field.name}
-                          type="number"
-                          placeholder="Price"
-                        />
-                        <ErrorText errors={field.errors} />
-                      </>
-                    )}
-                  </FormField>
-                </TableCell>
-                <TableCell className="align-top">
-                  <FormField
-                    name={'taxRate' as const}
-                    form={subForm}
-                    validator={(value) => {
-                      if (value !== 19 && value !== 7 && value !== 0)
-                        return 'Value must be 19, 7 or 0'
-                      return undefined
-                    }}
-                    transformToBinding={(value) => `${value}`}
-                    transformFromBinding={(value: string) => parseFloat(value)}
-                  >
-                    {(field) => (
-                      <>
-                        <Label htmlFor={field.name}>Tax Rate</Label>
-                        <SelectSignal
-                          name={field.name}
-                          value={field.transformedSignal}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="19">19%</SelectItem>
-                            <SelectItem value="7">7%</SelectItem>
-                            <SelectItem value="0">0%</SelectItem>
-                          </SelectContent>
-                        </SelectSignal>
-                        <ErrorText errors={field.errors} />
-                      </>
-                    )}
-                  </FormField>
-                </TableCell>
+                <subForm.FormProvider>
+                  <TableCell className="align-top">
+                    <subForm.FieldProvider
+                      name="count"
+                      validator={(value) => {
+                        if (value <= 0) return 'Value must be greater than 0'
+                        return undefined
+                      }}
+                      transformToBinding={(value) => `${value}`}
+                      transformFromBinding={(value: string) =>
+                        parseFloat(value)
+                      }
+                    >
+                      {(field) => (
+                        <>
+                          <Label htmlFor={field.name}>Min Count</Label>
+                          <InputSignal
+                            value={field.transformedSignal}
+                            id={field.name}
+                            name={field.name}
+                            type="number"
+                            placeholder="Min Count"
+                          />
+                          <ErrorText errors={field.errors} />
+                        </>
+                      )}
+                    </subForm.FieldProvider>
+                  </TableCell>
+                  <TableCell className="align-top">
+                    <subForm.FieldProvider
+                      name="price"
+                      validator={(value) => {
+                        if (value <= 0) return 'Value must be greater than 0'
+                        return undefined
+                      }}
+                      transformToBinding={(value) => `${value}`}
+                      transformFromBinding={(value: string) =>
+                        parseFloat(value)
+                      }
+                    >
+                      {(field) => (
+                        <>
+                          <Label htmlFor={field.name}>New price</Label>
+                          <InputSignal
+                            value={field.transformedSignal}
+                            id={field.name}
+                            name={field.name}
+                            type="number"
+                            placeholder="Price"
+                          />
+                          <ErrorText errors={field.errors} />
+                        </>
+                      )}
+                    </subForm.FieldProvider>
+                  </TableCell>
+                  <TableCell className="align-top">
+                    <subForm.FieldProvider
+                      name="taxRate"
+                      validator={(value) => {
+                        if (value !== 19 && value !== 7 && value !== 0)
+                          return 'Value must be 19, 7 or 0'
+                        return undefined
+                      }}
+                      transformToBinding={(value) => `${value}`}
+                      transformFromBinding={(value: string) =>
+                        parseFloat(value)
+                      }
+                    >
+                      {(field) => (
+                        <>
+                          <Label htmlFor={field.name}>Tax Rate</Label>
+                          <SelectSignal
+                            name={field.name}
+                            value={field.transformedSignal}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="19">19%</SelectItem>
+                              <SelectItem value="7">7%</SelectItem>
+                              <SelectItem value="0">0%</SelectItem>
+                            </SelectContent>
+                          </SelectSignal>
+                          <ErrorText errors={field.errors} />
+                        </>
+                      )}
+                    </subForm.FieldProvider>
+                  </TableCell>
 
-                <TableCell align="right" className="align-top">
-                  <Button
-                    className="mt-5"
-                    type="button"
-                    variant="outline"
-                    disabled={!subForm.canSubmit.value}
-                    onClick={() => subForm.handleSubmit()}
-                  >
-                    Add new price
-                  </Button>
-                </TableCell>
+                  <TableCell align="right" className="align-top">
+                    <Button
+                      className="mt-5"
+                      type="button"
+                      variant="outline"
+                      // disabled={!subForm.canSubmit.value}
+                      onClick={() => subForm.handleSubmit()}
+                    >
+                      Add new price
+                    </Button>
+                  </TableCell>
+                </subForm.FormProvider>
               </TableRow>
             </TableFooter>
-            <TableCaption>Currently {0} currencies configured</TableCaption>
+            <TableCaption>Currently {currencyCount} configured</TableCaption>
           </Table>
         </div>
 
@@ -417,55 +407,47 @@ export const Index = () => {
           ))}
         </Tabs>
 
-        <pre>
-          {JSON.stringify({
-            isValid: form.isValid.value,
-            isValidForm: form.isValidForm.value,
-            isValidFields: form.isValidFields.value,
-          })}
-        </pre>
-
         <Button
           className="mt-2 max-w-[280px]"
           type="submit"
-          disabled={!form.canSubmit.value}
+          // disabled={!form.canSubmit.value}
         >
           Save configuration
         </Button>
-      </form>
 
-      <Card className="mt-3">
-        <CardHeader>
-          <CardTitle>Form stats</CardTitle>
-          <CardDescription>
-            This shows the current values from within the form for debugging
-            purposes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Collapsible>
-            <CollapsibleTrigger asChild>
-              <Button variant="secondary" type="button">
-                + Show values
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <FormString />
-            </CollapsibleContent>
-          </Collapsible>
-        </CardContent>
-        <CardFooter className="flex flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={() => form.validateForEvent('onSubmit')}
-          >
-            Force Validate Form
-          </Button>
-          <Button variant="destructive" onClick={() => form.reset()}>
-            Reset
-          </Button>
-        </CardFooter>
-      </Card>
+        <Card className="mt-3">
+          <CardHeader>
+            <CardTitle>Form stats</CardTitle>
+            <CardDescription>
+              This shows the current values from within the form for debugging
+              purposes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="secondary" type="button">
+                  + Show values
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <FormString />
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+          <CardFooter className="flex flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => form.validateForEvent('onSubmit')}
+            >
+              Force Validate Form
+            </Button>
+            <Button variant="destructive" onClick={() => form.reset()}>
+              Reset
+            </Button>
+          </CardFooter>
+        </Card>
+      </form.FormProvider>
     </main>
   )
 }
@@ -474,9 +456,8 @@ export const Index = () => {
  * TODO Figure out why this needs the useSignals annotation for the babel transformer to work
  * @useSignals
  */
-const PriceTableBody = ({
-  field,
-}: { field: FieldLogic<Product, `prices.${string}`, unknown> }) => {
+const PriceTableBody = () => {
+  const field = useFieldContext<Product, `prices.${string}`, never>()
   return field.signal.value?.map((arrayEntry, index) => (
     <TableRow key={arrayEntry.key}>
       {/* TODO This might not be so nice to deal with (being forced to use nested signals) */}
@@ -496,14 +477,14 @@ const PriceTableBody = ({
   ))
 }
 
-const PriceTableErrorText = ({
-  errors,
-}: { errors: Signal<Array<ValidationError>> }) => {
-  if (!errors.value.length) return null
+const PriceTableErrorText = () => {
+  const field = useFieldContext()
+  console.log(field)
+  if (!field.isValid.value) return null
   return (
     <TableRow disableHoverStyle>
       <TableCell colSpan={4}>
-        <ErrorText errors={errors} />
+        <ErrorText />
       </TableCell>
     </TableRow>
   )
@@ -560,27 +541,29 @@ const FormField = <TData, TName extends Paths<TData>, TBoundValue>({
   return children(field)
 }
 
-const ErrorText = ({ errors }: { errors: Signal<Array<ValidationError>> }) => {
-  if (!errors.value.length) return null
+const ErrorText = () => {
+  const field = useFieldContext()
+  if (!field.errors.value.length) return null
   return (
     <p className="text-[0.8rem] font-medium text-destructive">
-      {errors.value.join(', ')}
+      {field.errors.value.join(', ')}
     </p>
   )
 }
 
-const FormTextInput = <TName extends Paths<Product>, TBoundValue>({
+const FormTextInput = ({
   label,
   maxLength,
-  field,
 }: {
   label: string
-  field: FieldLogic<Product, TName, TBoundValue>
   maxLength?: number
 }) => {
+  const field = useFieldContext()
+
   const currentCount = useComputed(() => {
-    if (typeof field.signal.value !== 'string') return 0
-    return field.signal.value.length
+    const value = field.signal.value
+    if (typeof value === 'string') return (value as string).length
+    return 0
   })
   const errorText = useComputed(() => {
     return field.errors.value.join(', ')
@@ -588,6 +571,7 @@ const FormTextInput = <TName extends Paths<Product>, TBoundValue>({
   const errorClassName = useComputed(() => {
     return !field.isValid.value ? 'text-destructive' : ''
   })
+
   return (
     <div>
       <Label htmlFor={field.name}>{label}</Label>
@@ -619,6 +603,7 @@ const FormTextInput = <TName extends Paths<Product>, TBoundValue>({
 }
 
 const FormString = () => {
+  const form = useFormContext()
   return <pre>{JSON.stringify(form.json.value, null, 2)}</pre>
 }
 
