@@ -52,7 +52,7 @@ import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
 import './index.css'
 
-const emptyDefaultValues = {
+const emptyDefaultValues: Product = {
   name: '',
   description: '',
   validRange: [undefined, undefined],
@@ -96,7 +96,7 @@ export const Index = () => {
 
   const currencyCount = useComputed(() => {
     const count = Object.values(form.json.value.prices).filter(
-      (prices) => !!prices.length,
+      (prices) => !!prices?.length,
     ).length
 
     if (count === 1) return '1 currency'
@@ -220,11 +220,13 @@ export const Index = () => {
             <TableBody>
               {/* TODO Validate rising count */}
               {/* TODO When having and error on one tab and then navigating away and to it, the error is not visible anymore */}
+              {/* TODO Add support for in-place change of name and values */}
               {supportedCurrency.map(
                 (currency) =>
                   currency === selectedCurrency.value && (
                     <form.FieldProvider
                       name={`prices.${currency}`}
+                      defaultValue={emptyDefaultValues.prices[currency] ?? []}
                       preserveValueOnUnmount
                       validator={(value) =>
                         !!value &&
@@ -240,6 +242,7 @@ export const Index = () => {
             </TableBody>
             <TableFooter>
               <TableRow disableHoverStyle>
+                {/* TODO Somehow capture enter on child */}
                 <subForm.FormProvider>
                   <TableCell className="align-top">
                     <subForm.FieldProvider
