@@ -1,11 +1,10 @@
 import { type Signal, useComputed } from '@preact/signals-react'
 import type { FieldLogic, Paths } from '@signal-forms/form-core'
 // biome-ignore lint/nursery/noUnusedImports: This is the React import
-import React from 'react'
+import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { useFieldContext } from './field/FieldContext'
-import { useField } from './field/useField'
-import { useForm } from './form/useForm'
+import { useField, useFieldContext } from './field'
+import { useForm } from './form'
 
 type Form = {
   name: string
@@ -31,11 +30,20 @@ function FieldTransformedConsumer({
   field,
 }: { field: FieldLogic<Form, 'name', unknown> }) {
   const changed = useComputed(() => `${field.signal.value} (transformed)`)
-  return <SignalText text={changed} />
+  return <p>{changed.value}</p>
 }
 
 function SignalText({ text }: { text: Signal<string> }) {
   return <p>{text}</p>
+}
+
+function NestedField() {
+  const field = useField<Form, 'name'>('name')
+  return (
+    <field.FieldProvider>
+      <FieldConsumer />
+    </field.FieldProvider>
+  )
 }
 
 function TestApp() {
@@ -47,6 +55,7 @@ function TestApp() {
       console.log('submit 1', data)
     },
   })
+  const [someState, setSomeState] = useState(false)
   return (
     <div>
       <form.FormProvider asForm>
@@ -61,6 +70,11 @@ function TestApp() {
         <form.FieldProvider name="name">
           {(field) => <FieldTransformedConsumer field={field} />}
         </form.FieldProvider>
+        <NestedField />
+
+        <button type="button" onClick={() => setSomeState(!someState)}>
+          Update
+        </button>
       </form.FormProvider>
     </div>
   )
