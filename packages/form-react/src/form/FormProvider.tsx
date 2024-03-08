@@ -1,8 +1,9 @@
 import type { FormLogic, FormLogicOptions } from '@signal-forms/form-core'
-import type React from 'react'
+// biome-ignore lint/nursery/useImportType: This is the React import and should never be a type import
+import React from 'react'
 import type { Context, HTMLProps, PropsWithChildren } from 'react'
 import { FormContext } from './FormContext'
-import { useFormInstance } from './useForm'
+import { useForm } from './useForm'
 
 type FormProviderBaseNoFormProps = {
   /**
@@ -59,9 +60,9 @@ const RestrictedInputTypes = [
   'url',
   'week',
 ]
-const shouldSkipSubmitKeyboarEvent = (
+function shouldSkipSubmitKeyboardEvent(
   event: React.KeyboardEvent<HTMLDivElement>,
-) => {
+): boolean {
   const isRestrictedTargetInput =
     event.target instanceof HTMLElement &&
     event.target.tagName.toUpperCase() === 'INPUT' &&
@@ -77,10 +78,12 @@ const shouldSkipSubmitKeyboarEvent = (
   )
 }
 
-export function BindFormProviderComponent<TData>(form: FormLogic<TData>) {
-  return function BoundFormProviderComponent(
-    props: PropsWithChildren<FormProviderComponentPropsNoForm>,
-  ) {
+export function BindFormProviderComponent<TData>(
+  form: FormLogic<TData>,
+): (
+  props: PropsWithChildren<FormProviderComponentPropsNoForm>,
+) => React.ReactNode {
+  return function BoundFormProviderComponent(props) {
     return <FormProviderComponent form={form} {...props} />
   }
 }
@@ -91,7 +94,7 @@ export function FormProviderComponent<TData>({
   form,
   asForm,
   ...formProps
-}: PropsWithChildren<FormProviderComponentProps<TData>>) {
+}: PropsWithChildren<FormProviderComponentProps<TData>>): React.ReactNode {
   const TypedContext = FormContext as Context<FormLogic<TData>>
 
   if (asForm) {
@@ -116,7 +119,7 @@ export function FormProviderComponent<TData>({
       <TypedContext.Provider value={form}>
         <div
           onKeyDown={(event) => {
-            if (shouldSkipSubmitKeyboarEvent(event)) {
+            if (shouldSkipSubmitKeyboardEvent(event)) {
               return
             }
 
@@ -139,18 +142,14 @@ function FormProviderWithOptions<TData>({
   children,
   asForm,
   ...props
-}: PropsWithChildren<FormProviderWithOptionProps<TData>>) {
-  const form = useFormInstance<TData>(props)
-  return (
-    <FormProviderComponent form={form} asForm={asForm}>
-      {children}
-    </FormProviderComponent>
-  )
+}: PropsWithChildren<FormProviderWithOptionProps<TData>>): React.ReactNode {
+  const form = useForm<TData>(props)
+  return <form.FormProvider asForm={asForm}>{children}</form.FormProvider>
 }
 
 export function FormProvider<TData>(
   props: PropsWithChildren<FormProviderProps<TData>>,
-) {
+): React.ReactNode {
   if ('form' in props) {
     return <FormProviderComponent {...props} />
   }

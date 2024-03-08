@@ -1,3 +1,6 @@
 export * from './FieldContext'
-export * from './FieldProvider'
+export {
+  FieldProvider,
+  FieldProviderComponent,
+} from './FieldProvider'
 export * from './useField'

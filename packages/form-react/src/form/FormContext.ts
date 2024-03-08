@@ -5,7 +5,7 @@ export const FormContext = createContext<FormLogic<unknown> | undefined>(
   undefined,
 )
 
-export const useFormContext = <TData>(): FormLogic<TData> => {
+export function useFormContext<TData>(): FormLogic<TData> {
   const form = useContext(FormContext)
 
   if (!form) {

@@ -6,25 +6,14 @@ import {
   type PathsDefaultValue,
 } from '@signal-forms/form-core'
 import { useEffect, useMemo } from 'react'
-import type { BindFormProviderComponent } from '../components'
-import { useFormContext } from '../form/FormContext'
+import { useFormContext } from '../form'
+import { BindFieldProviderComponent } from './FieldProvider'
 
-export function useFieldInstance<
-  TData,
-  TName extends Paths<TData>,
-  TBoundData = never,
->(
-  form: FormLogic<TData>,
-  name: TName,
-  fieldOptions?: FieldLogicOptions<TData, TName, TBoundData>,
-) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create this element once
-  return useMemo(() => new FieldLogic(form, name, fieldOptions), [])
-}
-
-interface Field<TData, TName extends Paths<TData>, TBoundData>
+interface Field<TData, TName extends Paths<TData>, TBoundData = never>
   extends FieldLogic<TData, TName, TBoundData> {
-  FormProvider?: ReturnType<typeof BindFormProviderComponent<TData>>
+  FieldProvider: ReturnType<
+    typeof BindFieldProviderComponent<TData, TName, TBoundData>
+  >
 }
 
 export function useFieldWithForm<
@@ -35,12 +24,22 @@ export function useFieldWithForm<
   form: FormLogic<TData>,
   name: TName,
   fieldOptions?: FieldLogicOptions<TData, TName, TBoundData>,
-) {
-  const field = useFieldInstance(form, name, fieldOptions) as Field<
-    TData,
-    TName,
-    TBoundData
-  >
+): Field<TData, TName, TBoundData> {
+  // TODO This possibly needs to listen to changes in the name to create new fields (but in that case we should include a `form.getOrCreateField` method)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create this element once
+  const field = useMemo(() => {
+    const field = new FieldLogic(form, name, fieldOptions) as Field<
+      TData,
+      TName,
+      TBoundData
+    >
+
+    field.FieldProvider = BindFieldProviderComponent<TData, TName, TBoundData>(
+      field,
+    )
+
+    return field
+  }, [])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only want to hook into the component render lifecycle once
   useEffect(() => {
@@ -56,7 +55,10 @@ export function useField<
   TData = PathsDefaultValue,
   TName extends Paths<TData> = Paths<TData>,
   TBoundData = never,
->(name: TName, fieldOptions?: FieldLogicOptions<TData, TName, TBoundData>) {
+>(
+  name: TName,
+  fieldOptions?: FieldLogicOptions<TData, TName, TBoundData>,
+): Field<TData, TName, TBoundData> {
   const form = useFormContext<TData>()
   return useFieldWithForm(form, name, fieldOptions) as Field<
     TData,
