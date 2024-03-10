@@ -81,14 +81,16 @@ export const Index = () => {
   })
   const subForm = useForm<Product['prices'][string][number]>({
     defaultValues: {
-      count: 1,
-      price: 30,
+      count: null as unknown as number,
+      price: null as unknown as number,
       taxRate: 19,
     },
     onSubmit: (values) => {
       // TODO Add transformer to field to handle this string to number conversion
       // TODO Also add a field transformer to handle default values to form values
       form.pushValueToArray(`prices.${selectedCurrency.peek()}`, values)
+      // TODO This is not working rn
+      subForm.reset()
     },
   })
   const selectedVariant = useSignal(0)
@@ -225,6 +227,7 @@ export const Index = () => {
                 (currency) =>
                   currency === selectedCurrency.value && (
                     <form.FieldProvider
+                      key={`prices.${currency}`}
                       name={`prices.${currency}`}
                       defaultValue={emptyDefaultValues.prices[currency] ?? []}
                       preserveValueOnUnmount
@@ -241,9 +244,9 @@ export const Index = () => {
               )}
             </TableBody>
             <TableFooter>
-              <TableRow disableHoverStyle>
-                {/* TODO Somehow capture enter on child */}
+                {/* TODO Somehow capture enter on child or add ability to change underlying component */}
                 <subForm.FormProvider>
+              <TableRow disableHoverStyle onKeyDown={subForm.handleSubmitOnEnterForForm}>
                   <TableCell className="align-top">
                     <subForm.FieldProvider
                       name="count"
@@ -251,9 +254,9 @@ export const Index = () => {
                         if (value <= 0) return 'Value must be greater than 0'
                         return undefined
                       }}
-                      transformToBinding={(value) => `${value}`}
+                      transformToBinding={(value) => value === null ? '' : `${value}`}
                       transformFromBinding={(value: string) =>
-                        parseFloat(value)
+                        parseFloat(value ?? '0')
                       }
                     >
                       {(field) => (
@@ -266,7 +269,7 @@ export const Index = () => {
                             type="number"
                             placeholder="Min Count"
                           />
-                          <ErrorText errors={field.errors} />
+                          <ErrorText />
                         </>
                       )}
                     </subForm.FieldProvider>
@@ -293,7 +296,7 @@ export const Index = () => {
                             type="number"
                             placeholder="Price"
                           />
-                          <ErrorText errors={field.errors} />
+                          <ErrorText />
                         </>
                       )}
                     </subForm.FieldProvider>
@@ -327,7 +330,7 @@ export const Index = () => {
                               <SelectItem value="0">0%</SelectItem>
                             </SelectContent>
                           </SelectSignal>
-                          <ErrorText errors={field.errors} />
+                          <ErrorText />
                         </>
                       )}
                     </subForm.FieldProvider>
@@ -344,8 +347,8 @@ export const Index = () => {
                       Add new price
                     </Button>
                   </TableCell>
-                </subForm.FormProvider>
               </TableRow>
+                </subForm.FormProvider>
             </TableFooter>
             <TableCaption>Currently {currencyCount} configured</TableCaption>
           </Table>
@@ -491,57 +494,6 @@ const PriceTableErrorText = () => {
       </TableCell>
     </TableRow>
   )
-}
-
-type FormFieldProps<TData, TName extends Paths<TData>, TBoundValue> = {
-  form: FormLogic<TData>
-  name: TName
-  children: (field: FieldLogic<TData, TName, TBoundValue>) => ReactNode
-} & FieldLogicOptions<TData, TName, TBoundValue>
-
-const useEqualityMemorizedValue = <T,>(newValue: T) => {
-  const [value, setValue] = useState(newValue)
-
-  useEffect(() => {
-    const newValueString = JSON.stringify(newValue)
-    const valueString = JSON.stringify(value)
-
-    if (newValueString === valueString) {
-      return
-    }
-
-    setValue(newValue)
-  }, [newValue, value])
-
-  return value
-}
-
-const FormField = <TData, TName extends Paths<TData>, TBoundValue>({
-  form,
-  name,
-  children,
-  ...options
-}: FormFieldProps<TData, TName, TBoundValue>) => {
-  const memoName = useEqualityMemorizedValue(name)
-  const memoOptions = useEqualityMemorizedValue(options)
-  const [field, setField] = useState<FieldLogic<TData, TName, TBoundValue>>()
-
-  useEffect(() => {
-    const fieldFromForm = form.getFieldForPath(memoName)
-    if (fieldFromForm) {
-      setField(fieldFromForm)
-      fieldFromForm.mount()
-      return () => fieldFromForm.unmount()
-    }
-    const newField = new FieldLogic(form, memoName, memoOptions)
-    setField(newField)
-    newField.mount()
-    return () => newField.unmount()
-  }, [form, memoName, memoOptions])
-
-  if (!field) return null
-
-  return children(field)
 }
 
 const ErrorText = () => {
