@@ -77,6 +77,20 @@ function shouldSkipSubmitKeyboardEvent(
     !isRestrictedTargetInput
   )
 }
+export function handleSubmitOnEnterForForm<TData>(
+  form: FormLogic<TData>,
+): (event: React.KeyboardEvent<HTMLDivElement>) => void {
+  return function (event: React.KeyboardEvent<HTMLDivElement>,) {
+    if (shouldSkipSubmitKeyboardEvent(event)) {
+      return
+    }
+
+    event.stopPropagation()
+    event.preventDefault()
+
+    form.handleSubmit()
+  }
+}
 
 export function BindFormProviderComponent<TData>(
   form: FormLogic<TData>,
@@ -118,16 +132,7 @@ export function FormProviderComponent<TData>({
     return (
       <TypedContext.Provider value={form}>
         <div
-          onKeyDown={(event) => {
-            if (shouldSkipSubmitKeyboardEvent(event)) {
-              return
-            }
-
-            event.stopPropagation()
-            event.preventDefault()
-
-            form.handleSubmit()
-          }}
+          onKeyDown={handleSubmitOnEnterForForm(form)}
         >
           {children}
         </div>

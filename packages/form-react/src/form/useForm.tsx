@@ -1,11 +1,12 @@
 import { FormLogic, type FormLogicOptions } from '@signal-forms/form-core'
 import { useEffect, useMemo } from 'react'
 import { BindFormFieldProviderComponent } from '../field/FieldProvider'
-import { BindFormProviderComponent } from './FormProvider'
+import { BindFormProviderComponent, handleSubmitOnEnterForForm } from './FormProvider'
 
 interface Form<TData> extends FormLogic<TData> {
   FormProvider: ReturnType<typeof BindFormProviderComponent<TData>>
   FieldProvider: ReturnType<typeof BindFormFieldProviderComponent<TData>>
+  handleSubmitOnEnterForForm: ReturnType<typeof handleSubmitOnEnterForForm<TData>>
 }
 
 export function useForm<TData>(
@@ -16,6 +17,7 @@ export function useForm<TData>(
     const form = new FormLogic(formOptions) as Form<TData>
     form.FormProvider = BindFormProviderComponent<TData>(form)
     form.FieldProvider = BindFormFieldProviderComponent<TData>(form)
+    form.handleSubmitOnEnterForForm = handleSubmitOnEnterForForm<TData>(form)
     return form
   }, [])
 
