@@ -28,6 +28,7 @@ import {
   unSignalifyValue,
   unSignalifyValueSubscribed,
   validateWithValidators,
+  setSignalValuesFromObject,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -161,6 +162,7 @@ export class FormLogic<TData> {
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
   private _isMounted = signal(false)
+  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
   constructor(private readonly _options?: FormLogicOptions<TData>) {
     if (this._options?.defaultValues) {
@@ -276,6 +278,10 @@ export class FormLogic<TData> {
 
   public get canSubmit(): ReadonlySignal<boolean> {
     return this._canSubmit
+  }
+
+  public get isMounted(): ReadonlySignal<boolean> {
+    return this._isMountedReadOnly
   }
 
   public validateForEvent(
@@ -456,23 +462,34 @@ export class FormLogic<TData> {
     return this._fields.peek().get(path) as FieldLogic<TData, TPath, never>
   }
 
-  public reset(): void {
-    for (const field of this._fieldsArray.peek()) {
-      field.reset()
-    }
-    // TODO This does not call a reactive update on the sub fields + add test for that + do without validation
-    // This looses the reference to all values, but we only want to set the values, therefore we need to set the value at every leaf
-    this._data.value = (
-      deepSignalifyValue(
-        this._options?.defaultValues ?? {},
-      ) as SignalifiedData<TData>
-    ).peek()
-
-    this._submitCountUnsuccessful.value = 0
+  public resetStateForm(): void {
     this._submitCountSuccessful.value = 0
+    this._submitCountUnsuccessful.value = 0
     this._isValidatingForm.value = false
     this._isSubmitting.value = false
     this._errorMap.value = {}
+  }
+
+  public resetStateFields(): void {
+    for (const field of this._fieldsArray.peek()) {
+      field.resetState()
+    }
+  }
+
+  public resetState(): void {
+    this.resetStateForm()
+    this.resetStateFields()
+  }
+
+  public resetValues(): void {
+    this._isMounted.value = false
+    setSignalValuesFromObject(this._data, this._options?.defaultValues)
+    this._isMounted.value = true
+  }
+
+  public reset(): void {
+    this.resetState()
+    this.resetValues()
   }
   //endregion
 

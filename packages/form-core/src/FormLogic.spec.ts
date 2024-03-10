@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
 import { Truthy } from './utils/internal.utils'
+import { deepSignalifyValue } from './utils'
+import { effect } from '@preact/signals-core'
 
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
@@ -328,6 +330,7 @@ describe('FormLogic', () => {
     })
     it('should not can submit if a form field is invalid, unmounted and did preserve its value', async () => {
       const form = new FormLogic<{ name: string }>()
+      await form.mount()
       const field = new FieldLogic(form, 'name', {
         preserveValueOnUnmount: true,
         validator: {
@@ -342,6 +345,7 @@ describe('FormLogic', () => {
     })
     it("should can submit if a form field is invalid, unmounted and didn't preserve its value", async () => {
       const form = new FormLogic<{ name: string }>()
+      await form.mount()
       const field = new FieldLogic(form, 'name', {
         validator: {
           validate: () => 'error',
@@ -362,6 +366,7 @@ describe('FormLogic', () => {
     })
     it('should be invalid if any field is invalid', () => {
       const form = new FormLogic<{ name: string }>()
+      form.mount()
       const field = new FieldLogic(form, 'name', {
         validator: (v) => v.length >= 3 && 'error',
       })
@@ -375,8 +380,8 @@ describe('FormLogic', () => {
     })
     it('should be validating if any field is validating', async () => {
       vi.useFakeTimers()
-
       const form = new FormLogic<{ name: string }>()
+      await form.mount()
       const field = new FieldLogic(form, 'name', {
         validatorAsync: {
           validate: (v) =>
@@ -944,7 +949,7 @@ describe('FormLogic', () => {
       await form.mount()
       const field = new FieldLogic(form, 'deep.value' as const, {
         validator: {
-          validate: (value) => (value === 1 ? undefined : 'error'),
+          validate: () => 'error',
           disableOnBlurValidation: true,
         },
       })
@@ -973,6 +978,109 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
       expect(form.submitCount.value).toBe(0)
+    })
+    it('should trigger the reactive updates of all nested values within the default values', () => {
+      const defaultValues = {
+        name: 'test',
+        deep: {
+          item: 1,
+        },
+        array: [
+          {
+            value: 1,
+          },
+        ],
+      }
+      const form = new FormLogic<{name: string, deep: {item: number, other?: string}, array: Array<{value: number}>, hidden?: string}>({
+        defaultValues,
+      })
+      form.mount()
+
+      form.data.value.name.value = 'test1'
+      form.data.value.deep.value.item.value = 2
+      form.pushValueToArray('array', { value: 2 })
+      form.data.value.array.value[0].signal.value.value.value = 3
+      // TODO Add helpers for dynamic objects
+      form.data.value.deep.value = {
+        ...form.data.value.deep.value,
+        other: deepSignalifyValue('test'), 
+      }
+      form.data.value = {
+        ...form.data.value,
+        hidden: deepSignalifyValue('test'),
+      }
+
+      expect(form.json.value).toEqual({
+        name: 'test1',
+        deep: {
+          item: 2,
+          other: 'test',
+        },
+        array: [
+          { value: 3 },
+          { value: 2 },
+        ],
+        hidden: 'test',
+      })
+
+      const nestedUpdate = vi.fn()
+      let ignoreEffect = 9
+      effect(() => {
+        const value = form.data.peek().name.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.peek().deep.peek().item.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.peek().deep.peek().other?.value
+        if(ignoreEffect-- > 0) return
+        // This should not trigger
+        nestedUpdate(value)
+        throw new Error("Should not update the other deep value since it is not included in the default values")
+      })
+      effect(() => {
+        const value = form.data.peek().array.peek()[0].signal.peek().value.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.peek().array.peek()[1].signal.peek().value.value
+        if(ignoreEffect-- > 0) return
+        // This should not trigger
+        nestedUpdate(value)
+        throw new Error("Should not update the second array value since it is not included in the default values")
+      })
+      effect(() => {
+        const value = form.data.peek().deep.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.peek().array.value
+        
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.peek().hidden?.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      effect(() => {
+        const value = form.data.value
+        if(ignoreEffect-- > 0) return
+        nestedUpdate(value)
+      })
+      expect(ignoreEffect).toBe(0)
+
+      form.reset()
+      
+      expect(form.json.value).toEqual(defaultValues)
+      expect(nestedUpdate).toHaveBeenCalledTimes(6)
     })
     it('should insert a value into a form value array', () => {
       const form = new FormLogic({

@@ -22,6 +22,7 @@ import {
   unSignalifyValue,
   unSignalifyValueSubscribed,
   validateWithValidators,
+  setSignalValuesFromObject,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -167,11 +168,12 @@ export class FieldLogic<
 
   //region Internal State
   private _isMounted = signal(false)
+  private _isMountedReadOnly = computed(() => this._isMounted.value)
   private readonly _transformedSignal: Signal<TBoundValue | undefined>
 
   //region State
   public get isMounted(): Signal<boolean> {
-    return this._isMounted
+    return this._isMountedReadOnly
   }
   /**
    * The reactive signal of the field value, you can get, subscribe and set the value of the field with this signal.
@@ -258,7 +260,7 @@ export class FieldLogic<
     this._isMounted.value = false
 
     if (!this._options?.preserveValueOnUnmount) {
-      this._resetState()
+      this.resetState()
     }
 
     this._unsubscribeFromChangeEffect?.()
@@ -280,7 +282,7 @@ export class FieldLogic<
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek()) return
+    if (!this._isMounted.peek() || !this._form.isMounted.peek()) return
     const value = checkValue ?? unSignalifyValue(this.signal)
     return validateWithValidators(
       value,
@@ -443,19 +445,20 @@ export class FieldLogic<
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
-  private _resetState() {
+  public resetState() : void {
     this._errorMap.value = {}
     this._isTouched.value = false
     this._isValidating.value = false
   }
 
-  public reset(): void {
-    this._resetState()
+  public resetValue(): void {
+    this._isMounted.value = false
+    setSignalValuesFromObject(this.signal, this.defaultValue)
+    this._isMounted.value = true
+  }
 
-    this.signal.value = (
-      deepSignalifyValue(this.defaultValue) as SignalifiedData<
-        ValueAtPath<TData, TName>
-      >
-    ).peek()
+  public reset(): void {
+    this.resetState()
+    this.resetValue()
   }
 }

@@ -5,10 +5,8 @@ import type { Paths, ValueAtPath } from './types'
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
 let arrayKey = 0
 
-export function makeArrayEntry<T>(value: T): {
-  key: number
-  signal: SignalifiedData<T>
-} {
+type SignalArrayEntry<T> = {  key: number; signal: SignalifiedData<T> }
+export function makeArrayEntry<T>(value: T): SignalArrayEntry<T> {
   return {
     key: arrayKey++,
     signal: deepSignalifyValue(value),
@@ -163,6 +161,85 @@ export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     const { [part as keyof TValue]: _, ...rest } = peekedValue
     parent.value = rest as (typeof parent)['value']
   }
+}
+
+// Todo put into a batch operation
+export function setSignalValuesFromObject<TValue>(
+  obj: SignalifiedData<TValue> | Signal<undefined>,
+  value: TValue | undefined,
+): SignalifiedData<TValue> | Signal<undefined> {
+  if (!obj) {
+    return signal(undefined)
+  }
+  if (value === undefined) {
+    return obj
+  }
+  if (Array.isArray(value)) {
+    // If the value currently does not exist we need to create it
+    if(!Array.isArray(obj.peek())) {
+      (obj as Signal<TValue>).value = [] as TValue
+    }
+    // First we want to update any child signals that have been added or updated
+    value.forEach((entry, index) => {
+      // We get the current item, if it does not exist we create a new one
+      const objValue = (obj.peek()as Array<SignalArrayEntry<TValue>>)[index]
+      if(objValue === undefined) {
+        const arr = obj.peek() as Array<never>
+        arr[index] = makeArrayEntry(entry) as never
+        (obj as Signal<Array<never>>).value = [...arr]
+        return
+      }
+      // If it does exist we update the value deeply
+      setSignalValuesFromObject(objValue.signal, entry)
+    })
+    if((obj.peek() as Array<never>).length === value.length) {
+      return obj
+    }
+    // In case there were also values removed, we need to remove them
+    (obj as Signal<Array<never>>).value = (obj.peek() as Array<never>).filter((_, index) => {
+      return index in value
+    })
+    return obj
+  }
+  if(value instanceof Date) {
+    (obj as Signal<Date>).value = value
+    return obj
+  }
+  if (typeof value === 'object' && value !== null) {
+    // If the value currently does not exist we need to create it
+    if(typeof obj.peek() !== 'object') {
+      (obj as Signal<Object>).value = {}
+    }
+    // First we want to update any child signals that have been added or updated
+    Object.entries(value).forEach(([key, entry]) => {
+      // We get the current item, if it does not exist we create a new one
+      const objValue = (obj.peek() as Record<typeof key, Signal<unknown>>)[key]
+      if(objValue === undefined) {
+        (obj as Signal<Object>).value = {
+          ...obj.peek(),
+          [key]: deepSignalifyValue(entry)
+        }
+        return
+      }
+      // If it does exist we update the value deeply
+      setSignalValuesFromObject(objValue, entry)
+    })
+    // In case there were also values removed, we need to remove them
+    let shouldUpdate = false
+    const newObj = Object.fromEntries(Object.entries((obj.peek() as Object)).filter(([key]) => {
+      if(!(key in value)) {
+        shouldUpdate = true
+        return false
+      }
+      return key in value
+    }))
+    if(shouldUpdate) {
+      (obj as Signal<Object>).value = newObj
+    }
+    return obj
+  }
+  (obj as Signal<unknown>).value = value
+  return obj
 }
 
 export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(

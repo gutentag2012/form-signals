@@ -7,6 +7,7 @@ import {
   setSignalValueAtPath,
   unSignalifyValue,
   unSignalifyValueSubscribed,
+  setSignalValuesFromObject,
 } from './signals.utils'
 
 describe('signals.utils', () => {
@@ -150,6 +151,169 @@ describe('signals.utils', () => {
       removeSignalValueAtPath(obj, 'a.0')
       expect(obj.value.a.value.length).toBe(1)
       expect(obj.value.a.value[0].signal.value).toBe(2)
+    })
+  })
+  describe('setSignalValuesFromObject', () => {
+    it('should do nothing for an undefined object', () => {
+      const obj = undefined
+      expect(setSignalValuesFromObject(obj as never, { a: 1 }).value).toEqual(
+        undefined,
+      )
+    })
+    it('should do nothing for an undefined value', () => {
+      const obj = deepSignalifyValue({ a: 1 })
+      expect(setSignalValuesFromObject(obj, undefined)).toEqual(obj)
+      expect(obj.value.a.value).toBe(1)
+    })
+    it('should update the value of an existing array', () => {
+      const obj = deepSignalifyValue({ a: [1, 2] })
+      setSignalValuesFromObject(obj, { a: [2, 3] })
+      expect(obj.value.a.value[0].signal.value).toBe(2)
+      expect(obj.value.a.value[1].signal.value).toBe(3)
+    })
+    it('should add the value of a non existing array', () => {
+      const obj = deepSignalifyValue({} as { a: number[] })
+      setSignalValuesFromObject(obj, { a: [1, 2] })
+      expect(obj.value.a.value[0].signal.value).toBe(1)
+      expect(obj.value.a.value[1].signal.value).toBe(2)
+    })
+    it('should add a value to an existing array', () => {
+      const obj = deepSignalifyValue({ a: [1] })
+      setSignalValuesFromObject(obj, { a: [1, 2] })
+      expect(obj.value.a.value[0].signal.value).toBe(1)
+      expect(obj.value.a.value[1].signal.value).toBe(2)
+    })
+    it('should remove a value from an existing array', () => {
+      const obj = deepSignalifyValue({ a: [1, 2] })
+      setSignalValuesFromObject(obj, { a: [1] })
+      expect(obj.value.a.value[0].signal.value).toBe(1)
+      expect(obj.value.a.value[1]).toBe(undefined)
+    })
+    it('should add a deeply nested array', () => {
+      const obj = deepSignalifyValue({} as { a: Array<{ b: Array<{ c: number }>}>})
+      setSignalValuesFromObject(obj, { a: [{ b: [{ c: 1 }] }] })
+      expect(obj.value.a.value[0].signal.value.b.value[0].signal.value.c.value).toBe(1)
+    })
+    it('should update the value of an existing object', () => {
+      const obj = deepSignalifyValue({ a: 1 })
+      setSignalValuesFromObject(obj, { a: 2 })
+      expect(obj.value.a.value).toBe(2)
+    })
+    it('should add the value of a non existing object', () => {
+      const obj = deepSignalifyValue({} as { a: number })
+      setSignalValuesFromObject(obj, { a: 1 })
+      expect(obj.value.a.value).toBe(1)
+    })
+    it('should remove the value of an existing object', () => {
+      const obj = deepSignalifyValue<{a:number, b?: number}>({ a: 1, b: 2 })
+      setSignalValuesFromObject(obj, {a: 1})
+      expect(obj.value.b).toBe(undefined)
+    })
+    it('should add a deeply nested object', () => {
+      const obj = deepSignalifyValue({} as { a: { b: { c: number } } })
+      setSignalValuesFromObject(obj, { a: { b: { c: 1 } } })
+      expect(obj.value.a.value.b.value.c.value).toBe(1)
+    })
+    it('should update the values reactively', () => {
+      const obj = deepSignalifyValue<{name: string, deep: {item: number, other?: string}, array: Array<{value: number}>}>({
+        name: 'test',
+        deep: {
+          item: 1,
+          other: 'test',
+        },
+        array: [
+          {
+            value: 1,
+          },
+          {
+            value: 2,
+          }
+        ],
+      })
+      const fn = vi.fn()
+      let ignoreEffect = 7
+      effect(() => {
+        const value = obj.peek().name.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        fn(value)
+      })
+      effect(() => {
+        const value = obj.peek().deep.peek().item.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        fn(value)
+      })
+      effect(() => {
+        const value = obj.peek().deep.peek().other?.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        // This should not be called
+        fn(value)
+        throw new Error('Should not update the other value')
+      })
+      effect(() => {
+        const value = obj.peek().array.peek()[0].signal.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        fn(value)
+      })
+      effect(() => {
+        const value = obj.peek().array.peek()[1].signal.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        // This should not be called
+        fn(value)
+        throw new Error('Should not update the array value')
+      })
+      effect(() => {
+        const value = obj.peek().array.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        fn(value)
+      })
+      effect(() => {
+        const value = obj.peek().deep.value
+        if (ignoreEffect-- > 0) {
+          return
+        }
+        fn(value)
+      })
+      expect(ignoreEffect).toBe(0)
+      setSignalValuesFromObject(obj, {
+        name: 'test1',
+        deep: {
+          item: 2,
+        },
+        array: [
+          {
+            value: 2,
+          },
+        ],
+      })
+      expect(fn).toHaveBeenCalledTimes(4)
+      setSignalValuesFromObject(obj, {
+        name: 'test1',
+        deep: {
+          item: 2,
+          other: 'test',
+        },
+        array: [
+          {
+            value: 2,
+          },
+          {
+            value: 2,
+          }
+        ],
+      })
+      expect(fn).toHaveBeenCalledTimes(6)
     })
   })
   describe('setSignalValueAtPath', () => {
