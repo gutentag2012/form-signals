@@ -457,14 +457,16 @@ export class FormLogic<TData> {
   }
 
   public reset(): void {
+    for (const field of this._fieldsArray.peek()) {
+      field.reset()
+    }
+    // TODO This does not call a reactive update on the sub fields + add test for that + do without validation
+    // This looses the reference to all values, but we only want to set the values, therefore we need to set the value at every leaf
     this._data.value = (
       deepSignalifyValue(
         this._options?.defaultValues ?? {},
       ) as SignalifiedData<TData>
     ).peek()
-    for (const field of this._fieldsArray.peek()) {
-      field.reset()
-    }
 
     this._submitCountUnsuccessful.value = 0
     this._submitCountSuccessful.value = 0
