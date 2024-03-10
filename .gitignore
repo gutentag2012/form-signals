@@ -8,7 +8,6 @@ types
 build
 */build
 dist
-lib
 es
 artifacts
 coverage
