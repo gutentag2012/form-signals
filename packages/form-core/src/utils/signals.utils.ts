@@ -1,4 +1,4 @@
-import { Signal, signal } from '@preact/signals-core'
+import { Signal, batch, signal } from '@preact/signals-core'
 import { pathToParts } from './access.utils'
 import type { Paths, ValueAtPath } from './types'
 
@@ -168,6 +168,7 @@ export function setSignalValuesFromObject<TValue>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   value: TValue | undefined,
 ): SignalifiedData<TValue> | Signal<undefined> {
+  return batch(() => {
   if (!obj) {
     return signal(undefined)
   }
@@ -240,6 +241,7 @@ export function setSignalValuesFromObject<TValue>(
   }
   (obj as Signal<unknown>).value = value
   return obj
+})
 }
 
 export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
@@ -247,6 +249,7 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   path: TPath,
   value: ValueAtPath<TValue, TPath> | undefined,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
+  return batch(() => {
   if (!path || !obj) {
     return undefined
   }
@@ -295,4 +298,5 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     current = element.peek()[part]
   }
   return current
+})
 }
