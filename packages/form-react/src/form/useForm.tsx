@@ -8,7 +8,7 @@ interface Form<TData> extends FormLogic<TData> {
   FieldProvider: ReturnType<typeof BindFormFieldProviderComponent<TData>>
   handleSubmitOnEnterForForm: ReturnType<typeof handleSubmitOnEnterForForm<TData>>
 }
-
+// TODO The useFormContext returns the wrong data, since it returns the complete Form type
 export function useForm<TData>(
   formOptions: FormLogicOptions<TData>,
 ): Form<TData> {
