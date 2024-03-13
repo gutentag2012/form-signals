@@ -443,17 +443,9 @@ export class FormLogic<TData> {
   public getValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    const value = getSignalValueAtPath<TData, TPath>(this._data, path)
-    if (value) return value
-
-    const createdValue = setSignalValueAtPath<TData, TPath>(
-      this._data,
-      path,
-      this.getDefaultValueForPath(path),
-    )
-    if (!createdValue)
-      throw new Error(`Could not create value for path "${path}"`)
-    return createdValue
+    // TODO Fix tests due to not setting signal to undefined if not exist
+    // TODO Fix typing so that this can be undefined maybe
+    return getSignalValueAtPath<TData, TPath>(this._data, path) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
 
   public getFieldForPath<TPath extends Paths<TData>>(
