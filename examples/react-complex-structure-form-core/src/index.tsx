@@ -36,21 +36,16 @@ import { TextareaSignal } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types.ts'
 import {
-  FieldLogic,
-  type FieldLogicOptions,
-  FormLogic,
-  type Paths,
-} from '@form-signals/form-core'
-import {
+  useField,
   useFieldContext,
   useForm,
   useFormContext,
 } from '@form-signals/form-react'
-import { signal, useComputed, useSignal } from '@preact/signals-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { Signal, batch, signal, useComputed, useSignal, useSignalEffect } from '@preact/signals-react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
 import './index.css'
+import { useEffect } from 'react'
 
 const emptyDefaultValues: Product = {
   name: '',
@@ -70,7 +65,6 @@ const emptyDefaultValues: Product = {
 const supportedCurrency = ['EUR', 'USD', 'GBP'] as const
 
 const selectedCurrency = signal('EUR')
-// TODO Typesafety is not where I want/need it
 
 export const Index = () => {
   const form = useForm<Product>({
@@ -104,9 +98,6 @@ export const Index = () => {
     if (count === 1) return '1 currency'
     return `${count} currencies`
   })
-
-  // TODO The outer layer is rendered if there is an error or if the error is resolved
-  console.log('Render outer')
 
   return (
     <main className="container mt-3">
@@ -341,7 +332,7 @@ export const Index = () => {
                       className="mt-5"
                       type="button"
                       variant="outline"
-                      // disabled={!subForm.canSubmit.value}
+                      disabled={!subForm.canSubmit.value}
                       onClick={() => subForm.handleSubmit()}
                     >
                       Add new price
@@ -359,54 +350,88 @@ export const Index = () => {
         <Tabs
           value={selectedVariant.value.toString()}
           onValueChange={(value) => {
+            if(value === 'new') return
             selectedVariant.value = +value
           }}
         >
-          <TabsList>
-            {emptyDefaultValues.variants?.map(({ name }, index) => (
-              <TabsTrigger key={index} value={`${index}`}>
-                {name || '...'}
-              </TabsTrigger>
-            ))}
-            <TabsTrigger value={'new'}>+</TabsTrigger>
-          </TabsList>
-          {emptyDefaultValues.variants?.map((_, index) => (
-            <TabsContent key={index} value={`${index}`}>
-              <div>
-                <Label>Name</Label>
-                <div className="flex flex-row gap-2">
-                  <Input type="text" placeholder="Name" />
-                  <Button type="button" variant="destructive">
-                    Remove
-                  </Button>
-                </div>
-                {false && (
-                  <p className="text-[0.8rem] font-medium text-destructive">
-                    {'field.state.meta.errors'}
-                  </p>
-                )}
-              </div>
+            <VariantTabsTrigger selectedVariant={selectedVariant} />
+          {form.data.value.variants.value?.map((variant, index) => (
+            <TabsContent key={variant.key} value={`${index}`}>
+              <form.FieldProvider name={`variants.${index}.name`} preserveValueOnUnmount validator={value => !value && "The variant needs to have a name."}>
+                {
+                  (field) => (
+                    <div>
+                      <Label htmlFor={field.name}>Name</Label>
+                      <div className="flex flex-row gap-2">
+                        <InputSignal
+                          type="text"
+                          placeholder="Name"
+                          value={field.signal}
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          // TODO Fix this
+                          onClick={() => form.removeValueFromArray('variants', index)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <ErrorText />
+                    </div>
+                  )
+                }
+              </form.FieldProvider>
               <div className="mt-2">
                 <Label htmlFor={`variant-${index}-options`}>Options</Label>
                 <div className="flex flex-col gap-1">
-                  {([] as string[])?.map((_, optionIndex) => (
-                    <Input
-                      type="text"
-                      placeholder="Option"
-                      autoFocus={justAddedOption.value && optionIndex === 1}
-                    />
+                  {/* TODO When not preserving, the array should be empty and not have undefined values instead (add tests) */}
+                  {(variant.signal.value.options.value)?.map((option, optionIndex) => (
+                    <form.FieldProvider key={option.key} name={`variants.${index}.options.${optionIndex}`}>
+                      {
+                        (field) => (
+                          <InputSignal
+                            type="text"
+                            placeholder="Option"
+                            value={field.signal}
+                            onBlur={() => field.handleBlur()}
+                            onChange={(e) => {
+                              if (!e.target.value) {
+                                return form.removeValueFromArray(
+                                  `variants.${index}.options`,
+                                  optionIndex,
+                                )
+                              }
+                              console.log('change', e.target.value)
+                              // TODO This is not working rn
+                              field.handleChange(e.target.value)
+                              field.signal.value = e.target.value
+                            }}
+                            autoFocus={justAddedOption.peek() && optionIndex === form.data.value.variants.value[index].signal.value.options.value.length - 1}
+                          />
+                        )
+                      }
+                    </form.FieldProvider>
                   ))}
-                  <Input
-                    id={`variant-${index}-option-new`}
-                    name={`variant-${index}-option-new`}
-                    type="text"
-                    placeholder="Option"
-                  />
-                  {false && (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {'optionField.state.meta.errors'}
-                    </p>
-                  )}
+                  {/* TODO If there is no preserveValueOnUnmount the remove throws an error, this has to be fixed (probably because in the last render there is a null pointer of some sort) */}
+                    <form.FieldProvider name={`variants.${index}.options`} preserveValueOnUnmount validator={value => value.length < 1 && "There must be at least one variant."}>
+                      {
+                        field => <>
+                        <Input
+                          id={`variant-${index}-option-new`}
+                          name={`variant-${index}-option-new`}
+                          type="text"
+                          placeholder="Option"
+                          onChange={(e) => {
+                            field.pushValueToArray(e.target.value)
+                            justAddedOption.value = true
+                            e.target.value = ''
+                          }}
+                          />
+                            <ErrorText />
+                        </>
+                      }
+                  </form.FieldProvider>
                 </div>
               </div>
             </TabsContent>
@@ -416,7 +441,7 @@ export const Index = () => {
         <Button
           className="mt-2 max-w-[280px]"
           type="submit"
-          // disabled={!form.canSubmit.value}
+          disabled={!form.canSubmit.value}
         >
           Save configuration
         </Button>
@@ -458,6 +483,44 @@ export const Index = () => {
   )
 }
 
+const VariantTabsTrigger = ({selectedVariant}: {selectedVariant: Signal<number>}) => {
+  // TODO Check why this is not validated on mount
+  // const field = useField<Product, "variants">("variants", {
+  //   validator: {
+  //     validate: () => "error",
+  //     validateOnMount: true
+  //   }
+  // })
+  const field = useField<Product, "variants">("variants", {
+    validator: value => value.some((variant, index, array) => index !== array.findIndex(v => v.name === variant.name)) && "Variants must be unique.",
+    validateOnNestedChange: true
+  })
+    return <field.FieldProvider>
+      <TabsList>
+  {
+    field.signal.value?.map((variant, index) => (
+      <TabsTrigger key={variant.key} value={`${index}`}>
+        {variant.signal.value.name.value || '...'}
+      </TabsTrigger>
+    ))
+  }
+              <TabsTrigger
+                value="new"
+                onClick={() => {
+                  field.pushValueToArray({
+                    name: '',
+                    options: [],
+                  })
+                  selectedVariant.value = field.signal.peek().length - 1
+                }}
+              >
+                +
+              </TabsTrigger>
+  </TabsList>
+    <ErrorText />
+            </field.FieldProvider>
+}
+
 /**
  * TODO Figure out why this needs the useSignals annotation for the babel transformer to work
  * @useSignals
@@ -485,7 +548,6 @@ const PriceTableBody = () => {
 
 const PriceTableErrorText = () => {
   const field = useFieldContext()
-  console.log(field)
   if (!field.isValid.value) return null
   return (
     <TableRow disableHoverStyle>

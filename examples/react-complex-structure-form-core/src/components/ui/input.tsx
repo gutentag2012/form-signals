@@ -24,18 +24,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input'
 
 export interface InputSignalProps
-  extends Omit<InputProps, 'value' | 'onChange'> {
-  value: Signal<string>
+  extends Omit<InputProps, 'value'> {
+  value?: Signal<string>
 }
 
-const InputSignal = ({ value, ...props }: InputSignalProps) => {
+const InputSignal = ({ value, onChange, ...props }: InputSignalProps) => {
   return (
     <Input
       {...props}
-      value={value.value}
-      onChange={(e) => {
+      value={value?.value}
+      onChange={onChange ?? ((e) => {
+        if(!value) return
         value.value = e.target.value
-      }}
+      })}
     />
   )
 }
