@@ -601,9 +601,9 @@ describe('FieldLogic', () => {
 
       expect(validate).toHaveBeenCalledTimes(4)
     })
-    it('should not validate if unmounted', () => {
+    it('should not validate if unmounted', async () => {
       const form = new FormLogic<{ name: string }>()
-      form.mount()
+      await form.mount()
       const validate = vi.fn(() => undefined)
       const field = new FieldLogic(form, 'name', {
         validator: {
@@ -612,9 +612,9 @@ describe('FieldLogic', () => {
         },
       })
 
-      field.handleBlur()
+      await field.handleBlur()
       field.handleChange('test')
-      form.handleSubmit()
+      await field.handleSubmit()
 
       expect(validate).toHaveBeenCalledTimes(0)
     })
@@ -690,7 +690,7 @@ describe('FieldLogic', () => {
       field.signal.value = 'test'
       field.unmount()
       expect(field.errors.value).toEqual([])
-      expect(field.signal.value).toBeUndefined()
+      expect(field.signal).toBeUndefined()
     })
   })
   describe('state', () => {
@@ -973,7 +973,7 @@ describe('FieldLogic', () => {
 
       expect(field.isTouched.value).toBe(true)
     })
-    it('should reset field state on unmount if not otherwise configured', () => {
+    it('should reset field state on unmount if configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: 'default',
@@ -981,7 +981,9 @@ describe('FieldLogic', () => {
       })
       form.mount()
 
-      const field = new FieldLogic(form, 'name')
+      const field = new FieldLogic(form, 'name', {
+        resetValueToDefaultOnUnmount: true,
+      })
       field.mount()
       field.handleBlur()
       field.signal.value = 'value'
@@ -993,7 +995,7 @@ describe('FieldLogic', () => {
       expect(form.data.value.name.value).toBe('default')
       expect(field.isTouched.value).toBe(false)
     })
-    it('should delete field state on unmount if configured', () => {
+    it('should delete field state on unmount if not otherwise configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: 'default',
@@ -1001,9 +1003,7 @@ describe('FieldLogic', () => {
       })
       form.mount()
 
-      const field = new FieldLogic(form, 'name', {
-        deleteValueOnUnmount: true,
-      })
+      const field = new FieldLogic(form, 'name')
       field.mount()
       field.handleBlur()
       field.signal.value = 'value'
@@ -1037,6 +1037,29 @@ describe('FieldLogic', () => {
       expect(form.data.value.name.value).toBe('value')
       expect(field.isTouched.value).toBe(true)
     })
+    it('should preserve an array field state on unmount if configured', () => {
+      const form = new FormLogic<{ name: string[] }>({
+        defaultValues: {
+          name: [],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'name', {
+        preserveValueOnUnmount: true,
+      })
+      field.mount()
+      field.handleBlur()
+      field.pushValueToArray('value')
+      field.pushValueToArray('value2')
+
+      expect(field.isTouched.value).toBe(true)
+      expect(form.json.value.name).toEqual(['value', 'value2'])
+      field.unmount()
+      
+      expect(form.json.value.name).toEqual(['value', 'value2'])
+      expect(field.isTouched.value).toBe(true)
+    })
     it('should show the validating state while doing async validation', async () => {
       vi.useFakeTimers()
       const form = new FormLogic<{ name: string }>()
@@ -1060,27 +1083,16 @@ describe('FieldLogic', () => {
 
       vi.useRealTimers()
     })
-    it('should not accept value changes through its handlers', () => {
+    it('should not accept value changes through its handlers when unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name')
       field.mount()
       field.unmount()
 
-      expect(field.signal.value).toBeUndefined()
+      expect(field.signal).toBeUndefined()
       field.handleChange('test1')
-      expect(field.signal.value).toBeUndefined()
-    })
-    it('should accept value directly through the signal', () => {
-      const form = new FormLogic<{ name: string }>()
-      form.mount()
-      const field = new FieldLogic(form, 'name')
-      field.mount()
-      field.unmount()
-
-      expect(field.signal.value).toBeUndefined()
-      field.signal.value = 'test'
-      expect(field.signal.value).toBe('test')
+      expect(field.signal).toBeUndefined()
     })
   })
   describe('transform', () => {
