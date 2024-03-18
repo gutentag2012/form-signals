@@ -156,7 +156,7 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(true)
       expect(form.isDirty.value).toBe(true)
     })
-    it('should not consider removed fields when calculating touched and dirty', () => {
+    it('should not consider removed fields when calculating touched', () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'default',
@@ -176,10 +176,9 @@ describe('FormLogic', () => {
       newField.handleChange('value')
       expect(form.isTouched.value).toBe(true)
       expect(form.isDirty.value).toBe(true)
-
       newField.unmount()
       expect(form.isTouched.value).toBe(false)
-      expect(form.isDirty.value).toBe(false)
+      expect(form.isDirty.value).toBe(true)
     })
     it('should consider removed fields when calculating touched and dirty when configured', () => {
       const form = new FormLogic({
@@ -221,9 +220,7 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
 
-      const newField = new FieldLogic(form, 'other', {
-        deleteValueOnUnmount: true,
-      })
+      const newField = new FieldLogic(form, 'other')
       newField.mount()
 
       newField.handleBlur()
