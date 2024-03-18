@@ -69,10 +69,10 @@ export type FieldLogicOptions<
    */
   preserveValueOnUnmount?: boolean
   /**
-   * Whenever a field is unmounted, the value within the form is reset to its default value if the value should not be preserved.
-   * If true, the field value will be deleted from the form when unmounted.
+   * Whenever a field is unmounted, the value within the form is deleted if the value should not be preserved.
+   * If true, the field value will set to its default value.
    */
-  deleteValueOnUnmount?: boolean
+  resetValueToDefaultOnUnmount?: boolean
 
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
@@ -89,6 +89,8 @@ export type FieldLogicOptions<
 }
 
 // TODO Add async annotations so you only need to await if it is really needed
+// TODO Add core method to get a subfield
+// TODO Enable to update the configuration of a field after it has been created
 export class FieldLogic<
   TData,
   TName extends Paths<TData>,
@@ -131,7 +133,7 @@ export class FieldLogic<
   constructor(
     private readonly _form: FormLogic<TData>,
     private readonly _name: TName,
-    private readonly _options?: FieldLogicOptions<TData, TName, TBoundValue>,
+    private _options?: FieldLogicOptions<TData, TName, TBoundValue>,
   ) {
     this._form.registerField(_name, this, _options?.defaultValue)
 
@@ -140,36 +142,23 @@ export class FieldLogic<
       this._errorMap.value = _options.defaultState.errors
     }
 
-    const baseSignal = this.signal
-    const wrappedSignal = computed(() => {
-      if (!_options?.transformToBinding) return undefined
-      return _options.transformToBinding(
-        unSignalifyValueSubscribed(this.signal.value),
-      )
-    })
-    this._transformedSignal = {
-      set value(newValue: TBoundValue) {
-        if (!_options?.transformFromBinding) return
-        const transformedValue = _options.transformFromBinding(newValue)
-        baseSignal.value = deepSignalifyValue(transformedValue).value
-      },
-      get value() {
-        return wrappedSignal.value as TBoundValue
-      },
-      peek: wrappedSignal.peek.bind(wrappedSignal),
-      brand: wrappedSignal.brand,
-      toJSON: wrappedSignal.toJSON.bind(wrappedSignal),
-      valueOf: wrappedSignal.valueOf.bind(wrappedSignal),
-      toString: wrappedSignal.toString.bind(wrappedSignal),
-      subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
-    }
+    // TODO Check if this is really wanted + if so remove from all tests
+    this.mount()
   }
   //endregion
+
+  public updateOptions(options?: FieldLogicOptions<TData, TName, TBoundValue>): void {
+    if(!options) return
+    this._options = options
+    // TODO Update values if not touched + transformed signal
+    // TODO This also has to recreate all the signals that depend on the options, since e.g. the dirty signal depends on the value IMPORTANT: Figure out how to tell the form about this change, since the signal reference for the isDirty would also change
+    // TODO I could wrap the options in a signal, so everything that depends on the options is notified upon change
+  }
 
   //region Internal State
   private _isMounted = signal(false)
   private _isMountedReadOnly = computed(() => this._isMounted.value)
-  private readonly _transformedSignal: Signal<TBoundValue | undefined>
+  private _transformedSignal?: Signal<TBoundValue | undefined>
 
   //region State
   public get isMounted(): Signal<boolean> {
@@ -188,6 +177,10 @@ export class FieldLogic<
 
   public get name(): TName {
     return this._name
+  }
+
+  public get form(): FormLogic<TData> {
+    return this._form
   }
 
   public get isValidating(): ReadonlySignal<boolean> {
@@ -218,9 +211,40 @@ export class FieldLogic<
     )
   }
 
+  private setupTransformedSignal() {
+    const baseSignal = this.signal
+    const options = this._options
+    const wrappedSignal = computed(() => {
+      if (!options?.transformToBinding) return undefined
+      return options.transformToBinding(
+        unSignalifyValueSubscribed(this.signal.value),
+      )
+    })
+    
+    this._transformedSignal = {
+      set value(newValue: TBoundValue) {
+        if (!options?.transformFromBinding) return
+        const transformedValue = options.transformFromBinding(newValue)
+        baseSignal.value = deepSignalifyValue(transformedValue).value
+      },
+      get value() {
+        return wrappedSignal.value as TBoundValue
+      },
+      peek: wrappedSignal.peek.bind(wrappedSignal),
+      brand: wrappedSignal.brand,
+      toJSON: wrappedSignal.toJSON.bind(wrappedSignal),
+      valueOf: wrappedSignal.valueOf.bind(wrappedSignal),
+      toString: wrappedSignal.toString.bind(wrappedSignal),
+      subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
+    }
+  }
+
   //region Lifecycle
   public async mount(): Promise<void> {
     if (this._isMounted.peek()) return
+    this._form.initFieldSignal(this._name, this.defaultValue)
+    this.setupTransformedSignal()
+
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
     const runOnChangeValidation = async (
@@ -258,6 +282,7 @@ export class FieldLogic<
   public unmount(): void {
     if (!this._isMounted.peek()) return
     this._isMounted.value = false
+    this._transformedSignal = undefined
 
     if (!this._options?.preserveValueOnUnmount) {
       this.resetState()
@@ -267,8 +292,9 @@ export class FieldLogic<
 
     this._form.unregisterField(
       this._name,
+      this.defaultValue,
       this._options?.preserveValueOnUnmount,
-      this._options?.deleteValueOnUnmount,
+      this._options?.resetValueToDefaultOnUnmount,
     )
   }
 
@@ -282,7 +308,7 @@ export class FieldLogic<
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this._form.isMounted.peek()) return
+    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.signal) return
     const value = checkValue ?? unSignalifyValue(this.signal)
     return validateWithValidators(
       value,
@@ -344,12 +370,6 @@ export class FieldLogic<
    */
   public async handleSubmit(): Promise<void> {
     await this.validateForEvent('onSubmit')
-
-    // If there are any errors, we don't want to submit the form
-    if (!this.isValid.value) {
-      return
-    }
-    return this.signal.value
   }
   //endregion
 
