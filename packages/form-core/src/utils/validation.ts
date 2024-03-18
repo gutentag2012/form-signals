@@ -17,6 +17,7 @@ export type ValidationErrorMap = {
   asyncErrorEvent?: ValidatorEvents
 }
 
+// TODO Allow to only enable changed validation if touched
 interface ValidatorBase {
   /**
    * Whether this validator should not run when the value changes
