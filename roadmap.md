@@ -44,3 +44,7 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **debugger-react**: Add debugger component for react forms
 - [ ] **form-core**: Add support for server side validation
 - [ ] **addon-storage-persistence**: Add addon to persist form state in browser storage (session or local)
+
+## Version 1.3.0
+
+- [ ] **form-core**: Add support for bracket syntax for field names
