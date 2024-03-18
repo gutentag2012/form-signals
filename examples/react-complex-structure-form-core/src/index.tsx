@@ -41,7 +41,7 @@ import {
   useForm,
   useFormContext,
 } from '@form-signals/form-react'
-import { Signal, batch, signal, useComputed, useSignal, useSignalEffect } from '@preact/signals-react'
+import { Signal, signal, useComputed, useSignal } from '@preact/signals-react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
 import './index.css'
@@ -65,7 +65,7 @@ const emptyDefaultValues: Product = {
 const supportedCurrency = ['EUR', 'USD', 'GBP'] as const
 
 const selectedCurrency = signal('EUR')
-
+const Test = () => <div>Test</div>
 export const Index = () => {
   const form = useForm<Product>({
     defaultValues: emptyDefaultValues,
@@ -73,6 +73,15 @@ export const Index = () => {
       console.log('submit', values)
     },
   })
+
+  useEffect(() => {
+    console.log("Changed", form)
+  }, [form])
+
+  console.log(form.FieldProvider, form.FormProvider)
+  form.FieldProvider ??= Test
+  form.FormProvider ??= Test
+  
   const subForm = useForm<Product['prices'][string][number]>({
     defaultValues: {
       count: null as unknown as number,
@@ -87,6 +96,8 @@ export const Index = () => {
       subForm.reset()
     },
   })
+  subForm.FieldProvider ??= Test
+  subForm.FormProvider ??= Test
   const selectedVariant = useSignal(0)
   const justAddedOption = useSignal(false)
 
@@ -355,68 +366,41 @@ export const Index = () => {
           }}
         >
             <VariantTabsTrigger selectedVariant={selectedVariant} />
-          {form.data.value.variants.value?.map((variant, index) => (
+          {form.data.value.variants?.value?.map((variant, index) => (
             <TabsContent key={variant.key} value={`${index}`}>
-              <form.FieldProvider name={`variants.${index}.name`} preserveValueOnUnmount validator={value => !value && "The variant needs to have a name."}>
-                {
-                  (field) => (
-                    <div>
-                      <Label htmlFor={field.name}>Name</Label>
-                      <div className="flex flex-row gap-2">
-                        <InputSignal
-                          type="text"
-                          placeholder="Name"
-                          value={field.signal}
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          // TODO Fix this
-                          onClick={() => form.removeValueFromArray('variants', index)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      <ErrorText />
+            <form.FieldProvider name={`variants.${index}.name`} preserveValueOnUnmount validator={value => !value && "The variant needs to have a name."}>
+              {
+                (field) => (
+                  <div>
+                    <Label htmlFor={field.name}>Name</Label>
+                    <div className="flex flex-row gap-2">
+                      <InputSignal
+                        type="text"
+                        placeholder="Name"
+                        value={field.signal}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        // TODO Fix this
+                        onClick={() => form.removeValueFromArray('variants', index)}
+                      >
+                        Remove
+                      </Button>
                     </div>
-                  )
-                }
-              </form.FieldProvider>
-              <div className="mt-2">
-                <Label htmlFor={`variant-${index}-options`}>Options</Label>
-                <div className="flex flex-col gap-1">
-                  {/* TODO When not preserving, the array should be empty and not have undefined values instead (add tests) */}
-                  {(variant.signal.value.options.value)?.map((option, optionIndex) => (
-                    <form.FieldProvider key={option.key} name={`variants.${index}.options.${optionIndex}`}>
-                      {
-                        (field) => (
-                          <InputSignal
-                            type="text"
-                            placeholder="Option"
-                            value={field.signal}
-                            onBlur={() => field.handleBlur()}
-                            onChange={(e) => {
-                              if (!e.target.value) {
-                                return form.removeValueFromArray(
-                                  `variants.${index}.options`,
-                                  optionIndex,
-                                )
-                              }
-                              console.log('change', e.target.value)
-                              // TODO This is not working rn
-                              field.handleChange(e.target.value)
-                              field.signal.value = e.target.value
-                            }}
-                            autoFocus={justAddedOption.peek() && optionIndex === form.data.value.variants.value[index].signal.value.options.value.length - 1}
-                          />
-                        )
-                      }
-                    </form.FieldProvider>
-                  ))}
-                  {/* TODO If there is no preserveValueOnUnmount the remove throws an error, this has to be fixed (probably because in the last render there is a null pointer of some sort) */}
-                    <form.FieldProvider name={`variants.${index}.options`} preserveValueOnUnmount validator={value => value.length < 1 && "There must be at least one variant."}>
-                      {
-                        field => <>
+                    <ErrorText />
+                  </div>
+                )
+              }
+            </form.FieldProvider>
+            <div className="mt-2">
+              <Label htmlFor={`variant-${index}-options`}>Options</Label>
+              <div className="flex flex-col gap-1">
+                {/* TODO When not preserving, the array should be empty and not have undefined values instead (add tests) */}
+                  <form.FieldProvider name={`variants.${index}.options`} preserveValueOnUnmount validator={value => value.length < 1 && "There must be at least one variant."}>
+                    {
+                      field => <>
+                        <VariantOptionsList justAddedOption={justAddedOption} />
                         <Input
                           id={`variant-${index}-option-new`}
                           name={`variant-${index}-option-new`}
@@ -428,12 +412,12 @@ export const Index = () => {
                             e.target.value = ''
                           }}
                           />
-                            <ErrorText />
-                        </>
-                      }
-                  </form.FieldProvider>
-                </div>
+                          <ErrorText />
+                      </>
+                    }
+                </form.FieldProvider>
               </div>
+            </div>
             </TabsContent>
           ))}
         </Tabs>
@@ -481,6 +465,39 @@ export const Index = () => {
       </form.FormProvider>
     </main>
   )
+}
+
+const VariantOptionsList = ({justAddedOption}: {justAddedOption: Signal<boolean>}) => {
+  const parentField = useFieldContext<Product, `variants.${number}.options`>()
+  console.log(parentField.name, parentField.signal?.value, parentField.signal);
+  
+  return parentField.signal.value.map((option, optionIndex) => (
+    <parentField.SubFieldProvider key={option.key} name={`${optionIndex}`} preserveValueOnUnmount>
+      {
+        (field) => (
+          <InputSignal
+            type="text"
+            placeholder="Option"
+            value={field.signal}
+            onBlur={() => field.handleBlur()}
+            onChange={(e) => {
+              if (!e.target.value) {
+                return field.unmount()
+                // return form.removeValueFromArray(
+                //   `variants.${index}.options`,
+                //   optionIndex,
+                // )
+              }
+              // TODO This is not working rn
+              field.handleChange(e.target.value)
+              field.signal.value = e.target.value
+            }}
+            autoFocus={justAddedOption.peek() && optionIndex === parentField.signal.value.length - 1}
+          />
+        )
+      }
+    </parentField.SubFieldProvider>
+  ))
 }
 
 const VariantTabsTrigger = ({selectedVariant}: {selectedVariant: Signal<number>}) => {
