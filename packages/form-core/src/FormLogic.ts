@@ -6,7 +6,7 @@ import {
   effect,
   signal,
 } from '@preact/signals-core'
-import type { FieldLogic } from './FieldLogic'
+import { FieldLogic, FieldLogicOptions } from './FieldLogic'
 import {
   type Paths,
   type SignalifiedData,
@@ -59,6 +59,7 @@ export type FormLogicOptions<TData> = {
   onSubmit?: (data: TData) => void | Promise<void>
 }
 
+// TODO Add a method to get or create a field, if considered this could also update the configuration of the field
 export class FormLogic<TData> {
   /**
    * Single source of truth for the form data
@@ -361,7 +362,7 @@ export class FormLogic<TData> {
   //endregion
 
   //region Lifecycle
-  public async mount(): Promise<void> {
+  public async mount(): Promise<() => void> {
     // Once mounted, we want to listen to all changes to the form
     this._unsubscribeFromChangeEffect?.()
     this._unsubscribeFromChangeEffect = effect(async () => {
@@ -384,6 +385,10 @@ export class FormLogic<TData> {
 
     this._isMounted.value = true
     await this.validateForEvent('onMount')
+
+    return () => {
+      this.unmount()
+    }
   }
 
   public unmount(): void {
@@ -394,6 +399,24 @@ export class FormLogic<TData> {
   //endregion
 
   //region Field helpers
+public getOrCreateField<TPath extends Paths<TData>, TBoundValue>(
+  path: TPath,
+  fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
+): FieldLogic<TData, TPath, TBoundValue> {
+  const existingField = this._fields.peek().get(path)
+  if (existingField) {
+    existingField.updateOptions(fieldOptions)
+    return existingField as FieldLogic<TData, TPath, TBoundValue>
+  }
+  const field = new FieldLogic<TData, TPath, TBoundValue>(
+    this,
+    path,
+    fieldOptions,
+  )
+  this.registerField(path, field, this.getDefaultValueForPath(path))
+  return field
+}
+
   public registerField<TPath extends Paths<TData>, TBoundValue>(
     path: TPath,
     field: FieldLogic<TData, TPath, TBoundValue>,
@@ -414,21 +437,20 @@ export class FormLogic<TData> {
 
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
+    defaultValue?: ValueAtPath<TData, TPath>,
     preserveValue?: boolean,
-    deleteValue?: boolean,
+    resetToDefault?: boolean,
   ): void {
     if (preserveValue) return
-
-    const defaultValue = this.getDefaultValueForPath(path)
 
     const newMap = new Map(this._fields.peek())
     newMap.delete(path)
     this._fields.value = newMap
 
-    if (deleteValue) {
-      removeSignalValueAtPath(this._data, path)
-    } else {
+    if (resetToDefault) {
       setSignalValueAtPath(this._data, path, defaultValue)
+    } else {
+      removeSignalValueAtPath(this._data, path)
     }
   }
   //endregion
@@ -446,6 +468,12 @@ export class FormLogic<TData> {
     // TODO Fix tests due to not setting signal to undefined if not exist
     // TODO Fix typing so that this can be undefined maybe
     return getSignalValueAtPath<TData, TPath>(this._data, path) as SignalifiedData<ValueAtPath<TData, TPath>>
+  }
+
+  // TODO Add tests
+  public initFieldSignal<TPath extends Paths<TData>>(path: TPath, defaultValue?: ValueAtPath<TData, TPath>): void {
+    if(this.getValueForPath(path)) return
+    setSignalValueAtPath(this._data, path, defaultValue)
   }
 
   public getFieldForPath<TPath extends Paths<TData>>(
@@ -479,6 +507,7 @@ export class FormLogic<TData> {
     this._isMounted.value = true
   }
 
+  // TODO Allow similar reset to RHF https://www.react-hook-form.com/api/useform/reset/
   public reset(): void {
     this.resetState()
     this.resetValues()
