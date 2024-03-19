@@ -60,6 +60,7 @@ export type FormLogicOptions<TData> = {
 }
 
 // TODO Add a method to get or create a field, if considered this could also update the configuration of the field
+// TODO Add typed default values + NOTE There is the limitation, that if the default value is placed on a field, it cannot affect the type of the form, since the form type is not aware of the fields
 export class FormLogic<TData> {
   /**
    * Single source of truth for the form data
