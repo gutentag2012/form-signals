@@ -1,12 +1,4 @@
 type MaxIterationLength = 15
-type MaxTupleLength = 99
-
-type CountTo<
-  MaxLength extends number,
-  Res extends Array<number> = [],
-> = Res['length'] extends MaxLength
-  ? Res
-  : CountTo<MaxLength, [...Res, Res['length']]>
 
 type IndicesOf<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -18,15 +10,8 @@ type IndicesOf<
     ? IndicesOf<RestTuple, Acc | RestTuple['length']>
     : Acc
 
-type TupleMaxLength = CountTo<MaxTupleLength>[number]
-
 // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
-type IsTuple<T> = T extends readonly any[] & { length: infer Length }
-  ? // This checks if the length of a given array is a specific number, if so it is a tuple... Therefore, this also is limited to 99 elements
-    Length extends TupleMaxLength
-    ? T
-    : never
-  : never
+type IsTuple<T> = T extends any[] ? (T extends readonly [infer _A, ...infer _Rest] ? T : never) : never;
 
 type CombinePath<
   T,
@@ -50,7 +35,7 @@ export type Paths<
       ? never
       : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
         T extends readonly any[] & IsTuple<T>
-        ? IndicesOf<T> | CombinePath<T, IndicesOf<T>, DepthCheck>
+        ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
         : // biome-ignore lint/suspicious/noExplicitAny: This is a type helper
           T extends any[]
           ? `${number}` | CombinePath<T, number, DepthCheck>
@@ -64,3 +49,54 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
     ? ValueAtPath<T[TBranch], TDeepProp>
     : T[TProp & string]
   : never
+
+type MakeOptionalIfNotExistInCheckTuple<
+  Tuple,
+  ReplaceWithTuple,
+  Acc extends unknown[] = [],
+> = Acc['length'] extends MaxIterationLength
+  ? never
+  : Tuple extends readonly [infer Head, ...infer Rest]
+    ? ReplaceWithTuple extends readonly [
+        infer ReplaceWithHead,
+        ...infer ReplaceWithRest,
+      ]
+      ? MakeOptionalIfNotExistInCheckTuple<
+          Rest,
+          ReplaceWithRest,
+          [...Acc, MakeOptionalIfNotExistInCheck<Head, ReplaceWithHead>]
+        >
+      : [...Acc, Head | undefined]
+    : Acc
+
+export type MakeOptionalIfNotExistInCheck<
+  BaseObject,
+  CheckObject,
+  DepthCheck extends unknown[] = [],
+> = DepthCheck['length'] extends MaxIterationLength
+  ? never
+  : BaseObject extends Date
+    ? CheckObject extends Date
+      ? BaseObject
+      : BaseObject | undefined
+    : BaseObject extends IsTuple<BaseObject>
+      ? CheckObject extends IsTuple<CheckObject>
+        ? MakeOptionalIfNotExistInCheckTuple<BaseObject, CheckObject>
+        : BaseObject | undefined
+      : BaseObject extends Array<infer T>
+        ? CheckObject extends Array<infer T2>
+          ? Array<MakeOptionalIfNotExistInCheck<T, T2, [...DepthCheck, unknown]>>
+          : BaseObject | undefined
+        : BaseObject extends object
+            ? {
+                [K in keyof BaseObject]: K extends keyof CheckObject
+                  ? MakeOptionalIfNotExistInCheck<
+                      BaseObject[K],
+                      CheckObject[K],
+                      [...DepthCheck, unknown]
+                    >
+                  : BaseObject[K] | undefined
+              }
+          : BaseObject extends CheckObject
+            ? BaseObject
+            : BaseObject | undefined
