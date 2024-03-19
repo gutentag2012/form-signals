@@ -220,7 +220,7 @@ export class FieldLogic<
         unSignalifyValueSubscribed(this.signal.value),
       )
     })
-    
+
     this._transformedSignal = {
       set value(newValue: TBoundValue) {
         if (!options?.transformFromBinding) return
