@@ -209,25 +209,25 @@ export function setSignalValuesFromObject<TValue>(
   if (typeof value === 'object' && value !== null) {
     // If the value currently does not exist we need to create it
     if(typeof obj.peek() !== 'object') {
-      (obj as Signal<Object>).value = {}
+      (obj as Signal<object>).value = {}
     }
     // First we want to update any child signals that have been added or updated
-    Object.entries(value).forEach(([key, entry]) => {
+    for (const [key, entry] of Object.entries(value)) {
       // We get the current item, if it does not exist we create a new one
       const objValue = (obj.peek() as Record<typeof key, Signal<unknown>>)[key]
       if(objValue === undefined) {
-        (obj as Signal<Object>).value = {
+        (obj as Signal<object>).value = {
           ...obj.peek(),
           [key]: deepSignalifyValue(entry)
         }
-        return
+        continue;
       }
       // If it does exist we update the value deeply
       setSignalValuesFromObject(objValue, entry)
-    })
+    }
     // In case there were also values removed, we need to remove them
     let shouldUpdate = false
-    const newObj = Object.fromEntries(Object.entries((obj.peek() as Object)).filter(([key]) => {
+    const newObj = Object.fromEntries(Object.entries((obj.peek() as object)).filter(([key]) => {
       if(!(key in value)) {
         shouldUpdate = true
         return false
@@ -235,7 +235,7 @@ export function setSignalValuesFromObject<TValue>(
       return key in value
     }))
     if(shouldUpdate) {
-      (obj as Signal<Object>).value = newObj
+      (obj as Signal<object>).value = newObj
     }
     return obj
   }
