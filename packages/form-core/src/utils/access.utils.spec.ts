@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getValueAtPath, pathToParts, setValueAtPath } from './access.utils'
+}import {getValueAtPath, pathToParts, removeValueAtPath, setValueAtPath} from './access.utils'
 
 describe('access.utils', () => {
   describe('pathToParts', () => {
@@ -72,4 +72,34 @@ describe('access.utils', () => {
       expect(obj).toEqual({ a: { b: { c: [[undefined, { d: 1 }]] } } })
     })
   })
+
+  describe('removeValueAtPath', () => {
+    it('should do nothing for an undefined object', () => {
+      expect(removeValueAtPath(undefined, 'a' as never)).toBe(undefined)
+    })
+    it('should do nothing for an undefined path', () => {
+      expect(removeValueAtPath({}, undefined as never)).toEqual({})
+    })
+    it('should do nothing for an empty path', () => {
+      expect(removeValueAtPath({}, '' as never)).toEqual({})
+    })
+    it('should do nothing for a non existing path', () => {
+      expect(removeValueAtPath({}, 'a' as never)).toEqual({})
+    })
+    it('should remove the value of an existing path', () => {
+      const obj = { a: 1 }
+      expect(removeValueAtPath(obj, 'a')).toEqual({})
+      expect(obj).toEqual({})
+    })
+    it('should remove the value of a nested path', () => {
+      const obj = { a: { b: 1 } }
+      expect(removeValueAtPath(obj, 'a.b')).toEqual({ a: {} })
+      expect(obj).toEqual({ a: {} })
+    })
+    it('should remove the value of an array path', () => {
+      const obj = { a: [1, 2] }
+      expect(removeValueAtPath(obj, 'a.0')).toEqual({ a: [2] })
+      expect(obj).toEqual({ a: [2] })
+    })
+  });
 })

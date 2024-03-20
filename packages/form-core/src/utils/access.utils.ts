@@ -28,6 +28,38 @@ export function getValueAtPath<TValue, TPath extends Paths<TValue>>(
   return value
 }
 
+export function removeValueAtPath<TValue, TPath extends Paths<TValue>>(
+  obj: TValue | undefined,
+  path: TPath,
+) {
+  if (!obj) {
+    return
+  }
+  if(!path) {
+    return obj
+  }
+
+  const parts = pathToParts(path as string)
+  const parentPath = parts.slice(0, -1).join('.')
+
+  const parent =
+    parts.length === 1
+      ? obj
+      : getValueAtPath(obj, parentPath as Paths<typeof obj>)
+  if (!parent) {
+    return obj
+  }
+
+  const part = parts[parts.length - 1]
+  if (typeof part === 'number' && Array.isArray(parent)) {
+    parent.splice(part, 1)
+  } else {
+    delete parent[part as keyof typeof parent]
+  }
+
+  return obj
+}
+
 export function setValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: TValue | undefined,
   path: TPath,
