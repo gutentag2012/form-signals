@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-}import {getValueAtPath, pathToParts, removeValueAtPath, setValueAtPath} from './access.utils'
+import {getValueAtPath, pathToParts, removeValueAtPath, setValueAtPath} from './access.utils'
 
 describe('access.utils', () => {
   describe('pathToParts', () => {
