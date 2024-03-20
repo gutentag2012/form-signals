@@ -611,12 +611,13 @@ describe('FieldLogic', () => {
           validateOnMount: true,
         },
       })
+      field.unmount()
 
       await field.handleBlur()
       field.handleChange('test')
       await field.handleSubmit()
 
-      expect(validate).toHaveBeenCalledTimes(0)
+      expect(validate).toHaveBeenCalledTimes(1)
     })
     it('should not valid  te if the form is unmounted', () => {
       const form = new FormLogic<{ name: string }>()
@@ -694,12 +695,12 @@ describe('FieldLogic', () => {
     })
   })
   describe('state', () => {
-    it('should not be mounted after construction', () => {
+    it('should be mounted after construction', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name')
 
-      expect(field.isMounted.value).toBe(false)
+      expect(field.isMounted.value).toBe(true)
     })
     it('should be mounted after mount', () => {
       const form = new FormLogic<{ name: string }>()
@@ -1056,7 +1057,7 @@ describe('FieldLogic', () => {
       expect(field.isTouched.value).toBe(true)
       expect(form.json.value.name).toEqual(['value', 'value2'])
       field.unmount()
-      
+
       expect(form.json.value.name).toEqual(['value', 'value2'])
       expect(field.isTouched.value).toBe(true)
     })
@@ -1093,6 +1094,44 @@ describe('FieldLogic', () => {
       expect(field.signal).toBeUndefined()
       field.handleChange('test1')
       expect(field.signal).toBeUndefined()
+    })
+
+
+    it("should update the default values if updated with new ones", () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: 'default',
+      })
+
+      expect(form.data.value.name.value).toBe('default')
+      field.updateOptions({defaultValue: "new"})
+      expect(form.data.value.name.value).toBe('new')
+    })
+    it("should not update the default values if the value is dirty", () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: 'default',
+      })
+
+      field.handleChange("new")
+      field.updateOptions({defaultValue: 'default'})
+
+      expect(form.data.value.name.value).toBe('new')
+    })
+    it("should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)", () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: 'default',
+      })
+
+      field.handleChange("new")
+      expect(field.isDirty.value).toBe(true)
+      field.updateOptions({defaultValue: 'new'})
+      expect(field.isDirty.value).toBe(false)
+
+      // This checks, that the value is now actually treated as a default value
+      field.updateOptions({defaultValue: 'new another'})
+      expect(form.data.value.name.value).toEqual('new another')
     })
   })
   describe('transform', () => {

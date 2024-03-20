@@ -6,7 +6,7 @@ import {
   effect,
   signal,
 } from '@preact/signals-core'
-import { FieldLogic, FieldLogicOptions } from './FieldLogic'
+import { FieldLogic, type FieldLogicOptions } from './FieldLogic'
 import {
   type Paths,
   type SignalifiedData,
@@ -17,8 +17,7 @@ import {
   type ValidatorSync,
   type ValueAtPath,
   clearSubmitEventErrors,
-  deepSignalifyValue,
-  equalityUtils,
+  isEqualDeep,
   getSignalValueAtPath,
   getValueAtPath,
   makeArrayEntry,
@@ -29,6 +28,9 @@ import {
   unSignalifyValueSubscribed,
   validateWithValidators,
   setSignalValuesFromObject,
+  deepSignalifyValue,
+  getLeftUnequalPaths,
+  removeValueAtPath,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -59,8 +61,6 @@ export type FormLogicOptions<TData> = {
   onSubmit?: (data: TData) => void | Promise<void>
 }
 
-// TODO Add a method to get or create a field, if considered this could also update the configuration of the field
-// TODO Add typed default values + NOTE There is the limitation, that if the default value is placed on a field, it cannot affect the type of the form, since the form type is not aware of the fields
 export class FormLogic<TData> {
   /**
    * Single source of truth for the form data
@@ -122,17 +122,6 @@ export class FormLogic<TData> {
   private readonly _isTouched = computed(() =>
     this._fieldsArray.value.some((field) => field.isTouched.value),
   )
-
-  private readonly _isDirty = computed(() => {
-    const defaultValues = (this._options?.defaultValues ?? {}) as TData
-    // Get any possible default value overrides from the fields
-    for (const field of this._fieldsArray.value) {
-      setValueAtPath(defaultValues, field.name, field.defaultValue)
-    }
-
-    return !equalityUtils(defaultValues, this._jsonData.value)
-  })
-
   private readonly _submitCountSuccessful = signal(0)
   private readonly _submitCountSuccessfulReadOnly = computed(
     () => this._submitCountSuccessful.value,
@@ -145,7 +134,6 @@ export class FormLogic<TData> {
     () =>
       this._submitCountSuccessful.value + this._submitCountUnsuccessful.value,
   )
-
   private readonly _isValidatingForm = signal(false)
   private readonly _isValidatingFormReadOnly = computed(
     () => this._isValidatingForm.value,
@@ -163,15 +151,43 @@ export class FormLogic<TData> {
     AbortController | undefined
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
-  private _isMounted = signal(false)
-  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
+  private readonly _options: Signal<FormLogicOptions<TData> | undefined>
+  private readonly _isDirty = computed(() => {
+    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
+    // Get any possible default value overrides from the fields
+    for (const field of this._fieldsArray.value) {
+      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
+    }
 
-  constructor(private readonly _options?: FormLogicOptions<TData>) {
-    if (this._options?.defaultValues) {
-      this._data = deepSignalifyValue(this._options.defaultValues)
+    return !isEqualDeep(defaultValues, this._jsonData.value)
+  })
+  private readonly _dirtyFields = computed(() => {
+    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
+    // Get any possible default value overrides from the fields
+    for (const field of this._fieldsArray.value) {
+      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
+    }
+
+    return getLeftUnequalPaths(defaultValues, this._jsonData.value)
+  })
+
+  constructor(options?: FormLogicOptions<TData>) {
+    if(options?.defaultValues) {
+      this._data = deepSignalifyValue(options.defaultValues)
     } else {
       this._data = signal({}) as SignalifiedData<TData>
     }
+
+    this._options = signal(options)
+    this.updateOptions(options)
+  }
+
+  private _isMounted = signal(false)
+  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
+
+  //region Getter
+  public get isMounted(): ReadonlySignal<boolean> {
+    return this._isMountedReadOnly
   }
 
   private _isValidatingFields = computed(() =>
@@ -193,7 +209,6 @@ export class FormLogic<TData> {
     return this._isValidatingFields
   }
 
-  //region State
   public get data(): SignalifiedData<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._data
@@ -281,9 +296,24 @@ export class FormLogic<TData> {
   public get canSubmit(): ReadonlySignal<boolean> {
     return this._canSubmit
   }
+  //endregion
 
-  public get isMounted(): ReadonlySignal<boolean> {
-    return this._isMountedReadOnly
+  public updateOptions(options?: FormLogicOptions<TData>): void {
+    const dirtyFields = this._dirtyFields.peek()
+    this._options.value = options
+
+    if(!this._data) return
+
+    if (!options?.defaultValues) {
+      return;
+    }
+
+    // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
+    const newDefaultValues = { ...options.defaultValues }
+    for (const dirtyField of dirtyFields) {
+      removeValueAtPath(newDefaultValues, dirtyField as never)
+    }
+    setSignalValuesFromObject(this._data, newDefaultValues, true)
   }
 
   public validateForEvent(
@@ -296,12 +326,12 @@ export class FormLogic<TData> {
     return validateWithValidators(
       value,
       event,
-      this._options?.validator,
-      this._options?.validatorAsync,
+      this._options.peek()?.validator,
+      this._options.peek()?.validatorAsync,
       this._previousAbortController,
       this._errorMap,
       this._isValidatingForm,
-      this._options?.accumulateErrors,
+      this._options.peek()?.accumulateErrors,
     )
   }
   //endregion
@@ -344,9 +374,10 @@ export class FormLogic<TData> {
 
     const currentJson = this._jsonData.peek()
 
-    if (this._options?.onSubmit) {
+    const currentOptions = this._options.peek()
+    if (currentOptions?.onSubmit) {
       try {
-        const res = Promise.resolve(this._options.onSubmit(currentJson))
+        const res = Promise.resolve(currentOptions.onSubmit(currentJson))
 
         await res.then((res) => {
           onFinished(true)
@@ -400,23 +431,25 @@ export class FormLogic<TData> {
   //endregion
 
   //region Field helpers
-public getOrCreateField<TPath extends Paths<TData>, TBoundValue>(
-  path: TPath,
-  fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
-): FieldLogic<TData, TPath, TBoundValue> {
-  const existingField = this._fields.peek().get(path)
-  if (existingField) {
-    existingField.updateOptions(fieldOptions)
-    return existingField as FieldLogic<TData, TPath, TBoundValue>
+  public getOrCreateField<TPath extends Paths<TData>, TBoundValue>(
+    path: TPath,
+    fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
+  ): FieldLogic<TData, TPath, TBoundValue> {
+    const existingField = this._fields.peek().get(path)
+
+    if (existingField) {
+      existingField.updateOptions(fieldOptions)
+      return existingField as FieldLogic<TData, TPath, TBoundValue>
+    }
+
+    const field = new FieldLogic<TData, TPath, TBoundValue>(
+      this,
+      path,
+      fieldOptions,
+    )
+    this.registerField(path, field, this.getDefaultValueForPath(path))
+    return field
   }
-  const field = new FieldLogic<TData, TPath, TBoundValue>(
-    this,
-    path,
-    fieldOptions,
-  )
-  this.registerField(path, field, this.getDefaultValueForPath(path))
-  return field
-}
 
   public registerField<TPath extends Paths<TData>, TBoundValue>(
     path: TPath,
@@ -457,10 +490,15 @@ public getOrCreateField<TPath extends Paths<TData>, TBoundValue>(
   //endregion
 
   //region Value helpers
+  private readonly _optionsReadOnly = computed(() => this._options.value)
+  public get options(): ReadonlySignal<FormLogicOptions<TData> | undefined> {
+    return this._optionsReadOnly
+  }
+
   public getDefaultValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): ValueAtPath<TData, TPath> | undefined {
-    return getValueAtPath<TData, TPath>(this._options?.defaultValues, path)
+    return getValueAtPath<TData, TPath>(this._options.peek()?.defaultValues, path)
   }
 
   public getValueForPath<TPath extends Paths<TData>>(
@@ -504,7 +542,7 @@ public getOrCreateField<TPath extends Paths<TData>, TBoundValue>(
 
   public resetValues(): void {
     this._isMounted.value = false
-    setSignalValuesFromObject(this._data, this._options?.defaultValues)
+    setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
     this._isMounted.value = true
   }
 

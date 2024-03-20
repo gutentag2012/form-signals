@@ -18,11 +18,11 @@ import {
   type ValueAtPath,
   clearSubmitEventErrors,
   deepSignalifyValue,
-  equalityUtils,
+  isEqualDeep,
   unSignalifyValue,
   unSignalifyValueSubscribed,
   validateWithValidators,
-  setSignalValuesFromObject,
+  setSignalValuesFromObject, getValueAtPath,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -77,13 +77,13 @@ export type FieldLogicOptions<
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
    * @param value The value from the binding
-   * @note This will only affect the {@link FieldLogic.handleChangeBound} method and the {@link FieldLogic.transformedSignal}, so changes directly to the {@link FieldLogic.signal} will not be transformed.
+   * @note This will only affect the {@link handleChangeBound} method and the {@link transformedSignal}, so changes directly to the {@link signal} will not be transformed.
    */
   transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName>
   /**
    * This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedSignal.
    * @param value The value from the form
-   * @note This will only affect the {@link FieldLogic.transformedSignal} and not the {@link FieldLogic.signal}.
+   * @note This will only affect the {@link transformedSignal} and not the {@link signal}.
    */
   transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
 }
@@ -102,8 +102,8 @@ export class FieldLogic<
 
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
-      !equalityUtils(
-        this.defaultValue,
+      !isEqualDeep(
+        this._defaultValue.value,
         unSignalifyValueSubscribed(this.signal.value),
       ),
   )
@@ -129,30 +129,41 @@ export class FieldLogic<
     AbortController | undefined
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
+  private readonly _options: Signal<FieldLogicOptions<TData, TName, TBoundValue> | undefined>
 
   constructor(
     private readonly _form: FormLogic<TData>,
     private readonly _name: TName,
-    private _options?: FieldLogicOptions<TData, TName, TBoundValue>,
+    options?: FieldLogicOptions<TData, TName, TBoundValue>,
   ) {
-    this._form.registerField(_name, this, _options?.defaultValue)
+    this._options = signal(options)
 
-    if (_options?.defaultState?.isTouched) this._isTouched.value = true
-    if (_options?.defaultState?.errors) {
-      this._errorMap.value = _options.defaultState.errors
-    }
+    this._form.registerField(_name, this, options?.defaultValue)
 
-    // TODO Check if this is really wanted + if so remove from all tests
+    // TODO Should not really mount at the start...
     this.mount()
+
+    this.updateOptions(options)
   }
   //endregion
 
   public updateOptions(options?: FieldLogicOptions<TData, TName, TBoundValue>): void {
-    if(!options) return
-    this._options = options
-    // TODO Update values if not touched + transformed signal
-    // TODO This also has to recreate all the signals that depend on the options, since e.g. the dirty signal depends on the value IMPORTANT: Figure out how to tell the form about this change, since the signal reference for the isDirty would also change
-    // TODO I could wrap the options in a signal, so everything that depends on the options is notified upon change
+    const isDirty = this._isDirty.peek()
+    this._options.value = options
+
+    if (options?.defaultState?.isTouched) {
+      this._isTouched.value = true
+    }
+    // We should only set the errors, if the are set, the field is not already touched or dirty, and the field is valid
+    if (options?.defaultState?.errors && !this._isTouched.peek() && !this._isDirty.value && this._isValid.peek()) {
+      this._errorMap.value = options.defaultState.errors
+    }
+
+    if(isDirty) return;
+
+    if (options?.defaultValue !== undefined) {
+      setSignalValuesFromObject(this.signal, options.defaultValue)
+    }
   }
 
   //region Internal State
@@ -204,16 +215,16 @@ export class FieldLogic<
   }
   //endregion
 
-  public get defaultValue(): ValueAtPath<TData, TName> | undefined {
-    return (
-      this._options?.defaultValue ??
-      this._form.getDefaultValueForPath(this._name)
-    )
+  private readonly _defaultValue = computed(() => {
+    return this._options.value?.defaultValue ?? getValueAtPath<TData, TName>(this._form.options.value?.defaultValues, this._name)
+  })
+  public get defaultValue(): ReadonlySignal<ValueAtPath<TData, TName> | undefined> {
+    return this._defaultValue
   }
 
   private setupTransformedSignal() {
     const baseSignal = this.signal
-    const options = this._options
+    const options = this._options.peek()
     const wrappedSignal = computed(() => {
       if (!options?.transformToBinding) return undefined
       return options.transformToBinding(
@@ -242,7 +253,7 @@ export class FieldLogic<
   //region Lifecycle
   public async mount(): Promise<void> {
     if (this._isMounted.peek()) return
-    this._form.initFieldSignal(this._name, this.defaultValue)
+    this._form.initFieldSignal(this._name, this.defaultValue.peek())
     this.setupTransformedSignal()
 
     // Once mounted, we want to listen to all changes to the value
@@ -260,7 +271,7 @@ export class FieldLogic<
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEvent('onChange', currentValue)
     }
-    if (this._options?.validateOnNestedChange) {
+    if (this._options.peek()?.validateOnNestedChange) {
       this._unsubscribeFromChangeEffect = effect(async () => {
         const currentValue = unSignalifyValueSubscribed(this.signal)
         await runOnChangeValidation(currentValue)
@@ -284,7 +295,7 @@ export class FieldLogic<
     this._isMounted.value = false
     this._transformedSignal = undefined
 
-    if (!this._options?.preserveValueOnUnmount) {
+    if (!this._options.peek()?.preserveValueOnUnmount) {
       this.resetState()
     }
 
@@ -292,9 +303,9 @@ export class FieldLogic<
 
     this._form.unregisterField(
       this._name,
-      this.defaultValue,
-      this._options?.preserveValueOnUnmount,
-      this._options?.resetValueToDefaultOnUnmount,
+      this.defaultValue.peek(),
+      this._options.peek()?.preserveValueOnUnmount,
+      this._options.peek()?.resetValueToDefaultOnUnmount,
     )
   }
 
@@ -313,12 +324,12 @@ export class FieldLogic<
     return validateWithValidators(
       value,
       event,
-      this._options?.validator,
-      this._options?.validatorAsync,
+      this._options.peek()?.validator,
+      this._options.peek()?.validatorAsync,
       this._previousAbortController,
       this._errorMap,
       this._isValidating,
-      this._options?.accumulateErrors,
+      this._options.peek()?.accumulateErrors,
     )
   }
 
@@ -345,7 +356,7 @@ export class FieldLogic<
     newValue: TBoundValue,
     options?: { shouldTouch?: boolean },
   ): void {
-    const transform = this._options?.transformFromBinding
+    const transform = this._options.peek()?.transformFromBinding
     if (!this._isMounted.peek() || !transform) return
     batch(() => {
       this.signal.value = transform(newValue)
@@ -473,7 +484,7 @@ export class FieldLogic<
 
   public resetValue(): void {
     this._isMounted.value = false
-    setSignalValuesFromObject(this.signal, this.defaultValue)
+    setSignalValuesFromObject(this.signal, this._defaultValue.peek())
     this._isMounted.value = true
   }
 

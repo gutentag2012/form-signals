@@ -354,6 +354,48 @@ describe('FormLogic', () => {
       field.unmount()
       expect(form.canSubmit.value).toBe(true)
     })
+
+    it("should update the default values if updated with new ones", () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+
+      expect(form.data.value.name.value).toBe('default')
+      form.updateOptions({defaultValues: { name: 'new' }})
+      expect(form.data.value.name.value).toBe('new')
+    })
+    it("should not update the default values if the value is dirty", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          dirty: false
+        },
+      })
+
+      form.data.value.dirty.value = true
+
+      form.updateOptions({defaultValues: { name: 'new', dirty: false }})
+      expect(form.data.value.name.value).toBe('new')
+      expect(form.data.value.dirty.value).toBe(true)
+    })
+    it("should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+
+      form.data.value.name.value = "new"
+      expect(form.isDirty.value).toBe(true)
+      form.updateOptions({defaultValues: { name: 'new' }})
+      expect(form.isDirty.value).toBe(false)
+
+      // This checks, that the value is now actually treated as a default value
+      form.updateOptions({defaultValues: { name: 'new another' }})
+      expect(form.data.value.name.value).toEqual('new another')
+    })
   })
   describe('state (fields)', () => {
     it('should be valid if all fields are valid', () => {
@@ -1000,7 +1042,7 @@ describe('FormLogic', () => {
       // TODO Add helpers for dynamic objects
       form.data.value.deep.value = {
         ...form.data.value.deep.value,
-        other: deepSignalifyValue('test'), 
+        other: deepSignalifyValue('test'),
       }
       form.data.value = {
         ...form.data.value,
@@ -1058,7 +1100,7 @@ describe('FormLogic', () => {
       })
       effect(() => {
         const value = form.data.peek().array.value
-        
+
         if(ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
@@ -1075,7 +1117,7 @@ describe('FormLogic', () => {
       expect(ignoreEffect).toBe(0)
 
       form.reset()
-      
+
       expect(form.json.value).toEqual(defaultValues)
       expect(nestedUpdate).toHaveBeenCalledTimes(6)
     })
@@ -1240,5 +1282,59 @@ describe('FormLogic', () => {
         form.swapValuesInArray('array', 1, 2, { shouldTouch: true }),
       ).not.toThrow()
     })
+
+    describe('getOrCreateField', () => {
+      it("should create a new field if it is not already existing", () => {
+        const form = new FormLogic<{ name: string }>({
+          defaultValues: {
+            name: 'default',
+          },
+        })
+
+        expect(form.fields.value.length).toBe(0)
+        const field = form.getOrCreateField('name')
+        expect(field).toBeInstanceOf(FieldLogic)
+        expect(field.signal.value).toEqual('default')
+        expect(form.fields.value.length).toBe(1)
+      })
+      it("should retrieve an existing field if it is already existing", () => {
+        const form = new FormLogic<{ name: string }>({
+          defaultValues: {
+            name: 'default',
+          },
+        })
+        const field = form.getOrCreateField('name')
+        expect(form.fields.value.length).toBe(1)
+        expect(form.getOrCreateField('name')).toBe(field)
+      })
+      it("should create a new field with provided options", () => {
+        const form = new FormLogic<{ name: string }>({
+          defaultValues: {
+            name: 'default',
+          },
+        })
+        form.mount()
+        const field = form.getOrCreateField('name', {
+          validator: {
+            validate: () => 'error',
+            validateOnMount: true,
+          }
+        })
+        // TODO Check onMount validation + check onChange validation after the options have been applied
+        expect(field.errors.value).toEqual(['error'])
+      })
+      it("should retieve an existing field and update its options", () => {
+        const form = new FormLogic<{ name: string }>()
+        form.mount()
+        new FieldLogic(form, 'name', {
+          defaultValue: "default",
+        })
+
+        const field = form.getOrCreateField('name', {
+          defaultValue: "new default"
+        })
+        expect(field.signal.value).toEqual("new default")
+      })
+    });
   })
 })
