@@ -315,6 +315,33 @@ describe('signals.utils', () => {
       })
       expect(fn).toHaveBeenCalledTimes(6)
     })
+    it("should make partial updates if configured", () => {
+      const obj = deepSignalifyValue({
+        first: 1,
+        second: 2,
+      })
+
+      const fn = vi.fn()
+      effect(() => {
+        const value = obj.peek().first.value
+        fn(value)
+      })
+      effect(() => {
+        const value = obj.peek().second.value
+        fn(value)
+      })
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      setSignalValuesFromObject(obj, {first: 2}, true)
+      expect(fn).toHaveBeenCalledTimes(3)
+      expect(obj.value.first.value).toEqual(2)
+      expect(obj.value.second.value).toEqual(2)
+
+      setSignalValuesFromObject(obj, {first: 3} as never)
+      expect(fn).toHaveBeenCalledTimes(4)
+      expect(obj.value.first.value).toEqual(3)
+      expect(obj.value.second).toBeUndefined()
+    })
   })
   describe('setSignalValueAtPath', () => {
     it('should do nothing for an undefined signalified object', () => {
