@@ -5,9 +5,9 @@ import {
   getSignalValueAtPath,
   removeSignalValueAtPath,
   setSignalValueAtPath,
+  setSignalValuesFromObject,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  setSignalValuesFromObject,
 } from './signals.utils'
 
 describe('signals.utils', () => {
@@ -98,9 +98,9 @@ describe('signals.utils', () => {
       const val = deepSignalifyValue({})
       expect(getSignalValueAtPath(val, undefined as never)).toBe(undefined)
     })
-    it('should return undefined for empty path', () => {
+    it('should return the object for empty path', () => {
       const val = deepSignalifyValue({})
-      expect(getSignalValueAtPath(val, '' as never)).toBe(undefined)
+      expect(getSignalValueAtPath(val, '' as never)).toBe(val)
     })
     it('should return undefined for empty object', () => {
       const val = deepSignalifyValue(undefined)
@@ -190,9 +190,13 @@ describe('signals.utils', () => {
       expect(obj.value.a.value[1]).toBe(undefined)
     })
     it('should add a deeply nested array', () => {
-      const obj = deepSignalifyValue({} as { a: Array<{ b: Array<{ c: number }>}>})
+      const obj = deepSignalifyValue(
+        {} as { a: Array<{ b: Array<{ c: number }> }> },
+      )
       setSignalValuesFromObject(obj, { a: [{ b: [{ c: 1 }] }] })
-      expect(obj.value.a.value[0].signal.value.b.value[0].signal.value.c.value).toBe(1)
+      expect(
+        obj.value.a.value[0].signal.value.b.value[0].signal.value.c.value,
+      ).toBe(1)
     })
     it('should update the value of an existing object', () => {
       const obj = deepSignalifyValue({ a: 1 })
@@ -205,8 +209,8 @@ describe('signals.utils', () => {
       expect(obj.value.a.value).toBe(1)
     })
     it('should remove the value of an existing object', () => {
-      const obj = deepSignalifyValue<{a:number, b?: number}>({ a: 1, b: 2 })
-      setSignalValuesFromObject(obj, {a: 1})
+      const obj = deepSignalifyValue<{ a: number; b?: number }>({ a: 1, b: 2 })
+      setSignalValuesFromObject(obj, { a: 1 })
       expect(obj.value.b).toBe(undefined)
     })
     it('should add a deeply nested object', () => {
@@ -215,7 +219,11 @@ describe('signals.utils', () => {
       expect(obj.value.a.value.b.value.c.value).toBe(1)
     })
     it('should update the values reactively', () => {
-      const obj = deepSignalifyValue<{name: string, deep: {item: number, other?: string}, array: Array<{value: number}>}>({
+      const obj = deepSignalifyValue<{
+        name: string
+        deep: { item: number; other?: string }
+        array: Array<{ value: number }>
+      }>({
         name: 'test',
         deep: {
           item: 1,
@@ -227,7 +235,7 @@ describe('signals.utils', () => {
           },
           {
             value: 2,
-          }
+          },
         ],
       })
       const fn = vi.fn()
@@ -310,12 +318,12 @@ describe('signals.utils', () => {
           },
           {
             value: 2,
-          }
+          },
         ],
       })
       expect(fn).toHaveBeenCalledTimes(6)
     })
-    it("should make partial updates if configured", () => {
+    it('should make partial updates if configured', () => {
       const obj = deepSignalifyValue({
         first: 1,
         second: 2,
@@ -332,12 +340,12 @@ describe('signals.utils', () => {
       })
       expect(fn).toHaveBeenCalledTimes(2)
 
-      setSignalValuesFromObject(obj, {first: 2}, true)
+      setSignalValuesFromObject(obj, { first: 2 }, true)
       expect(fn).toHaveBeenCalledTimes(3)
       expect(obj.value.first.value).toEqual(2)
       expect(obj.value.second.value).toEqual(2)
 
-      setSignalValuesFromObject(obj, {first: 3} as never)
+      setSignalValuesFromObject(obj, { first: 3 } as never)
       expect(fn).toHaveBeenCalledTimes(4)
       expect(obj.value.first.value).toEqual(3)
       expect(obj.value.second).toBeUndefined()

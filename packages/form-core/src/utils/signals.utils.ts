@@ -14,9 +14,7 @@ export function makeArrayEntry<T>(value: T): SignalArrayEntry<T> {
 }
 
 type SignalifiedTuple<
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   Tuple extends readonly any[],
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   Acc extends { key: number; signal: SignalifiedData<any> }[] = [],
 > = Tuple extends readonly []
   ? Acc
@@ -33,8 +31,7 @@ export type SignalifiedData<T> = Signal<
       ? T
       : T extends Array<infer U>
         ? Array<{ key: number; signal: SignalifiedData<U> }>
-        : // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-          T extends readonly any[]
+        : T extends readonly any[]
           ? SignalifiedTuple<T>
           : { [K in keyof T]: SignalifiedData<T[K]> }
     : T
@@ -89,7 +86,9 @@ function unSignalifyStep<T>(
   ) as T
 }
 
-export function unSignalifyValue<T>(value: SignalifiedData<T>): T {
+export function unSignalifyValue<T>(
+  value: SignalifiedData<T> | SignalifiedData<T>['value'],
+): T {
   const peekedValue =
     typeof value === 'object' && value instanceof Signal ? value.peek() : value
 
@@ -107,12 +106,15 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
-  if (!path || !obj?.peek()) {
+  if (!path) {
+    return obj as SignalifiedData<ValueAtPath<TValue, TPath>>
+  }
+
+  if (!obj?.peek()) {
     return undefined
   }
   const parts = pathToParts(path as string)
 
-  // biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
   let value: any = obj
   for (const part of parts) {
     const valuePeek = value.peek()
@@ -269,7 +271,6 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     const parts = pathToParts(path as string)
 
     if (!obj.peek()) {
-      // biome-ignore lint/suspicious/noExplicitAny: We are building an arbitrary object here, therefore, it has no specific type
       obj.value = {} as any
     }
 
