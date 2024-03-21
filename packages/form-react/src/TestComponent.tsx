@@ -1,82 +1,102 @@
 import { type Signal, useComputed } from '@preact/signals-react'
-import type { FieldLogic, Paths } from '@signal-forms/form-core'
-// biome-ignore lint/nursery/noUnusedImports: This is the React import
-import React, { useState } from 'react'
+import { unSignalifyValue } from '@signal-forms/form-core'
+// biome-ignore lint/correctness/noUnusedImports: This is the React import
+import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { useField, useFieldContext } from './field'
+import { useFieldContext } from './field'
 import { useForm } from './form'
 
-type Form = {
-  name: string
+function SignalText({ signal }: { signal: Signal<any> }) {
+  const text = useComputed(() =>
+    JSON.stringify(unSignalifyValue(signal.value), null, 2),
+  )
+  return <pre>{text}</pre>
 }
 
-function FormConsumer({ name }: { name: Paths }) {
-  const field = useField(name)
-  return (
-    <input
-      type="text"
-      value={field.signal.value}
-      onChange={(e) => {
-        field.handleChange(e.target.value as never)
-      }}
-    />
-  )
-}
-function FieldConsumer() {
+function Debug() {
   const field = useFieldContext()
-  return <SignalText text={field.signal} />
-}
-function FieldTransformedConsumer({
-  field,
-}: { field: FieldLogic<Form, 'name', unknown> }) {
-  const changed = useComputed(() => `${field.signal.value} (transformed)`)
-  return <p>{changed.value}</p>
+  return <SignalText signal={field.signal} />
 }
 
-function SignalText({ text }: { text: Signal<string> }) {
-  return <p>{text}</p>
-}
-
-function NestedField() {
-  const field = useField<Form, 'name'>('name')
+function ListItem() {
+  const field = useFieldContext<FormValues, `array.${number}`>()
   return (
-    <field.FieldProvider>
-      <FieldConsumer />
-    </field.FieldProvider>
+    <li>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <SignalText signal={field.signal} />
+        <button
+          type="button"
+          onClick={() => {
+            field.removeSelfFromArray()
+          }}
+        >
+          x
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            field.swapSelfInArray(field.currentNamePart - 1)
+          }}
+        >
+          up
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            field.swapSelfInArray(field.currentNamePart + 1)
+          }}
+        >
+          down
+        </button>
+      </div>
+    </li>
   )
+}
+
+function List() {
+  const field = useFieldContext<FormValues, 'array'>()
+  return (
+    <>
+      <ul>
+        {field.signal.value.map((value, index) => (
+          <field.SubFieldProvider
+            key={value.key}
+            name={`${index}`}
+            preserveValueOnUnmount
+          >
+            <ListItem />
+          </field.SubFieldProvider>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={() => {
+          field.pushValueToArray(field.signal.peek().length + 1)
+        }}
+      >
+        Add one
+      </button>
+    </>
+  )
+}
+
+interface FormValues {
+  array: number[]
 }
 
 function TestApp() {
-  const form = useForm<Form>({
+  const form = useForm<FormValues>({
     defaultValues: {
-      name: 'test',
-    },
-    onSubmit: (data) => {
-      console.log('submit 1', data)
+      array: [1, 2, 3],
     },
   })
-  const [someState, setSomeState] = useState(false)
   return (
-    <div>
-      <form.FormProvider asForm>
-        <FormConsumer name="name" />
-        <form.FieldProvider
-          name="name"
-          transformFromBinding={(v: number) => `${v}`}
-          transformToBinding={(v) => v.length}
-        >
-          <FieldConsumer />
-        </form.FieldProvider>
-        <form.FieldProvider name="name">
-          {(field) => <FieldTransformedConsumer field={field} />}
-        </form.FieldProvider>
-        <NestedField />
-
-        <button type="button" onClick={() => setSomeState(!someState)}>
-          Update
-        </button>
-      </form.FormProvider>
-    </div>
+    <form.FormProvider>
+      <form.FieldProvider name="array">
+        <Debug />
+        <List />
+      </form.FieldProvider>
+    </form.FormProvider>
   )
 }
 
