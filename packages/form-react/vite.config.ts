@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
@@ -51,7 +51,12 @@ export default defineConfig({
       },
     }),
     dts({
-      exclude: ['**/*.spec.ts', '**/*.spec-d.ts', 'vite.config.ts'],
+      exclude: [
+        '**/*.spec.ts',
+        '**/*.spec-d.ts',
+        'vite.config.ts',
+        'src/TestComponent.tsx',
+      ],
       insertTypesEntry: true,
     }),
   ],
