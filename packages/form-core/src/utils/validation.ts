@@ -17,6 +17,7 @@ export type ValidationErrorMap = {
   asyncErrorEvent?: ValidatorEvents
 }
 
+// TODO Add mixins to add more values to the validation
 // TODO Allow to only enable changed validation if touched
 interface ValidatorBase {
   /**
