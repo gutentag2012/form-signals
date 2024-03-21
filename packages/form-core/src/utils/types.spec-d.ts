@@ -1,38 +1,45 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { MakeOptionalIfNotExistInCheck, Paths, ValueAtPath } from './types'
+import type {
+  LastPath,
+  MakeOptionalIfNotExistInCheck,
+  ParentPath,
+  Paths,
+  ValueAtPath,
+} from './types'
 
 describe('types', () => {
   //region Paths
   it('should not generate paths for primitives + dates', () => {
-    expectTypeOf<Paths<string>>().toEqualTypeOf<never>()
-    expectTypeOf<Paths<number>>().toEqualTypeOf<never>()
-    expectTypeOf<Paths<boolean>>().toEqualTypeOf<never>()
-    expectTypeOf<Paths<Date>>().toEqualTypeOf<never>()
-    expectTypeOf<Paths<null>>().toEqualTypeOf<never>()
-    expectTypeOf<Paths<undefined>>().toEqualTypeOf<never>()
+    expectTypeOf<Paths<string>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<number>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<boolean>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<Date>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<null>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<undefined>>().toEqualTypeOf<''>()
   })
   it('should generate the first level of paths for objects', () => {
-    expectTypeOf<Paths<{ name: string }>>().toEqualTypeOf<'name'>()
-    expectTypeOf<Paths<{ age: number }>>().toEqualTypeOf<'age'>()
-    expectTypeOf<Paths<{ isHuman: boolean }>>().toEqualTypeOf<'isHuman'>()
-    expectTypeOf<Paths<{ birthday: Date }>>().toEqualTypeOf<'birthday'>()
+    expectTypeOf<Paths<{ name: string }>>().toEqualTypeOf<'' | 'name'>()
+    expectTypeOf<Paths<{ age: number }>>().toEqualTypeOf<'' | 'age'>()
+    expectTypeOf<Paths<{ isHuman: boolean }>>().toEqualTypeOf<'' | 'isHuman'>()
+    expectTypeOf<Paths<{ birthday: Date }>>().toEqualTypeOf<'' | 'birthday'>()
   })
   it('should generate a deep path for nested objects', () => {
     expectTypeOf<Paths<{ person: { name: string } }>>().toEqualTypeOf<
-      'person.name' | 'person'
+      '' | 'person.name' | 'person'
     >()
     expectTypeOf<Paths<{ person: { age: number } }>>().toEqualTypeOf<
-      'person.age' | 'person'
+      '' | 'person.age' | 'person'
     >()
     expectTypeOf<Paths<{ person: { isHuman: boolean } }>>().toEqualTypeOf<
-      'person.isHuman' | 'person'
+      '' | 'person.isHuman' | 'person'
     >()
     expectTypeOf<Paths<{ person: { birthday: Date } }>>().toEqualTypeOf<
-      'person.birthday' | 'person'
+      '' | 'person.birthday' | 'person'
     >()
     expectTypeOf<
       Paths<{ person: { deep: { object: { path: number } } } }>
     >().toEqualTypeOf<
+      | ''
       | 'person'
       | 'person.deep'
       | 'person.deep.object'
@@ -43,18 +50,47 @@ describe('types', () => {
     expectTypeOf<
       Paths<{ obj: { array: Array<{ name: string }> } }>
     >().toEqualTypeOf<
-      'obj' | 'obj.array' | `obj.array.${number}` | `obj.array.${number}.name`
+      | ''
+      | 'obj'
+      | 'obj.array'
+      | `obj.array.${number}`
+      | `obj.array.${number}.name`
     >()
-    expectTypeOf<Paths<string[]>>().toEqualTypeOf<`${number}`>()
+    expectTypeOf<Paths<string[]>>().toEqualTypeOf<'' | `${number}`>()
   })
   it('should generate all paths of a tuple', () => {
     expectTypeOf<Paths<{ tuple: [number, { name: string }] }>>().toEqualTypeOf<
-      'tuple' | 'tuple.0' | 'tuple.1' | 'tuple.1.name'
+      '' | 'tuple' | 'tuple.0' | 'tuple.1' | 'tuple.1.name'
     >()
-    expectTypeOf<Paths<[string]>>().toEqualTypeOf<'0'>()
+    expectTypeOf<Paths<[string]>>().toEqualTypeOf<'' | '0'>()
   })
   it("should default to a string if it can't infer the type", () => {
     expectTypeOf<Paths>().toEqualTypeOf<string>()
+  })
+  //endregion
+  //region ParentPath
+  it('should get the parent path of a path', () => {
+    expectTypeOf<ParentPath<'name'>>().toEqualTypeOf<''>()
+    expectTypeOf<ParentPath<'person.name'>>().toEqualTypeOf<'person'>()
+    expectTypeOf<
+      ParentPath<'person.deep.object.path'>
+    >().toEqualTypeOf<'person.deep.object'>()
+    expectTypeOf<
+      ParentPath<'person.deep.object.path.0'>
+    >().toEqualTypeOf<'person.deep.object.path'>()
+    expectTypeOf<
+      ParentPath<'array.2.0.1.test'>
+    >().toEqualTypeOf<'array.2.0.1'>()
+  })
+  //endregion
+  //region LastPath
+  it('should get the last path of a path', () => {
+    expectTypeOf<LastPath<'name'>>().toEqualTypeOf<'name'>()
+    expectTypeOf<LastPath<'person.name'>>().toEqualTypeOf<'name'>()
+    expectTypeOf<LastPath<'person.deep.object.path'>>().toEqualTypeOf<'path'>()
+    expectTypeOf<LastPath<'person.deep.object.path.0'>>().toEqualTypeOf<0>()
+    expectTypeOf<LastPath<'array.2.0.1.test'>>().toEqualTypeOf<'test'>()
+    expectTypeOf<LastPath<`array.${number}`>>().toEqualTypeOf<number>()
   })
   //endregion
   //region ValueAtPath
@@ -85,6 +121,16 @@ describe('types', () => {
       name: string
     }>()
     expectTypeOf<ValueAtPath<Obj, 'array.0.name'>>().toEqualTypeOf<string>()
+  })
+  it('should return any if the path is not included in the object', () => {
+    const obj = { test: 1 }
+    type Obj = typeof obj
+    expectTypeOf<ValueAtPath<Obj, 'testt'>>().toEqualTypeOf<unknown>()
+  })
+  it('should return the base object, if an empty string is provided as the key', () => {
+    const obj = { test: 1 }
+    type Obj = typeof obj
+    expectTypeOf<ValueAtPath<Obj, ''>>().toEqualTypeOf<Obj>()
   })
   //endregion
   //region MakeOptionalIfNotExistInCheck
@@ -195,8 +241,11 @@ describe('types', () => {
   })
   it("should make keys in an object optional if they don't exist in the check object", () => {
     expectTypeOf<
-      MakeOptionalIfNotExistInCheck<{name: string, age: number}, {name: string}>
-    >().toEqualTypeOf<{ name: string, age: number | undefined }>()
+      MakeOptionalIfNotExistInCheck<
+        { name: string; age: number },
+        { name: string }
+      >
+    >().toEqualTypeOf<{ name: string; age: number | undefined }>()
     expectTypeOf<
       MakeOptionalIfNotExistInCheck<{ age: number }, { name: string }>
     >().toEqualTypeOf<{ age: number | undefined }>()
