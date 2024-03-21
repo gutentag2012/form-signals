@@ -1,9 +1,9 @@
+import { effect } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
-import { Truthy } from './utils/internal.utils'
 import { deepSignalifyValue } from './utils'
-import { effect } from '@preact/signals-core'
+import { Truthy } from './utils/internal.utils'
 
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
@@ -355,7 +355,7 @@ describe('FormLogic', () => {
       expect(form.canSubmit.value).toBe(true)
     })
 
-    it("should update the default values if updated with new ones", () => {
+    it('should update the default values if updated with new ones', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: 'default',
@@ -363,37 +363,37 @@ describe('FormLogic', () => {
       })
 
       expect(form.data.value.name.value).toBe('default')
-      form.updateOptions({defaultValues: { name: 'new' }})
+      form.updateOptions({ defaultValues: { name: 'new' } })
       expect(form.data.value.name.value).toBe('new')
     })
-    it("should not update the default values if the value is dirty", () => {
+    it('should not update the default values if the value is dirty', () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'default',
-          dirty: false
+          dirty: false,
         },
       })
 
       form.data.value.dirty.value = true
 
-      form.updateOptions({defaultValues: { name: 'new', dirty: false }})
+      form.updateOptions({ defaultValues: { name: 'new', dirty: false } })
       expect(form.data.value.name.value).toBe('new')
       expect(form.data.value.dirty.value).toBe(true)
     })
-    it("should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)", () => {
+    it('should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)', () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'default',
         },
       })
 
-      form.data.value.name.value = "new"
+      form.data.value.name.value = 'new'
       expect(form.isDirty.value).toBe(true)
-      form.updateOptions({defaultValues: { name: 'new' }})
+      form.updateOptions({ defaultValues: { name: 'new' } })
       expect(form.isDirty.value).toBe(false)
 
       // This checks, that the value is now actually treated as a default value
-      form.updateOptions({defaultValues: { name: 'new another' }})
+      form.updateOptions({ defaultValues: { name: 'new another' } })
       expect(form.data.value.name.value).toEqual('new another')
     })
   })
@@ -1030,7 +1030,12 @@ describe('FormLogic', () => {
           },
         ],
       }
-      const form = new FormLogic<{name: string, deep: {item: number, other?: string}, array: Array<{value: number}>, hidden?: string}>({
+      const form = new FormLogic<{
+        name: string
+        deep: { item: number; other?: string }
+        array: Array<{ value: number }>
+        hidden?: string
+      }>({
         defaultValues,
       })
       form.mount()
@@ -1055,10 +1060,7 @@ describe('FormLogic', () => {
           item: 2,
           other: 'test',
         },
-        array: [
-          { value: 3 },
-          { value: 2 },
-        ],
+        array: [{ value: 3 }, { value: 2 }],
         hidden: 'test',
       })
 
@@ -1066,52 +1068,56 @@ describe('FormLogic', () => {
       let ignoreEffect = 9
       effect(() => {
         const value = form.data.peek().name.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.peek().deep.peek().item.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.peek().deep.peek().other?.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         // This should not trigger
         nestedUpdate(value)
-        throw new Error("Should not update the other deep value since it is not included in the default values")
+        throw new Error(
+          'Should not update the other deep value since it is not included in the default values',
+        )
       })
       effect(() => {
         const value = form.data.peek().array.peek()[0].signal.peek().value.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.peek().array.peek()[1].signal.peek().value.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         // This should not trigger
         nestedUpdate(value)
-        throw new Error("Should not update the second array value since it is not included in the default values")
+        throw new Error(
+          'Should not update the second array value since it is not included in the default values',
+        )
       })
       effect(() => {
         const value = form.data.peek().deep.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.peek().array.value
 
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.peek().hidden?.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
         const value = form.data.value
-        if(ignoreEffect-- > 0) return
+        if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       expect(ignoreEffect).toBe(0)
@@ -1173,6 +1179,23 @@ describe('FormLogic', () => {
       form.mount()
       form.removeValueFromArray('array', 1)
       expect(form.json.value.array).toEqual([1, 3])
+    })
+    it('should remove from the base object, if the whole form is an array', () => {
+      const form = new FormLogic({
+        defaultValues: [1, 2, 3],
+      })
+      form.mount()
+      form.removeValueFromArray('', 1)
+      expect(form.json.value).toEqual([1, 3])
+    })
+    it('should do nothing when trying to remove from a non existing index', () => {
+      const form = new FormLogic({
+        defaultValues: [1, 2, 3],
+      })
+      form.mount()
+      form.removeValueFromArray('', 3)
+      form.removeValueFromArray('', -1)
+      expect(form.json.value).toEqual([1, 2, 3])
     })
     it('should not do anything when trying to remove a value from a form value that is not an array', () => {
       const form = new FormLogic({
@@ -1282,9 +1305,20 @@ describe('FormLogic', () => {
         form.swapValuesInArray('array', 1, 2, { shouldTouch: true }),
       ).not.toThrow()
     })
+    it('should do nothing when trying to swap two values from non existing indexes', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      form.swapValuesInArray('array', 3, 4)
+      form.swapValuesInArray('array', -1, 4)
+      expect(form.json.value.array).toEqual([1, 2, 3])
+    })
 
     describe('getOrCreateField', () => {
-      it("should create a new field if it is not already existing", () => {
+      it('should create a new field if it is not already existing', () => {
         const form = new FormLogic<{ name: string }>({
           defaultValues: {
             name: 'default',
@@ -1297,7 +1331,7 @@ describe('FormLogic', () => {
         expect(field.signal.value).toEqual('default')
         expect(form.fields.value.length).toBe(1)
       })
-      it("should retrieve an existing field if it is already existing", () => {
+      it('should retrieve an existing field if it is already existing', () => {
         const form = new FormLogic<{ name: string }>({
           defaultValues: {
             name: 'default',
@@ -1307,7 +1341,7 @@ describe('FormLogic', () => {
         expect(form.fields.value.length).toBe(1)
         expect(form.getOrCreateField('name')).toBe(field)
       })
-      it("should create a new field with provided options", () => {
+      it('should create a new field with provided options', () => {
         const form = new FormLogic<{ name: string }>({
           defaultValues: {
             name: 'default',
@@ -1318,23 +1352,23 @@ describe('FormLogic', () => {
           validator: {
             validate: () => 'error',
             validateOnMount: true,
-          }
+          },
         })
         // TODO Check onMount validation + check onChange validation after the options have been applied
         expect(field.errors.value).toEqual(['error'])
       })
-      it("should retieve an existing field and update its options", () => {
+      it('should retieve an existing field and update its options', () => {
         const form = new FormLogic<{ name: string }>()
         form.mount()
         new FieldLogic(form, 'name', {
-          defaultValue: "default",
+          defaultValue: 'default',
         })
 
         const field = form.getOrCreateField('name', {
-          defaultValue: "new default"
+          defaultValue: 'new default',
         })
-        expect(field.signal.value).toEqual("new default")
+        expect(field.signal.value).toEqual('new default')
       })
-    });
+    })
   })
 })

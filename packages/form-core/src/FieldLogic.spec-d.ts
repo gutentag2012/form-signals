@@ -146,6 +146,25 @@ describe('FieldLogic (types)', () => {
       .parameter(0)
       .toBeNumber()
   })
+  it('should only allow to swap self if parent is an array', () => {
+    const form = new FormLogic<{ names: string }>()
+    const field = new FieldLogic(form, 'names' as const)
+
+    expectTypeOf(field.swapSelfInArray).parameter(0).toBeNever()
+  })
+  it('should only allow to swap self in tuple if target has the same type', () => {
+    const form = new FormLogic<{ names: readonly [string, number, string] }>()
+    const field = new FieldLogic(form, 'names.0' as const)
+
+    // You cannot swap a string with a number
+    expectTypeOf(field.swapSelfInArray<1>)
+      .parameter(0)
+      .toBeNever()
+    // You can swap two strings
+    expectTypeOf(field.swapSelfInArray<2>)
+      .parameter(0)
+      .toBeNumber()
+  })
   //endregion
   //region nested types
   it('should type all nested fields as signals', () => {
@@ -291,7 +310,7 @@ describe('FieldLogic (types)', () => {
       },
       transformToBinding: (value: string) => {
         assertType<string>(value)
-        return parseInt(value)
+        return Number.parseInt(value)
       },
     })
 

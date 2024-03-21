@@ -8,6 +8,8 @@ import {
 } from '@preact/signals-core'
 import type { FormLogic } from './FormLogic'
 import {
+  type LastPath,
+  type ParentPath,
   type Paths,
   type SignalifiedData,
   type ValidationError,
@@ -18,11 +20,13 @@ import {
   type ValueAtPath,
   clearSubmitEventErrors,
   deepSignalifyValue,
+  getValueAtPath,
   isEqualDeep,
+  pathToParts,
+  setSignalValuesFromObject,
   unSignalifyValue,
   unSignalifyValueSubscribed,
   validateWithValidators,
-  setSignalValuesFromObject, getValueAtPath,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -99,22 +103,12 @@ export class FieldLogic<
   //region Description
   private readonly _isTouched = signal(false)
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
-
-  private readonly _isDirty: ReadonlySignal<boolean> = computed(
-    () =>
-      !isEqualDeep(
-        this._defaultValue.value,
-        unSignalifyValueSubscribed(this.signal.value),
-      ),
-  )
-  //endregion
-
   //region External Validation State
   private readonly _isValidating = signal(false)
+  //endregion
   private readonly _isValidatingReadOnly = computed(
     () => this._isValidating.value,
   )
-
   private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
   private readonly _errors = computed(() => {
     const { sync, async } = this._errorMap.value
@@ -123,13 +117,31 @@ export class FieldLogic<
   private readonly _isValid = computed(
     () => !this._errors.value.filter(Truthy).length,
   )
-  //endregion
-
   private readonly _previousAbortController: Signal<
     AbortController | undefined
   > = signal(undefined)
+  //endregion
   private _unsubscribeFromChangeEffect?: () => void
-  private readonly _options: Signal<FieldLogicOptions<TData, TName, TBoundValue> | undefined>
+  private readonly _options: Signal<
+    FieldLogicOptions<TData, TName, TBoundValue> | undefined
+  >
+  private readonly _defaultValue = computed(() => {
+    return (
+      this._options.value?.defaultValue ??
+      getValueAtPath<TData, TName>(
+        this._form.options.value?.defaultValues,
+        this._name,
+      )
+    )
+  })
+  private readonly _isDirty: ReadonlySignal<boolean> = computed(
+    () =>
+      !isEqualDeep(
+        this._defaultValue.value,
+        unSignalifyValueSubscribed(this.signal),
+      ),
+  )
+  //endregion
 
   constructor(
     private readonly _form: FormLogic<TData>,
@@ -145,36 +157,22 @@ export class FieldLogic<
 
     this.updateOptions(options)
   }
-  //endregion
-
-  public updateOptions(options?: FieldLogicOptions<TData, TName, TBoundValue>): void {
-    const isDirty = this._isDirty.peek()
-    this._options.value = options
-
-    if (options?.defaultState?.isTouched) {
-      this._isTouched.value = true
-    }
-    // We should only set the errors, if the are set, the field is not already touched or dirty, and the field is valid
-    if (options?.defaultState?.errors && !this._isTouched.peek() && !this._isDirty.value && this._isValid.peek()) {
-      this._errorMap.value = options.defaultState.errors
-    }
-
-    if(isDirty) return;
-
-    if (options?.defaultValue !== undefined) {
-      setSignalValuesFromObject(this.signal, options.defaultValue)
-    }
-  }
 
   //region Internal State
   private _isMounted = signal(false)
   private _isMountedReadOnly = computed(() => this._isMounted.value)
-  private _transformedSignal?: Signal<TBoundValue | undefined>
 
   //region State
   public get isMounted(): Signal<boolean> {
     return this._isMountedReadOnly
   }
+
+  private _transformedSignal?: Signal<TBoundValue | undefined>
+
+  public get transformedSignal(): Signal<TBoundValue> {
+    return this._transformedSignal as Signal<TBoundValue>
+  }
+
   /**
    * The reactive signal of the field value, you can get, subscribe and set the value of the field with this signal.
    */
@@ -182,12 +180,12 @@ export class FieldLogic<
     return this._form.getValueForPath(this._name)
   }
 
-  public get transformedSignal(): Signal<TBoundValue> {
-    return this._transformedSignal as Signal<TBoundValue>
-  }
-
   public get name(): TName {
     return this._name
+  }
+
+  public get currentNamePart(): LastPath<TName> {
+    return pathToParts(this._name).pop() as LastPath<TName>
   }
 
   public get form(): FormLogic<TData> {
@@ -215,38 +213,35 @@ export class FieldLogic<
   }
   //endregion
 
-  private readonly _defaultValue = computed(() => {
-    return this._options.value?.defaultValue ?? getValueAtPath<TData, TName>(this._form.options.value?.defaultValues, this._name)
-  })
-  public get defaultValue(): ReadonlySignal<ValueAtPath<TData, TName> | undefined> {
+  public get defaultValue(): ReadonlySignal<
+    ValueAtPath<TData, TName> | undefined
+  > {
     return this._defaultValue
   }
 
-  private setupTransformedSignal() {
-    const baseSignal = this.signal
-    const options = this._options.peek()
-    const wrappedSignal = computed(() => {
-      if (!options?.transformToBinding) return undefined
-      return options.transformToBinding(
-        unSignalifyValueSubscribed(this.signal.value),
-      )
-    })
+  public updateOptions(
+    options?: FieldLogicOptions<TData, TName, TBoundValue>,
+  ): void {
+    const isDirty = this._isDirty.peek()
+    this._options.value = options
 
-    this._transformedSignal = {
-      set value(newValue: TBoundValue) {
-        if (!options?.transformFromBinding) return
-        const transformedValue = options.transformFromBinding(newValue)
-        baseSignal.value = deepSignalifyValue(transformedValue).value
-      },
-      get value() {
-        return wrappedSignal.value as TBoundValue
-      },
-      peek: wrappedSignal.peek.bind(wrappedSignal),
-      brand: wrappedSignal.brand,
-      toJSON: wrappedSignal.toJSON.bind(wrappedSignal),
-      valueOf: wrappedSignal.valueOf.bind(wrappedSignal),
-      toString: wrappedSignal.toString.bind(wrappedSignal),
-      subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
+    if (options?.defaultState?.isTouched) {
+      this._isTouched.value = true
+    }
+    // We should only set the errors, if the are set, the field is not already touched or dirty, and the field is valid
+    if (
+      options?.defaultState?.errors &&
+      !this._isTouched.peek() &&
+      !this._isDirty.value &&
+      this._isValid.peek()
+    ) {
+      this._errorMap.value = options.defaultState.errors
+    }
+
+    if (isDirty) return
+
+    if (options?.defaultValue !== undefined) {
+      setSignalValuesFromObject(this.signal, options.defaultValue)
     }
   }
 
@@ -288,7 +283,6 @@ export class FieldLogic<
 
     await this.validateForEvent('onMount')
   }
-  //endregion
 
   public unmount(): void {
     if (!this._isMounted.peek()) return
@@ -308,6 +302,7 @@ export class FieldLogic<
       this._options.peek()?.resetValueToDefaultOnUnmount,
     )
   }
+  //endregion
 
   //region Handlers
   /**
@@ -319,7 +314,8 @@ export class FieldLogic<
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.signal) return
+    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.signal)
+      return
     const value = checkValue ?? unSignalifyValue(this.signal)
     return validateWithValidators(
       value,
@@ -345,7 +341,7 @@ export class FieldLogic<
   ): void {
     if (!this._isMounted.peek()) return
     batch(() => {
-      this.signal.value = newValue
+      setSignalValuesFromObject(this.signal, newValue)
       if (options?.shouldTouch) {
         this._isTouched.value = true
       }
@@ -359,7 +355,7 @@ export class FieldLogic<
     const transform = this._options.peek()?.transformFromBinding
     if (!this._isMounted.peek() || !transform) return
     batch(() => {
-      this.signal.value = transform(newValue)
+      setSignalValuesFromObject(this.signal, transform(newValue))
       if (options?.shouldTouch) {
         this._isTouched.value = true
       }
@@ -382,13 +378,13 @@ export class FieldLogic<
   public async handleSubmit(): Promise<void> {
     await this.validateForEvent('onSubmit')
   }
-  //endregion
 
   public handleTouched(): void {
     this._isTouched.value = true
   }
+  //endregion
 
-  //region Array Helpers
+  // TODO Handle these via a type, so that they are not displayed on a non array element
   /**
    * Insert a value into an array. If the field is not an array, it will throw an error. For readonly arrays you can only insert values at existing indexes with the correct types.
    * This method should not be used to update the value of an array item, use `field.signal.value[index].value = newValue` instead.
@@ -398,11 +394,9 @@ export class FieldLogic<
    */
   public insertValueInArray<Index extends number>(
     index: Index,
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
-      : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -410,13 +404,14 @@ export class FieldLogic<
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
+  //region Array Helpers
+
   /**
    * Push a value to an array. If the field is not an array it will throw an error. You should also not push a value to a readonly array, this is also intended to give type errors.
    * @param value The value to push to the array
    * @param options Options for the push
    */
   public pushValueToArray(
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : never,
@@ -432,13 +427,29 @@ export class FieldLogic<
    * @param options Options for the remove
    */
   public removeValueFromArray(
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
     this._form.removeValueFromArray(this._name, index, options)
   }
-  //endregion
+
+  public removeSelfFromArray(options?: { shouldTouch?: boolean }) {
+    const path = pathToParts(this._name)
+    const index = path.splice(path.length - 1, 1)[0]
+    const parent = path.join('.')
+    if (index === undefined || typeof index !== 'number') {
+      console.error(
+        `Tried to remove self from a non-array-item field at ${this._name}`,
+      )
+      return
+    }
+    // TODO Check if this can be typed better
+    this._form.removeValueFromArray(
+      parent as Paths<TData>,
+      index as never,
+      options,
+    )
+  }
 
   /**
    * Swap two values in an array. If the field is not an array it will throw an error. You should also not swap values in a readonly array, this is also intended to give type errors.
@@ -447,11 +458,9 @@ export class FieldLogic<
    * @param options Options for the swap
    */
   public swapValuesInArray<IndexA extends number, IndexB extends number>(
-    // biome-ignore lint/suspicious/noExplicitAny: This could be any array
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
-      : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -459,11 +468,9 @@ export class FieldLogic<
           ? number
           : never
         : never,
-    // biome-ignore lint/suspicious/noExplicitAny: This could be any array
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
-      : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -476,7 +483,38 @@ export class FieldLogic<
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
-  public resetState() : void {
+  public swapSelfInArray<IndexB extends number>(
+    indexB: ValueAtPath<TData, ParentPath<TName>> extends any[]
+      ? number
+      : ValueAtPath<TData, ParentPath<TName>> extends readonly any[]
+        ? ValueAtPath<TData, ParentPath<TName>>[IndexB] extends ValueAtPath<
+            TData,
+            TName
+          >
+          ? number
+          : never
+        : never,
+    options?: { shouldTouch?: boolean },
+  ) {
+    const path = pathToParts(this._name)
+    const index = path.splice(path.length - 1, 1)[0]
+    const parent = path.join('.')
+    if (index === undefined || typeof index !== 'number') {
+      console.error(
+        `Tried to swap self from a non-array-item field at ${this._name}`,
+      )
+      return
+    }
+    // TODO Check if this can be typed better
+    this._form.swapValuesInArray(
+      parent as Paths<TData>,
+      index as never,
+      indexB as never,
+      options,
+    )
+  }
+
+  public resetState(): void {
     this._errorMap.value = {}
     this._isTouched.value = false
     this._isValidating.value = false
@@ -491,5 +529,31 @@ export class FieldLogic<
   public reset(): void {
     this.resetState()
     this.resetValue()
+  }
+
+  private setupTransformedSignal() {
+    const baseSignal = this.signal
+    const options = this._options.peek()
+    const wrappedSignal = computed(() => {
+      if (!options?.transformToBinding) return undefined
+      return options.transformToBinding(unSignalifyValueSubscribed(this.signal))
+    })
+
+    this._transformedSignal = {
+      set value(newValue: TBoundValue) {
+        if (!options?.transformFromBinding) return
+        const transformedValue = options.transformFromBinding(newValue)
+        baseSignal.value = deepSignalifyValue(transformedValue).value
+      },
+      get value() {
+        return wrappedSignal.value as TBoundValue
+      },
+      peek: wrappedSignal.peek.bind(wrappedSignal),
+      brand: wrappedSignal.brand,
+      toJSON: wrappedSignal.toJSON.bind(wrappedSignal),
+      valueOf: wrappedSignal.valueOf.bind(wrappedSignal),
+      toString: wrappedSignal.toString.bind(wrappedSignal),
+      subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
+    }
   }
 }

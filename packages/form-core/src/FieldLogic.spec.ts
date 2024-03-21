@@ -144,6 +144,29 @@ describe('FieldLogic', () => {
 
       expect(form.data.value.name.value).toBe('new value')
     })
+    it('should reactively update child values if an object is changed', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          nested: {
+            name: 'test',
+          },
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'nested')
+      field.mount()
+
+      const fn = vi.fn()
+      effect(() => {
+        fn(field.signal.peek().name.value)
+      })
+      field.handleChange({
+        name: 'new',
+      })
+      // It ran twice since it runs once when the effect is set up
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(field.signal.value.name.value).toEqual('new')
+    })
     it('should reactively insert a value into the array', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -188,6 +211,21 @@ describe('FieldLogic', () => {
 
       expect(field.signal.value.length).toBe(2)
     })
+    it('should reactively remove itself from an array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.1' as const)
+      field.mount()
+
+      expect(form.data.value.array.value.length).toBe(3)
+      field.removeSelfFromArray()
+      expect(form.data.value.array.value.length).toBe(2)
+    })
     it('should reactively update a value in the array', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -223,6 +261,20 @@ describe('FieldLogic', () => {
 
       expect(field.signal.value[0].signal.value).toBe(3)
       expect(field.signal.value[2].signal.value).toBe(1)
+    })
+    it('should reactively swap itself in an array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.1' as const)
+      field.mount()
+      field.swapSelfInArray(0)
+      expect(form.data.value.array.value[0].signal.value).toBe(2)
+      expect(form.data.value.array.value[1].signal.value).toBe(1)
     })
     it('should do nothing when trying to insert a value into a non-array field', () => {
       const form = new FormLogic({
@@ -272,6 +324,38 @@ describe('FieldLogic', () => {
 
       expect(field.signal.value).toBe(1)
     })
+    it('should do nothing when trying to remove itself from a non-array-item field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          someVal: 1,
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'someVal')
+      field.mount()
+
+      expect(field.signal.value).toBe(1)
+      field.removeSelfFromArray()
+
+      expect(field.signal.value).toBe(1)
+    })
+    it('should do nothing when trying to remove a non existing index', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const)
+      field.mount()
+      field.removeValueFromArray(2)
+      field.removeValueFromArray(-1)
+
+      expect(field.signal.value[0].signal.value).toBe(1)
+      expect(field.signal.value[1].signal.value).toBe(2)
+    })
     it('should do nothing when trying to swap values in a non-array field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -287,6 +371,38 @@ describe('FieldLogic', () => {
       field.swapValuesInArray(1 as never, 2 as never)
 
       expect(field.signal.value).toBe(1)
+    })
+    it('should do nothing when trying to swap itself in a non-array-item field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          someVal: 1,
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'someVal')
+      field.mount()
+
+      expect(field.signal.value).toBe(1)
+      field.swapSelfInArray(0 as never)
+
+      expect(field.signal.value).toBe(1)
+    })
+    it('should do nothing when trying to swap to a non existing index', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const)
+      field.mount()
+      field.swapValuesInArray(0, 2)
+      field.swapValuesInArray(-1, 1)
+
+      expect(field.signal.value[0].signal.value).toBe(1)
+      expect(field.signal.value[1].signal.value).toBe(2)
     })
   })
   describe('validation', () => {
@@ -1096,41 +1212,40 @@ describe('FieldLogic', () => {
       expect(field.signal).toBeUndefined()
     })
 
-
-    it("should update the default values if updated with new ones", () => {
+    it('should update the default values if updated with new ones', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
 
       expect(form.data.value.name.value).toBe('default')
-      field.updateOptions({defaultValue: "new"})
+      field.updateOptions({ defaultValue: 'new' })
       expect(form.data.value.name.value).toBe('new')
     })
-    it("should not update the default values if the value is dirty", () => {
+    it('should not update the default values if the value is dirty', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
 
-      field.handleChange("new")
-      field.updateOptions({defaultValue: 'default'})
+      field.handleChange('new')
+      field.updateOptions({ defaultValue: 'default' })
 
       expect(form.data.value.name.value).toBe('new')
     })
-    it("should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)", () => {
+    it('should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
 
-      field.handleChange("new")
+      field.handleChange('new')
       expect(field.isDirty.value).toBe(true)
-      field.updateOptions({defaultValue: 'new'})
+      field.updateOptions({ defaultValue: 'new' })
       expect(field.isDirty.value).toBe(false)
 
       // This checks, that the value is now actually treated as a default value
-      field.updateOptions({defaultValue: 'new another'})
+      field.updateOptions({ defaultValue: 'new another' })
       expect(form.data.value.name.value).toEqual('new another')
     })
   })

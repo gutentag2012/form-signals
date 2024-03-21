@@ -17,20 +17,20 @@ import {
   type ValidatorSync,
   type ValueAtPath,
   clearSubmitEventErrors,
-  isEqualDeep,
+  deepSignalifyValue,
+  getLeftUnequalPaths,
   getSignalValueAtPath,
   getValueAtPath,
+  isEqualDeep,
   makeArrayEntry,
   removeSignalValueAtPath,
+  removeValueAtPath,
   setSignalValueAtPath,
+  setSignalValuesFromObject,
   setValueAtPath,
   unSignalifyValue,
   unSignalifyValueSubscribed,
   validateWithValidators,
-  setSignalValuesFromObject,
-  deepSignalifyValue,
-  getLeftUnequalPaths,
-  removeValueAtPath,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
@@ -76,7 +76,6 @@ export class FormLogic<TData> {
    * @private
    */
   private readonly _fields: Signal<
-    // biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
     Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>
   > = signal(new Map())
   private readonly _fieldsArray = computed(() =>
@@ -172,7 +171,7 @@ export class FormLogic<TData> {
   })
 
   constructor(options?: FormLogicOptions<TData>) {
-    if(options?.defaultValues) {
+    if (options?.defaultValues) {
       this._data = deepSignalifyValue(options.defaultValues)
     } else {
       this._data = signal({}) as SignalifiedData<TData>
@@ -231,7 +230,6 @@ export class FormLogic<TData> {
     return this._unmountedFieldErrors
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: It does not matter what the bound value is
   public get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>> {
     return this._fieldsArray
   }
@@ -302,10 +300,10 @@ export class FormLogic<TData> {
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
 
-    if(!this._data) return
+    if (!this._data) return
 
     if (!options?.defaultValues) {
-      return;
+      return
     }
 
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
@@ -435,7 +433,9 @@ export class FormLogic<TData> {
     path: TPath,
     fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
   ): FieldLogic<TData, TPath, TBoundValue> {
-    const existingField = this._fields.peek().get(path)
+    const existingField = this._fields.peek().get(path) as
+      | FieldLogic<TData, TPath, TBoundValue>
+      | undefined
 
     if (existingField) {
       existingField.updateOptions(fieldOptions)
@@ -462,7 +462,8 @@ export class FormLogic<TData> {
     this._currentlyRegisteringFields++
 
     const newMap = new Map(this._fields.peek())
-    newMap.set(path, field)
+    // TODO Fix type here
+    newMap.set(path, field as any)
     this._fields.value = newMap
 
     if (defaultValues === undefined) return
@@ -498,7 +499,10 @@ export class FormLogic<TData> {
   public getDefaultValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): ValueAtPath<TData, TPath> | undefined {
-    return getValueAtPath<TData, TPath>(this._options.peek()?.defaultValues, path)
+    return getValueAtPath<TData, TPath>(
+      this._options.peek()?.defaultValues,
+      path,
+    )
   }
 
   public getValueForPath<TPath extends Paths<TData>>(
@@ -506,19 +510,25 @@ export class FormLogic<TData> {
   ): SignalifiedData<ValueAtPath<TData, TPath>> {
     // TODO Fix tests due to not setting signal to undefined if not exist
     // TODO Fix typing so that this can be undefined maybe
-    return getSignalValueAtPath<TData, TPath>(this._data, path) as SignalifiedData<ValueAtPath<TData, TPath>>
+    return getSignalValueAtPath<TData, TPath>(
+      this._data,
+      path,
+    ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
 
   // TODO Add tests
-  public initFieldSignal<TPath extends Paths<TData>>(path: TPath, defaultValue?: ValueAtPath<TData, TPath>): void {
-    if(this.getValueForPath(path)) return
+  public initFieldSignal<TPath extends Paths<TData>>(
+    path: TPath,
+    defaultValue?: ValueAtPath<TData, TPath>,
+  ): void {
+    if (this.getValueForPath(path)) return
     setSignalValueAtPath(this._data, path, defaultValue)
   }
 
-  public getFieldForPath<TPath extends Paths<TData>>(
+  public getFieldForPath<TPath extends Paths<TData>, TBoundData>(
     path: TPath,
-  ): FieldLogic<TData, TPath> {
-    return this._fields.peek().get(path) as FieldLogic<TData, TPath, never>
+  ): FieldLogic<TData, TPath, TBoundData> {
+    return this._fields.peek().get(path) as FieldLogic<TData, TPath, TBoundData>
   }
 
   public resetStateForm(): void {
@@ -565,11 +575,9 @@ export class FormLogic<TData> {
   public insertValueInArray<TName extends Paths<TData>, Index extends number>(
     name: TName,
     index: Index,
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
-      : // biome-ignore lint/suspicious/noExplicitAny: Could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[Index]
         : never,
     options?: { shouldTouch?: boolean },
@@ -599,7 +607,6 @@ export class FormLogic<TData> {
    */
   public pushValueToArray<TName extends Paths<TData>>(
     name: TName,
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
       : never,
@@ -634,7 +641,6 @@ export class FormLogic<TData> {
    */
   public removeValueFromArray<TName extends Paths<TData>>(
     name: TName,
-    // biome-ignore lint/suspicious/noExplicitAny: Could be any array
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
@@ -646,6 +652,13 @@ export class FormLogic<TData> {
       )
       return
     }
+    if (currentValue.length <= index || index < 0) {
+      console.error(
+        `Tried to remove a value from an array at path ${name} at index ${index} that does not exist`,
+      )
+      return
+    }
+
     batch(() => {
       signal.value = [...currentValue].filter(
         (_, i) => i !== index,
@@ -669,11 +682,9 @@ export class FormLogic<TData> {
     IndexB extends number,
   >(
     name: TName,
-    // biome-ignore lint/suspicious/noExplicitAny: This could be any array
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
-      : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
             TData,
             TName
@@ -681,11 +692,9 @@ export class FormLogic<TData> {
           ? number
           : never
         : never,
-    // biome-ignore lint/suspicious/noExplicitAny: This could be any array
     indexB: ValueAtPath<TData, TName> extends any[]
       ? number
-      : // biome-ignore lint/suspicious/noExplicitAny: This could be any array
-        ValueAtPath<TData, TName> extends readonly any[]
+      : ValueAtPath<TData, TName> extends readonly any[]
         ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
             TData,
             TName
@@ -699,6 +708,17 @@ export class FormLogic<TData> {
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
       console.error(`Tried to swap values in a non-array field at path ${name}`)
+      return
+    }
+    if (
+      currentValue.length <= indexA ||
+      indexA < 0 ||
+      currentValue.length <= indexB ||
+      indexB < 0
+    ) {
+      console.error(
+        `Tried to swap values in an array at path ${name} at index ${indexA} that does not exist`,
+      )
       return
     }
     const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
