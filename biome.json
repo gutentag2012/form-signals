@@ -12,10 +12,13 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noArrayIndexKey": "off"
+      "noArrayIndexKey": "off",
+        "noExplicitAny": "off"
       },
-      "nursery": {
-        "useImportType": "warn",
+      "style": {
+        "useImportType": "warn"
+      },
+      "correctness": {
         "noUnusedImports": "warn"
       }
     }
