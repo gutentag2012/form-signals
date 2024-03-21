@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import {getValueAtPath, pathToParts, removeValueAtPath, setValueAtPath} from './access.utils'
+import {
+  getValueAtPath,
+  pathToParts,
+  removeValueAtPath,
+  setValueAtPath,
+} from './access.utils'
 
 describe('access.utils', () => {
   describe('pathToParts', () => {
@@ -101,5 +106,5 @@ describe('access.utils', () => {
       expect(removeValueAtPath(obj, 'a.0')).toEqual({ a: [2] })
       expect(obj).toEqual({ a: [2] })
     })
-  });
+  })
 })

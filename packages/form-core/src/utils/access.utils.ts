@@ -2,7 +2,7 @@ import type { Paths, ValueAtPath } from './types'
 
 export function pathToParts(path: string): Array<string | number> {
   return path.split('.').map((part) => {
-    const num = parseInt(part, 10)
+    const num = Number.parseInt(part, 10)
     return Number.isNaN(num) ? part : num
   })
 }
@@ -16,7 +16,6 @@ export function getValueAtPath<TValue, TPath extends Paths<TValue>>(
   }
   const parts = pathToParts(path as string)
 
-  // biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
   let value: any = obj
   for (const part of parts) {
     if (typeof value !== 'object' || value === null || !(part in value)) {
@@ -35,7 +34,7 @@ export function removeValueAtPath<TValue, TPath extends Paths<TValue>>(
   if (!obj) {
     return
   }
-  if(!path) {
+  if (!path) {
     return obj
   }
 
@@ -70,7 +69,6 @@ export function setValueAtPath<TValue, TPath extends Paths<TValue>>(
   }
   const parts = pathToParts(path as string)
 
-  // biome-ignore lint/suspicious/noExplicitAny: We are not sure if the type here is correct, but we want to cast it
   let current: any = obj
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
