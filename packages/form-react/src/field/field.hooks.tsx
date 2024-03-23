@@ -1,4 +1,5 @@
-import type {
+import {
+  FieldLogic,
   FieldLogicOptions,
   FormLogic,
   Paths,
@@ -33,4 +34,15 @@ export function useField<
   }, [finalField])
 
   return finalField
+}
+
+export function useFieldWithComponents<
+  TData,
+  TName extends Paths<TData>,
+  TBoundValue = never,
+>(field: FieldLogic<TData, TName, TBoundValue>): FieldContextType<TData, TName, TBoundValue> {
+  return React.useMemo(
+    () => fieldLogicToFieldContext(field),
+    [field],
+  )
 }

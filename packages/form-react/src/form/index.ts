@@ -1,5 +1,5 @@
 export { useFormContext, type FormContextType } from './form.context'
-export { useForm } from './form.hooks'
+export { useForm, useFormWithComponents } from './form.hooks'
 export {
   Form,
   type FormProps,

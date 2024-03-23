@@ -20,3 +20,9 @@ export function useForm<TData>(
 
   return finalForm
 }
+
+export function useFormWithComponents<TData>(
+  form: FormLogic<TData>,
+): FormContextType<TData> {
+  return React.useMemo(() => formLogicToFormContext(form), [form])
+}

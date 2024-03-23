@@ -1,5 +1,5 @@
 export { useFieldContext, type FieldContextType } from './field.context'
-export { useField } from './field.hooks'
+export { useField, useFieldWithComponents } from './field.hooks'
 export {
   FieldProvider,
   type FieldProviderProps,
