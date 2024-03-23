@@ -1,4 +1,4 @@
-import {effect, signal} from '@preact/signals-core'
+import { effect, signal } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import {
   type ValidationErrorMap,
@@ -468,7 +468,7 @@ describe('validation', () => {
     const accumulateErrors = false
 
     const changedFn = vi.fn()
-    effect(() =>{
+    effect(() => {
       changedFn(errorMap.value)
     })
     expect(changedFn).toHaveBeenCalledTimes(1)
@@ -484,12 +484,15 @@ describe('validation', () => {
       accumulateErrors,
     )
 
-    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: 'onChange' })
+    expect(errorMap.value).toEqual({
+      sync: 'error',
+      syncErrorEvent: 'onChange',
+    })
     expect(changedFn).toHaveBeenCalledTimes(1)
 
     validateWithValidators(
       value,
-      "onSubmit",
+      'onSubmit',
       validator,
       undefined,
       asyncValidatorState,
@@ -498,7 +501,10 @@ describe('validation', () => {
       accumulateErrors,
     )
 
-    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: "onSubmit" })
+    expect(errorMap.value).toEqual({
+      sync: 'error',
+      syncErrorEvent: 'onSubmit',
+    })
     expect(changedFn).toHaveBeenCalledTimes(2)
   })
   it('should only update async errors if they have changed', async () => {
@@ -513,7 +519,7 @@ describe('validation', () => {
     const accumulateErrors = false
 
     const changedFn = vi.fn()
-    effect(() =>{
+    effect(() => {
       changedFn(errorMap.value)
     })
     expect(changedFn).toHaveBeenCalledTimes(1)
@@ -529,12 +535,15 @@ describe('validation', () => {
       accumulateErrors,
     )
 
-    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: 'onChange' })
+    expect(errorMap.value).toEqual({
+      async: 'error',
+      asyncErrorEvent: 'onChange',
+    })
     expect(changedFn).toHaveBeenCalledTimes(1)
 
     await validateWithValidators(
       value,
-      "onSubmit",
+      'onSubmit',
       undefined,
       validator,
       asyncValidatorState,
@@ -543,7 +552,10 @@ describe('validation', () => {
       accumulateErrors,
     )
 
-    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: "onSubmit" })
+    expect(errorMap.value).toEqual({
+      async: 'error',
+      asyncErrorEvent: 'onSubmit',
+    })
     expect(changedFn).toHaveBeenCalledTimes(2)
   })
 })
