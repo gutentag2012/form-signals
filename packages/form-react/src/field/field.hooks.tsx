@@ -1,4 +1,4 @@
-import {
+import type {
   FieldLogic,
   FieldLogicOptions,
   FormLogic,
@@ -6,6 +6,7 @@ import {
 } from '@signal-forms/form-core'
 import React from 'react'
 import type { FormContextType } from '../form'
+import { useIsomorphicLayoutEffect } from '../utils'
 import {
   type FieldContextType,
   fieldLogicToFieldContext,
@@ -26,7 +27,7 @@ export function useField<
     [field],
   )
 
-  React.useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     finalField.mount()
     return () => {
       finalField.unmount()
@@ -40,9 +41,8 @@ export function useFieldWithComponents<
   TData,
   TName extends Paths<TData>,
   TBoundValue = never,
->(field: FieldLogic<TData, TName, TBoundValue>): FieldContextType<TData, TName, TBoundValue> {
-  return React.useMemo(
-    () => fieldLogicToFieldContext(field),
-    [field],
-  )
+>(
+  field: FieldLogic<TData, TName, TBoundValue>,
+): FieldContextType<TData, TName, TBoundValue> {
+  return React.useMemo(() => fieldLogicToFieldContext(field), [field])
 }
