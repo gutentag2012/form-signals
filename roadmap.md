@@ -6,9 +6,9 @@ This document outlines the planned features and improvements for the project. It
 
 - [x] **form-core**: Add FieldLogic to handle form fields state and validation
 - [x] **form-core**: Add FormLogic to handle form state and validation
-- [ ] **form-react**: Add FormProvider to provide form state to form fields
-- [ ] **form-react**: Add useField hook to access form field state and validation
-- [ ] **form-react**: Add useForm hook to access form state and validation
+- [x] **form-react**: Add FormProvider to provide form state to form fields
+- [x] **form-react**: Add useField hook to access form field state and validation
+- [x] **form-react**: Add useForm hook to access form state and validation
 - [ ] **form-validation-adapter-zod**: Add Validation adapter for zod
 - [ ] **examples-react**: Add example for complex nested form
 - [ ] **examples-react**: Add example for async form setup
@@ -48,3 +48,4 @@ This document outlines the planned features and improvements for the project. It
 ## Version 1.3.0
 
 - [ ] **form-core**: Add support for bracket syntax for field names
+- [ ] **form-core**: Add support for typed default values
