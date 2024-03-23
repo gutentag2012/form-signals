@@ -108,7 +108,10 @@ function validateSync<TValue>(
       : validatorSync(value)
 
   const currentErrorMap = errorMap.peek()
-  if (error === currentErrorMap.sync && currentErrorMap.syncErrorEvent === event) {
+  if (
+    error === currentErrorMap.sync &&
+    currentErrorMap.syncErrorEvent === event
+  ) {
     return !!error
   }
 
@@ -159,7 +162,10 @@ async function validateAsync<TValue>(
     isValidating.value = false
 
     const currentErrorMap = errorMap.peek()
-    if (error === currentErrorMap.async && currentErrorMap.asyncErrorEvent === event) {
+    if (
+      error === currentErrorMap.async &&
+      currentErrorMap.asyncErrorEvent === event
+    )     {
       return
     }
 
