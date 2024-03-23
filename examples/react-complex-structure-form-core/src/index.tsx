@@ -40,7 +40,7 @@ import {
   useFieldContext,
   useForm,
   useFormContext,
-} from '@form-signals/form-react'
+} from '@signal-forms/form-react'
 import {
   type Signal,
   signal,
