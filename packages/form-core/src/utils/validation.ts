@@ -106,8 +106,14 @@ function validateSync<TValue>(
     typeof validatorSync !== 'function'
       ? validatorSync.validate(value)
       : validatorSync(value)
+
+  const currentErrorMap = errorMap.peek()
+  if (error === currentErrorMap.sync && currentErrorMap.syncErrorEvent === event) {
+    return !!error
+  }
+
   errorMap.value = {
-    ...errorMap.peek(),
+    ...currentErrorMap,
     sync: error,
     syncErrorEvent: event,
   }
@@ -151,6 +157,12 @@ async function validateAsync<TValue>(
   // Assign the final errors
   batch(() => {
     isValidating.value = false
+
+    const currentErrorMap = errorMap.peek()
+    if (error === currentErrorMap.async && currentErrorMap.asyncErrorEvent === event) {
+      return
+    }
+
     errorMap.value = {
       ...errorMap.peek(),
       async: error,

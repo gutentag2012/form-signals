@@ -1,4 +1,4 @@
-import { signal } from '@preact/signals-core'
+import {effect, signal} from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import {
   type ValidationErrorMap,
@@ -455,5 +455,95 @@ describe('validation', () => {
 
     expect(validator).not.toHaveBeenCalled()
     expect(errorMap.value).toEqual({})
+  })
+  it('should only update sync errors if they have changed', () => {
+    const value = 'test'
+    const validator = vi.fn(() => 'error')
+    const asyncValidatorState = signal(undefined)
+    const errorMap = signal<Partial<ValidationErrorMap>>({
+      sync: 'error',
+      syncErrorEvent: 'onChange',
+    })
+    const isValidating = signal(false)
+    const accumulateErrors = false
+
+    const changedFn = vi.fn()
+    effect(() =>{
+      changedFn(errorMap.value)
+    })
+    expect(changedFn).toHaveBeenCalledTimes(1)
+
+    validateWithValidators(
+      value,
+      'onChange',
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+    )
+
+    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: 'onChange' })
+    expect(changedFn).toHaveBeenCalledTimes(1)
+
+    validateWithValidators(
+      value,
+      "onSubmit",
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+    )
+
+    expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: "onSubmit" })
+    expect(changedFn).toHaveBeenCalledTimes(2)
+  })
+  it('should only update async errors if they have changed', async () => {
+    const value = 'test'
+    const validator = vi.fn(async () => 'error')
+    const asyncValidatorState = signal(undefined)
+    const errorMap = signal<Partial<ValidationErrorMap>>({
+      async: 'error',
+      asyncErrorEvent: 'onChange',
+    })
+    const isValidating = signal(false)
+    const accumulateErrors = false
+
+    const changedFn = vi.fn()
+    effect(() =>{
+      changedFn(errorMap.value)
+    })
+    expect(changedFn).toHaveBeenCalledTimes(1)
+
+    await validateWithValidators(
+      value,
+      'onChange',
+      undefined,
+      validator,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+    )
+
+    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: 'onChange' })
+    expect(changedFn).toHaveBeenCalledTimes(1)
+
+    await validateWithValidators(
+      value,
+      "onSubmit",
+      undefined,
+      validator,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+    )
+
+    expect(errorMap.value).toEqual({ async: 'error', asyncErrorEvent: "onSubmit" })
+    expect(changedFn).toHaveBeenCalledTimes(2)
   })
 })
