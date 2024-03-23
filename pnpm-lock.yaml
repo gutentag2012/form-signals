@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       '@biomejs/biome':
-       specifier: ^1.6.1
+        specifier: ^1.6.1
         version: 1.6.1
       '@nx/js':
         specifier: 18.0.2
@@ -32,12 +32,6 @@ importers:
 
   examples/react-complex-structure-form-core:
     dependencies:
-      '@form-signals/form-core':
-        specifier: link:../../packages/form-core
-        version: link:../../packages/form-core
-      '@form-signals/form-react':
-        specifier: link:../../packages/form-react
-        version: link:../../packages/form-react
       '@preact/signals-react':
         specifier: ^2.0.0
         version: 2.0.0(react@18.2.0)
@@ -65,6 +59,12 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.0.4
         version: 1.0.4(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
+      '@signal-forms/form-core':
+        specifier: workspace:*
+        version: link:../../packages/form-core
+      '@signal-forms/form-react':
+        specifier: workspace:*
+        version: link:../../packages/form-react
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
