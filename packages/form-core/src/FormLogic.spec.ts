@@ -1354,7 +1354,7 @@ describe('FormLogic', () => {
             validateOnMount: true,
           },
         })
-        // TODO Check onMount validation + check onChange validation after the options have been applied
+        field.mount()
         expect(field.errors.value).toEqual(['error'])
       })
       it('should retieve an existing field and update its options', () => {

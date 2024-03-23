@@ -727,13 +727,12 @@ describe('FieldLogic', () => {
           validateOnMount: true,
         },
       })
-      field.unmount()
 
       await field.handleBlur()
       field.handleChange('test')
       await field.handleSubmit()
 
-      expect(validate).toHaveBeenCalledTimes(1)
+      expect(validate).toHaveBeenCalledTimes(0)
     })
     it('should not valid  te if the form is unmounted', () => {
       const form = new FormLogic<{ name: string }>()
@@ -811,12 +810,12 @@ describe('FieldLogic', () => {
     })
   })
   describe('state', () => {
-    it('should be mounted after construction', () => {
+    it('should not be mounted after construction', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name')
 
-      expect(field.isMounted.value).toBe(true)
+      expect(field.isMounted.value).toBe(false)
     })
     it('should be mounted after mount', () => {
       const form = new FormLogic<{ name: string }>()
@@ -1227,6 +1226,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
+      field.mount()
 
       field.handleChange('new')
       field.updateOptions({ defaultValue: 'default' })
@@ -1238,6 +1238,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
+      field.mount()
 
       field.handleChange('new')
       expect(field.isDirty.value).toBe(true)

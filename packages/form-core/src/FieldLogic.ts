@@ -100,12 +100,9 @@ export class FieldLogic<
   TName extends Paths<TData>,
   TBoundValue = never,
 > {
-  //region Description
   private readonly _isTouched = signal(false)
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
-  //region External Validation State
   private readonly _isValidating = signal(false)
-  //endregion
   private readonly _isValidatingReadOnly = computed(
     () => this._isValidating.value,
   )
@@ -120,7 +117,6 @@ export class FieldLogic<
   private readonly _previousAbortController: Signal<
     AbortController | undefined
   > = signal(undefined)
-  //endregion
   private _unsubscribeFromChangeEffect?: () => void
   private readonly _options: Signal<
     FieldLogicOptions<TData, TName, TBoundValue> | undefined
@@ -141,7 +137,6 @@ export class FieldLogic<
         unSignalifyValueSubscribed(this.signal),
       ),
   )
-  //endregion
 
   constructor(
     private readonly _form: FormLogic<TData>,
@@ -152,22 +147,21 @@ export class FieldLogic<
 
     this._form.registerField(_name, this, options?.defaultValue)
 
-    // TODO Should not really mount at the start...
-    this.mount()
+    this.setupDataSignals()
 
     this.updateOptions(options)
   }
 
-  //region Internal State
-  private _isMounted = signal(false)
-  private _isMountedReadOnly = computed(() => this._isMounted.value)
+  private readonly _isMounted = signal(false)
+  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
-  //region State
   public get isMounted(): Signal<boolean> {
     return this._isMountedReadOnly
   }
 
-  private _transformedSignal?: Signal<TBoundValue | undefined>
+  private _transformedSignal?: Signal<TBoundValue | undefined> & {
+    get base(): SignalifiedData<ValueAtPath<TData, TName>>
+  }
 
   public get transformedSignal(): Signal<TBoundValue> {
     return this._transformedSignal as Signal<TBoundValue>
@@ -211,7 +205,6 @@ export class FieldLogic<
   public get isDirty(): ReadonlySignal<boolean> {
     return this._isDirty
   }
-  //endregion
 
   public get defaultValue(): ReadonlySignal<
     ValueAtPath<TData, TName> | undefined
@@ -245,11 +238,14 @@ export class FieldLogic<
     }
   }
 
-  //region Lifecycle
-  public async mount(): Promise<void> {
-    if (this._isMounted.peek()) return
+  private setupDataSignals() {
     this._form.initFieldSignal(this._name, this.defaultValue.peek())
     this.setupTransformedSignal()
+  }
+
+  public async mount(): Promise<void> {
+    if (this._isMounted.peek()) return
+    this.setupDataSignals()
 
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
@@ -302,9 +298,7 @@ export class FieldLogic<
       this._options.peek()?.resetValueToDefaultOnUnmount,
     )
   }
-  //endregion
 
-  //region Handlers
   /**
    * Manually validate the field for a specific event. This will run all validators for the event and update the field state.
    * @param event The event to validate for
@@ -382,7 +376,6 @@ export class FieldLogic<
   public handleTouched(): void {
     this._isTouched.value = true
   }
-  //endregion
 
   // TODO Handle these via a type, so that they are not displayed on a non array element
   /**
@@ -403,8 +396,6 @@ export class FieldLogic<
   ): void {
     this._form.insertValueInArray(this._name, index, value, options)
   }
-
-  //region Array Helpers
 
   /**
    * Push a value to an array. If the field is not an array it will throw an error. You should also not push a value to a readonly array, this is also intended to give type errors.
@@ -533,6 +524,12 @@ export class FieldLogic<
 
   private setupTransformedSignal() {
     const baseSignal = this.signal
+
+    // If the base signal is not changed, then we do not need to recreate the transformed signal
+    if (this._transformedSignal?.base === baseSignal) {
+      return
+    }
+
     const options = this._options.peek()
     const wrappedSignal = computed(() => {
       if (!options?.transformToBinding) return undefined
@@ -540,6 +537,9 @@ export class FieldLogic<
     })
 
     this._transformedSignal = {
+      get base() {
+        return baseSignal
+      },
       set value(newValue: TBoundValue) {
         if (!options?.transformFromBinding) return
         const transformedValue = options.transformFromBinding(newValue)
