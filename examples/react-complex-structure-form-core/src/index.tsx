@@ -89,7 +89,7 @@ export const Index = () => {
       subForm.reset()
     },
   })
-const selectedVariant = useSignal(  0)
+  const selectedVariant = useSignal(0)
   const justAddedOption = useSignal(false)
 
   const currencyCount = useComputed(() => {

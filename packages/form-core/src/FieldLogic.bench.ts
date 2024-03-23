@@ -1,6 +1,6 @@
-import {describe, expect, vi, bench} from "vitest";
-import {FormLogic} from "./FormLogic";
-import {effect} from "@preact/signals-core";
+import { effect } from '@preact/signals-core'
+import { bench, describe, expect, vi } from 'vitest'
+import { FormLogic } from './FormLogic'
 
 describe('FieldLogic (bench)', () => {
   bench('Update a value', () => {
@@ -20,5 +20,5 @@ describe('FieldLogic (bench)', () => {
       form.data.peek().counter.value = i
     }
     expect(fn).toHaveBeenCalledTimes(1_000)
-  });
-});
+  })
+})
