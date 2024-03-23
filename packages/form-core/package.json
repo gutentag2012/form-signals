@@ -40,6 +40,7 @@
   "scripts": {
     "build": "vite build",
     "test": "vitest",
+    "bench": "vitest bench --typecheck false",
     "prepublishOnly": "pnpm build"
   }
 }
