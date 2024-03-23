@@ -165,7 +165,7 @@ async function validateAsync<TValue>(
     if (
       error === currentErrorMap.async &&
       currentErrorMap.asyncErrorEvent === event
-    )     {
+    ) {
       return
     }
 
