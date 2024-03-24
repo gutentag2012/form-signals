@@ -208,7 +208,7 @@ describe('FieldProvider', () => {
           <SubField<
             FormValues,
             'name',
-            unknown,
+            never,
             FormValues['name'],
             'first',
             never
@@ -245,7 +245,7 @@ describe('FieldProvider', () => {
           <SubField<
             FormValues,
             'name',
-            unknown,
+            never,
             FormValues['name'],
             typeof name,
             never
@@ -292,7 +292,7 @@ describe('FieldProvider', () => {
           <SubField<
             FormValues,
             'name',
-            unknown,
+            never,
             FormValues['name'],
             'first',
             never
