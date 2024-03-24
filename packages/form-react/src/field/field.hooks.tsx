@@ -19,7 +19,7 @@ export function useField<
 >(
   form: FormContextType<TData> | FormLogic<TData>,
   name: TName,
-  options: FieldLogicOptions<TData, TName, TBoundValue>,
+  options?: FieldLogicOptions<TData, TName, TBoundValue>,
 ): FieldContextType<TData, TName, TBoundValue> {
   const field = form.getOrCreateField(name, options)
   const finalField = React.useMemo(

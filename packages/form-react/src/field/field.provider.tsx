@@ -10,11 +10,11 @@ import { type FormContextType, useFormContext } from '../form'
 import { FieldContext, type FieldContextType } from './field.context'
 import { useField } from './field.hooks'
 
-export type FieldChildren<TData, TName extends Paths<TData>, TBoundData> =
+export type FieldChildren<TData, TName extends Paths<TData>, TBoundData=never> =
   | ((field: FieldLogic<TData, TName, TBoundData>) => React.ReactNode)
   | React.ReactNode
 
-function useUnwrappedChildren<TData, TName extends Paths<TData>, TBoundData>(
+function useUnwrappedChildren<TData, TName extends Paths<TData>, TBoundData=never>(
   children: FieldChildren<TData, TName, TBoundData>,
   field: FieldContextType<TData, TName, TBoundData>,
 ): React.ReactNode {
@@ -28,13 +28,13 @@ function useUnwrappedChildren<TData, TName extends Paths<TData>, TBoundData>(
 export interface FieldProviderProps<
   TData,
   TName extends Paths<TData>,
-  TBoundData,
+  TBoundData=never,
 > {
   field: FieldContextType<TData, TName, TBoundData>
   children: FieldChildren<TData, TName, TBoundData>
 }
 
-export function FieldProvider<TData, TName extends Paths<TData>, TBoundData>(
+export function FieldProvider<TData, TName extends Paths<TData>, TBoundData=never>(
   props: FieldProviderProps<TData, TName, TBoundData>,
 ): React.ReactElement {
   return (
@@ -46,29 +46,14 @@ export function FieldProvider<TData, TName extends Paths<TData>, TBoundData>(
   )
 }
 
-export interface FieldProps<TData, TName extends Paths<TData>, TBoundData>
-  extends FieldLogicOptions<TData, TName, TBoundData> {
-  children: FieldChildren<TData, TName, TBoundData>
-  name: TName
-}
-export function Field<TData, TName extends Paths<TData>, TBoundData>({
-  name,
-  children,
-  ...props
-}: FieldProps<TData, TName, TBoundData>): React.ReactElement {
-  const form = useFormContext<TData>()
-  const field = useField(form, name, props)
-  return <FieldProvider field={field}>{children}</FieldProvider>
-}
-
 export interface FieldWithFormProps<
   TData,
   TName extends Paths<TData>,
-  TBoundData,
+  TBoundData=never,
 > extends FieldProps<TData, TName, TBoundData> {
   form: FormContextType<TData>
 }
-export function FieldWithForm<TData, TName extends Paths<TData>, TBoundData>({
+export function FieldWithForm<TData, TName extends Paths<TData>, TBoundData=never>({
   form,
   name,
   children,
@@ -78,13 +63,27 @@ export function FieldWithForm<TData, TName extends Paths<TData>, TBoundData>({
   return <FieldProvider field={field}>{children}</FieldProvider>
 }
 
+export interface FieldProps<TData, TName extends Paths<TData>, TBoundData=never>
+  extends FieldLogicOptions<TData, TName, TBoundData> {
+  children: FieldChildren<TData, TName, TBoundData>
+  name: TName
+}
+export function Field<TData, TName extends Paths<TData>, TBoundData=never>({
+                                                                             name,
+                                                                             children,
+                                                                             ...props
+                                                                           }: FieldProps<TData, TName, TBoundData>): React.ReactElement {
+  const form = useFormContext<TData>()
+  return <FieldWithForm form={form} name={name} {...props}>{children}</FieldWithForm>
+}
+
 export interface SubFieldProps<
   TParentData,
   TParentName extends Paths<TParentData>,
   TParentBoundData,
   TData,
   TName extends Paths<TData>,
-  TBoundData,
+  TBoundData=never,
 > extends FieldProps<TData, TName, TBoundData> {
   parentField: FieldContextType<TParentData, TParentName, TParentBoundData>
 }
@@ -94,7 +93,7 @@ export function SubField<
   TParentBoundData,
   TData extends ValueAtPath<TParentData, TParentName>,
   TName extends Paths<TData>,
-  TBoundData,
+  TBoundData=never,
 >({
   parentField,
   name,
