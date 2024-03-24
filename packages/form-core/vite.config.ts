@@ -13,7 +13,7 @@ export default defineConfig({
       enabled: true,
       provider: 'istanbul',
       include: ['src/**/*'],
-    exclude: ['**/*.spec.ts', '**/*.spec-d.ts', '**/*.bench.ts'],
+      exclude: ['**/*.spec.ts', '**/*.spec-d.ts', '**/*.bench.ts'],
       reporter: ['html', 'lcov', 'text', 'text-summary'],
     },
     typecheck: { enabled: true },

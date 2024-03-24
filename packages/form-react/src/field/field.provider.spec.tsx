@@ -1,15 +1,16 @@
-import React from "react";
-import {describe, it, expect} from "vitest";
-import {cleanup, render} from "@testing-library/react";
-import {FormLogic} from "@signal-forms/form-core";
-import {Field, FieldProvider, FieldWithForm, SubField} from "./field.provider";
-import {fieldLogicToFieldContext, useFieldContext} from "./field.context";
-import {FormContext, formLogicToFormContext} from "../form/form.context";
+import { FormLogic } from '@signal-forms/form-core'
+import { cleanup, render } from '@testing-library/react'
+// biome-ignore lint/correctness/noUnusedImports: This is the React import
+import React from 'react'
+import { describe, expect, it } from 'vitest'
+import { FormContext, formLogicToFormContext } from '../form/form.context'
+import { fieldLogicToFieldContext, useFieldContext } from './field.context'
+import { Field, FieldProvider, FieldWithForm, SubField } from './field.provider'
 
-describe("FieldProvider", () => {
+describe('FieldProvider', () => {
   describe('FieldProvider', () => {
-    it("should provide the field within the field context to the children", () => {
-      const form = new FormLogic({defaultValues: {name: 'John'}})
+    it('should provide the field within the field context to the children', () => {
+      const form = new FormLogic({ defaultValues: { name: 'John' } })
       const field = form.getOrCreateField('name')
 
       function ContextConsumer() {
@@ -31,8 +32,8 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-    it("should accept a function to render the children with the form as a parameter", ( )=> {
-      const form = new FormLogic({defaultValues: {name: 'John'}})
+    it('should accept a function to render the children with the form as a parameter', () => {
+      const form = new FormLogic({ defaultValues: { name: 'John' } })
       const field = form.getOrCreateField('name')
 
       function TestComponent() {
@@ -49,8 +50,8 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-    it("should provider the field within the field context to the children if they are a function", () => {
-      const form = new FormLogic({defaultValues: {name: 'John'}})
+    it('should provider the field within the field context to the children if they are a function', () => {
+      const form = new FormLogic({ defaultValues: { name: 'John' } })
       const field = form.getOrCreateField('name')
 
       function ContextConsumer() {
@@ -61,10 +62,12 @@ describe("FieldProvider", () => {
       function TestComponent() {
         return (
           <FieldProvider field={field as never}>
-            {(field) => <>
-              {field.signal.value}
-              <ContextConsumer />
-            </>}
+            {(field) => (
+              <>
+                {field.signal.value}
+                <ContextConsumer />
+              </>
+            )}
           </FieldProvider>
         )
       }
@@ -75,16 +78,16 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-  });
+  })
   describe('Field', () => {
-    it("should create a new field within the form inside the context with the provided options", () => {
-      type FormValues = {name: string}
+    it('should create a new field within the form inside the context with the provided options', () => {
+      type FormValues = { name: string }
       const form = new FormLogic<FormValues>()
 
       function TestComponent() {
         return (
-          <Field<FormValues, "name"> name="name" defaultValue="default">
-            {field => field.signal.value}
+          <Field<FormValues, 'name'> name="name" defaultValue="default">
+            {(field) => field.signal.value}
           </Field>
         )
       }
@@ -92,7 +95,7 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
@@ -100,14 +103,14 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-    it("should create a new field if the value of the name prop changes", () => {
-      type FormValues = {name: string, other: string}
+    it('should create a new field if the value of the name prop changes', () => {
+      type FormValues = { name: string; other: string }
       const form = new FormLogic<FormValues>()
 
-      function TestComponent({name}: {name: "name" | "other"}) {
+      function TestComponent({ name }: { name: 'name' | 'other' }) {
         return (
           <Field<FormValues, typeof name> name={name} defaultValue="default">
-            {field => field.signal.value}
+            {(field) => field.signal.value}
           </Field>
         )
       }
@@ -115,33 +118,33 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent name="name" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(1)
-      expect(form.json.value).toEqual({name: 'default'})
+      expect(form.json.value).toEqual({ name: 'default' })
 
       screen.rerender(
         <FormContext.Provider value={form as never}>
           <TestComponent name="other" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(1)
-      expect(form.json.value).toEqual({other: 'default'})
+      expect(form.json.value).toEqual({ other: 'default' })
 
       cleanup()
     })
-    it("should update the options of the field if the props change", () => {
-      type FormValues = {name: string}
+    it('should update the options of the field if the props change', () => {
+      type FormValues = { name: string }
       const form = new FormLogic<FormValues>()
 
-      function TestComponent({defaultValue}: {defaultValue: string}) {
+      function TestComponent({ defaultValue }: { defaultValue: string }) {
         return (
-          <Field<FormValues, "name"> name="name" defaultValue={defaultValue}>
-            {field => field.signal.value}
+          <Field<FormValues, 'name'> name="name" defaultValue={defaultValue}>
+            {(field) => field.signal.value}
           </Field>
         )
       }
@@ -149,7 +152,7 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent defaultValue="default" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
@@ -158,7 +161,7 @@ describe("FieldProvider", () => {
       screen.rerender(
         <FormContext.Provider value={form as never}>
           <TestComponent defaultValue="new" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('new')).toBeDefined()
@@ -166,41 +169,54 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-  });
+  })
   describe('FieldWithForm', () => {
-    it("should create a new field within the provided form with the provided options", () => {
-      type FormValues = {name: string}
+    it('should create a new field within the provided form with the provided options', () => {
+      type FormValues = { name: string }
       const form = new FormLogic<FormValues>()
       const formContext = formLogicToFormContext(form)
 
       function TestComponent() {
         return (
-          <FieldWithForm<FormValues, "name"> form={formContext} name="name" defaultValue="default">
-            {field => field.signal.value}
+          <FieldWithForm<FormValues, 'name'>
+            form={formContext}
+            name="name"
+            defaultValue="default"
+          >
+            {(field) => field.signal.value}
           </FieldWithForm>
         )
       }
 
-      const screen = render(
-          <TestComponent />
-      )
+      const screen = render(<TestComponent />)
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(1)
 
       cleanup()
     })
-  });
+  })
   describe('SubField', () => {
-    it("should create a new field based on the provided parent with the provided options", () => {
-      type FormValues = {name: {first: string}}
+    it('should create a new field based on the provided parent with the provided options', () => {
+      type FormValues = { name: { first: string } }
       const form = new FormLogic<FormValues>()
       const parentField = form.getOrCreateField('name')
       const parentFieldContext = fieldLogicToFieldContext(parentField)
 
       function TestComponent() {
         return (
-          <SubField<FormValues, "name", unknown, FormValues["name"], "first", never> parentField={parentFieldContext} name="first" defaultValue="default">
+          <SubField<
+            FormValues,
+            'name',
+            unknown,
+            FormValues['name'],
+            'first',
+            never
+          >
+            parentField={parentFieldContext}
+            name="first"
+            defaultValue="default"
+          >
             {(field) => field.signal.value}
           </SubField>
         )
@@ -209,24 +225,35 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(2)
-      expect(form.json.value).toEqual({name: {first: 'default'}})
+      expect(form.json.value).toEqual({ name: { first: 'default' } })
 
       cleanup()
     })
-    it("should create a new field if the value of the name prop changes", () => {
-      type FormValues = {name: { first: string, last: string }}
+    it('should create a new field if the value of the name prop changes', () => {
+      type FormValues = { name: { first: string; last: string } }
       const form = new FormLogic<FormValues>()
       const parentField = form.getOrCreateField('name')
       const parentFieldContext = fieldLogicToFieldContext(parentField)
 
-      function TestComponent({name}: {name: "first" | "last"}) {
+      function TestComponent({ name }: { name: 'first' | 'last' }) {
         return (
-          <SubField<FormValues, "name", unknown, FormValues["name"], typeof name, never> parentField={parentFieldContext} name={name} defaultValue="default">
+          <SubField<
+            FormValues,
+            'name',
+            unknown,
+            FormValues['name'],
+            typeof name,
+            never
+          >
+            parentField={parentFieldContext}
+            name={name}
+            defaultValue="default"
+          >
             {(field) => field.signal.value}
           </SubField>
         )
@@ -235,34 +262,45 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent name="first" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(2)
-      expect(form.json.value).toEqual({name: {first:'default'}})
+      expect(form.json.value).toEqual({ name: { first: 'default' } })
 
       screen.rerender(
         <FormContext.Provider value={form as never}>
           <TestComponent name="last" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(2)
-      expect(form.json.value).toEqual({name: {last:'default'}})
+      expect(form.json.value).toEqual({ name: { last: 'default' } })
 
       cleanup()
     })
-    it("should update the options of the field if the props change", () => {
-      type FormValues = {name: { first: string }}
+    it('should update the options of the field if the props change', () => {
+      type FormValues = { name: { first: string } }
       const form = new FormLogic<FormValues>()
       const parentField = form.getOrCreateField('name')
       const parentFieldContext = fieldLogicToFieldContext(parentField)
 
-      function TestComponent({defaultValue}: {defaultValue: string}) {
+      function TestComponent({ defaultValue }: { defaultValue: string }) {
         return (
-          <SubField<FormValues, "name", unknown, FormValues["name"], "first", never> parentField={parentFieldContext} name="first" defaultValue={defaultValue}>
+          <SubField<
+            FormValues,
+            'name',
+            unknown,
+            FormValues['name'],
+            'first',
+            never
+          >
+            parentField={parentFieldContext}
+            name="first"
+            defaultValue={defaultValue}
+          >
             {(field) => field.signal.value}
           </SubField>
         )
@@ -271,7 +309,7 @@ describe("FieldProvider", () => {
       const screen = render(
         <FormContext.Provider value={form as never}>
           <TestComponent defaultValue="default" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('default')).toBeDefined()
@@ -280,7 +318,7 @@ describe("FieldProvider", () => {
       screen.rerender(
         <FormContext.Provider value={form as never}>
           <TestComponent defaultValue="new" />
-        </FormContext.Provider>
+        </FormContext.Provider>,
       )
 
       expect(screen.getByText('new')).toBeDefined()
@@ -288,5 +326,5 @@ describe("FieldProvider", () => {
 
       cleanup()
     })
-  });
+  })
 })

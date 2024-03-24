@@ -429,7 +429,7 @@ export class FormLogic<TData> {
   //endregion
 
   //region Field helpers
-  public getOrCreateField<TPath extends Paths<TData>, TBoundValue=never>(
+  public getOrCreateField<TPath extends Paths<TData>, TBoundValue = never>(
     path: TPath,
     fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
   ): FieldLogic<TData, TPath, TBoundValue> {
@@ -451,7 +451,7 @@ export class FormLogic<TData> {
     return field
   }
 
-  public registerField<TPath extends Paths<TData>, TBoundValue=never>(
+  public registerField<TPath extends Paths<TData>, TBoundValue = never>(
     path: TPath,
     field: FieldLogic<TData, TPath, TBoundValue>,
     defaultValues?: ValueAtPath<TData, TPath>,

@@ -36,17 +36,17 @@ import { TextareaSignal } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types.ts'
 import {
-  useField,
-  useFieldContext,
-  useForm,
-  useFormContext,
-} from '@signal-forms/form-react'
-import {
   type Signal,
   signal,
   useComputed,
   useSignal,
 } from '@preact/signals-react'
+import {
+  useField,
+  useFieldContext,
+  useForm,
+  useFormContext,
+} from '@signal-forms/form-react'
 import { createRoot } from 'react-dom/client'
 import { Button } from './components/ui/button'
 import './index.css'
