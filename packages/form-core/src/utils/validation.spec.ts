@@ -558,4 +558,92 @@ describe('validation', () => {
     })
     expect(changedFn).toHaveBeenCalledTimes(2)
   })
+  it("should only run onChange validation if the field was touched before if configured", ()=>{
+    const value = 'test'
+    const validate = vi.fn(() => 'error')
+    const validator = {
+      validate,
+      validateOnChangeIfTouched: true,
+    }
+    const asyncValidatorState = signal(undefined)
+    const errorMap = signal<Partial<ValidationErrorMap>>({})
+    const isValidating = signal(false)
+    const accumulateErrors = false
+
+    validateWithValidators(
+      value,
+      'onChange',
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+      false,
+    )
+
+    expect(validate).not.toHaveBeenCalled()
+    expect(errorMap.value).toEqual({})
+
+    validateWithValidators(
+      value,
+      'onChange',
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+      true,
+    )
+
+    expect(validate).toHaveBeenCalled()
+    expect(errorMap.value).toEqual({
+      sync: 'error',
+      syncErrorEvent: 'onChange',
+    })
+  })
+  it("should not run onChange validation even after touch if the onChange validation is disabled completely", () => {
+    const value = 'test'
+    const validate = vi.fn(() => 'error')
+    const validator = {
+      validate,
+      disableOnChangeValidation: true,
+      validateOnChangeIfTouched: true,
+    }
+    const asyncValidatorState = signal(undefined)
+    const errorMap = signal<Partial<ValidationErrorMap>>({})
+    const isValidating = signal(false)
+    const accumulateErrors = false
+
+    validateWithValidators(
+      value,
+      'onChange',
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+      false,
+    )
+
+    expect(validate).not.toHaveBeenCalled()
+    expect(errorMap.value).toEqual({})
+
+    validateWithValidators(
+      value,
+      'onChange',
+      validator,
+      undefined,
+      asyncValidatorState,
+      errorMap,
+      isValidating,
+      accumulateErrors,
+      true,
+    )
+
+    expect(validate).not.toHaveBeenCalled()
+    expect(errorMap.value).toEqual({})
+  })
 })

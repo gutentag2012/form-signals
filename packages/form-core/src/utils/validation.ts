@@ -18,7 +18,6 @@ export type ValidationErrorMap = {
 }
 
 // TODO Add mixins to add more values to the validation
-// TODO Allow to only enable changed validation if touched
 interface ValidatorBase {
   /**
    * Whether this validator should not run when the value changes
@@ -32,13 +31,16 @@ interface ValidatorBase {
    * Whether this validator should run when the form is submitted
    */
   validateOnMount?: boolean
+  /**
+   * If this is true, the onChange validation will only run if the field was already touched
+   */
+  validateOnChangeIfTouched?: boolean
 }
 
 export type ValidatorSyncFn<TValue> = (value: TValue) => ValidationError
 export interface ValidatorSyncConfigured<TValue> extends ValidatorBase {
   validate: ValidatorSyncFn<TValue>
 }
-// TODO Check that both the object and the function are working
 export type ValidatorSync<TValue> =
   | ValidatorSyncConfigured<TValue>
   | ValidatorSyncFn<TValue>
@@ -60,9 +62,10 @@ export type ValidatorAsync<TValue> =
 const shouldValidateEvent = (
   event: ValidatorEvents,
   validator: ValidatorSync<never> | ValidatorAsync<never>,
+  isTouched?: boolean,
 ) => {
   if (typeof validator === 'function') return event !== 'onMount'
-  if (event === 'onChange') return !validator.disableOnChangeValidation
+  if (event === 'onChange') return !validator.disableOnChangeValidation && (!validator.validateOnChangeIfTouched || isTouched)
   if (event === 'onBlur') return !validator.disableOnBlurValidation
   if (event === 'onMount') return validator.validateOnMount
   return true
@@ -92,12 +95,13 @@ function validateSync<TValue>(
   event: ValidatorEvents,
   validatorSync: ValidatorSync<TValue> | undefined,
   errorMap: Signal<Partial<ValidationErrorMap>>,
+  isTouched?: boolean,
 ) {
   // Without a validator, we don't need to validate
   if (!validatorSync) return false
 
   // Check if this event should be validated
-  if (!shouldValidateEvent(event, validatorSync)) {
+  if (!shouldValidateEvent(event, validatorSync, isTouched)) {
     return false
   }
 
@@ -131,12 +135,13 @@ async function validateAsync<TValue>(
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isValidating: Signal<boolean>,
+  isTouched?: boolean,
 ) {
   // Without a validator, we don't need to validate
   if (!validatorAsync) return
 
   // Check if this event should be validated
-  if (!shouldValidateEvent(event, validatorAsync)) {
+  if (!shouldValidateEvent(event, validatorAsync, isTouched)) {
     return
   }
 
@@ -187,6 +192,7 @@ async function validateAsync<TValue>(
  * @param errorMap The error map to update
  * @param isValidating The state to keep track of the async validation
  * @param accumulateErrors Whether to accumulate errors or not
+ * @param isToched Whether the field is touched or not
  */
 export function validateWithValidators<TValue>(
   value: TValue,
@@ -197,12 +203,14 @@ export function validateWithValidators<TValue>(
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isValidating: Signal<boolean>,
   accumulateErrors?: boolean,
+  isToched?: boolean,
 ) {
   const failedSyncValidation = validateSync(
     value,
     event,
     validatorSync,
     errorMap,
+    isToched
   )
   if (!accumulateErrors && failedSyncValidation) {
     return
@@ -215,6 +223,7 @@ export function validateWithValidators<TValue>(
     previousAbortController,
     errorMap,
     isValidating,
+    isToched
   )
 }
 

@@ -320,6 +320,7 @@ export class FieldLogic<
       this._errorMap,
       this._isValidating,
       this._options.peek()?.accumulateErrors,
+    this._isTouched.peek(),
     )
   }
 

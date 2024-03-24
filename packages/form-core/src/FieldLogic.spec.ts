@@ -808,6 +808,24 @@ describe('FieldLogic', () => {
       expect(field.errors.value).toEqual([])
       expect(field.signal).toBeUndefined()
     })
+    it("should only validate on change after the field was touched if configured", () => {
+      const form = new FormLogic<{name: string}>()
+      form.mount()
+      const field = new FieldLogic(form, "name", {
+        validator: {
+          validate: (value) => (value === "test" && "error"),
+          validateOnChangeIfTouched: true,
+        },
+      })
+      field.mount()
+
+      field.handleChange("test")
+      expect(field.errors.value).toEqual([])
+      field.handleBlur()
+      expect(field.errors.value).toEqual(["error"])
+      field.handleChange("test1")
+      expect(field.errors.value).toEqual([])
+    })
   })
   describe('state', () => {
     it('should not be mounted after construction', () => {

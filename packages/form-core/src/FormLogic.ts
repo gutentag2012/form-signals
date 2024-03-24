@@ -330,6 +330,7 @@ export class FormLogic<TData> {
       this._errorMap,
       this._isValidatingForm,
       this._options.peek()?.accumulateErrors,
+      this._isTouched.peek(),
     )
   }
   //endregion
