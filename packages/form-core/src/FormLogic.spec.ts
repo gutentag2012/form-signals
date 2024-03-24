@@ -396,6 +396,38 @@ describe('FormLogic', () => {
       form.updateOptions({ defaultValues: { name: 'new another' } })
       expect(form.data.value.name.value).toEqual('new another')
     })
+    it("should not update default values for fields that are dirty", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      field.handleChange('new')
+      form.updateOptions({ defaultValues: { name: 'changed this' } })
+      expect(form.data.value.name.value).toBe('new')
+
+      field.handleChange('changed this')
+      form.updateOptions({ defaultValues: { name: 'another' } })
+      expect(form.data.value.name.value).toBe('another')
+    })
+    it("should not update default values that are dirty even without a field", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+
+      form.data.value.name.value = "new"
+      form.updateOptions({ defaultValues: { name: 'changed this' } })
+      expect(form.data.value.name.value).toBe('new')
+
+      form.data.value.name.value = "changed this"
+      form.updateOptions({ defaultValues: { name: 'another' } })
+      expect(form.data.value.name.value).toBe('another')
+    })
   })
   describe('state (fields)', () => {
     it('should be valid if all fields are valid', () => {
@@ -777,14 +809,31 @@ describe('FormLogic', () => {
           validate,
         },
       })
-      await form.mount()
-      await form.unmount()
+      await form.mount().then(unmount => unmount())
 
       form.data.value.name.value = 'asd'
       await form.handleBlur()
       await form.handleSubmit()
 
       expect(validate).toHaveBeenCalledTimes(0)
+    })
+    it('should only force validate if unmounted for submit event', async () => {
+      const validate = vi.fn(() => undefined)
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: '',
+        },
+        validator: {
+          validate,
+        },
+      })
+
+      form.validateForEvent("onMount")
+      form.validateForEvent("onBlur")
+      form.validateForEvent("onChange")
+      form.validateForEvent("onSubmit")
+
+      expect(validate).toHaveBeenCalledTimes(1)
     })
     it('should show errors for fields that are unmounted and preserved their value', async () => {
       const form = new FormLogic<{ name: string }>({

@@ -300,8 +300,6 @@ export class FormLogic<TData> {
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
 
-    if (!this._data) return
-
     if (!options?.defaultValues) {
       return
     }

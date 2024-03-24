@@ -106,5 +106,10 @@ describe('access.utils', () => {
       expect(removeValueAtPath(obj, 'a.0')).toEqual({ a: [2] })
       expect(obj).toEqual({ a: [2] })
     })
+    it("should do nothing if parent is undefined", () => {
+      const obj = { a: { b: undefined } }
+      expect(removeValueAtPath(obj, 'a.b.c' as never)).toEqual(obj)
+      expect(obj).toEqual({ a: { b: undefined } })
+    })
   })
 })

@@ -137,6 +137,8 @@ export class FieldLogic<
         unSignalifyValueSubscribed(this.signal),
       ),
   )
+  private readonly _isMounted = signal(false)
+  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
   constructor(
     private readonly _form: FormLogic<TData>,
@@ -151,9 +153,6 @@ export class FieldLogic<
 
     this.updateOptions(options)
   }
-
-  private readonly _isMounted = signal(false)
-  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
   public get isMounted(): Signal<boolean> {
     return this._isMountedReadOnly
@@ -238,13 +237,7 @@ export class FieldLogic<
     }
   }
 
-  private setupDataSignals() {
-    this._form.initFieldSignal(this._name, this.defaultValue.peek())
-    this.setupTransformedSignal()
-  }
-
-  public async mount(): Promise<void> {
-    if (this._isMounted.peek()) return
+  public async mount(): Promise<() => void> {
     this.setupDataSignals()
 
     // Once mounted, we want to listen to all changes to the value
@@ -278,10 +271,13 @@ export class FieldLogic<
     this._isMounted.value = true
 
     await this.validateForEvent('onMount')
+
+    return () => {
+      this.unmount()
+    }
   }
 
   public unmount(): void {
-    if (!this._isMounted.peek()) return
     this._isMounted.value = false
     this._transformedSignal = undefined
 
@@ -507,20 +503,31 @@ export class FieldLogic<
   }
 
   public resetState(): void {
-    this._errorMap.value = {}
-    this._isTouched.value = false
-    this._isValidating.value = false
+    batch(() => {
+      this._errorMap.value = {}
+      this._isTouched.value = false
+      this._isValidating.value = false
+    })
   }
 
   public resetValue(): void {
-    this._isMounted.value = false
-    setSignalValuesFromObject(this.signal, this._defaultValue.peek())
+    batch(() => {
+      this._isMounted.value = false
+      setSignalValuesFromObject(this.signal, this._defaultValue.peek())
+    })
     this._isMounted.value = true
   }
 
   public reset(): void {
-    this.resetState()
-    this.resetValue()
+    batch(() => {
+      this.resetState()
+      this.resetValue()
+    })
+  }
+
+  private setupDataSignals() {
+    this._form.initFieldSignal(this._name, this.defaultValue.peek())
+    this.setupTransformedSignal()
   }
 
   private setupTransformedSignal() {

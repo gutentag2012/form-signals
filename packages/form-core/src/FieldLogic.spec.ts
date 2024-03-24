@@ -94,6 +94,30 @@ describe('FieldLogic', () => {
 
       expect(field.errors.value).toEqual(['error'])
     })
+    it("should return the currentNamePart of the field", () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, "name")
+      field.mount()
+
+      expect(field.currentNamePart).toBe("name")
+    })
+    it("should return the array index with currentNamePart of the field if it is an array item", () => {
+      const form = new FormLogic<{ name: string[] }>()
+      form.mount()
+      const field = new FieldLogic(form, "name.0")
+      field.mount()
+
+      expect(field.currentNamePart).toBe(0)
+    })
+    it("should return the form used for construction", () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, "name")
+      field.mount()
+
+      expect(field.form).toBe(form)
+    })
   })
   describe('value', () => {
     it('should return the value from the form', () => {
@@ -722,11 +746,9 @@ describe('FieldLogic', () => {
       await form.mount()
       const validate = vi.fn(() => undefined)
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate,
-          validateOnMount: true,
-        },
+        validator: validate,
       })
+      await field.mount().then(unmount => unmount())
 
       await field.handleBlur()
       field.handleChange('test')
@@ -1228,7 +1250,6 @@ describe('FieldLogic', () => {
       field.handleChange('test1')
       expect(field.signal).toBeUndefined()
     })
-
     it('should update the default values if updated with new ones', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
@@ -1266,6 +1287,43 @@ describe('FieldLogic', () => {
       // This checks, that the value is now actually treated as a default value
       field.updateOptions({ defaultValue: 'new another' })
       expect(form.data.value.name.value).toEqual('new another')
+    })
+    it("should reset the value back to the default without running validation", () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: 'default',
+        validator: (value) => value === "default" && "error"
+      })
+      field.mount()
+
+      field.handleChange('new')
+      field.resetValue()
+
+      expect(field.signal.value).toBe('default')
+      expect(field.errors.value).toEqual([])
+    })
+    it("should reset both value and state", () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: 'default',
+        validator: (value) => value === "new" && "error"
+      })
+      field.mount()
+
+      field.handleChange('new')
+      field.handleBlur()
+
+      expect(field.signal.value).toBe('new')
+      expect(field.errors.value).toEqual(["error"])
+      expect(field.isTouched.value).toBe(true)
+
+      field.reset()
+
+      expect(field.signal.value).toBe('default')
+      expect(field.errors.value).toEqual([])
+      expect(field.isTouched.value).toBe(false)
     })
   })
   describe('transform', () => {
@@ -1352,6 +1410,43 @@ describe('FieldLogic', () => {
 
       expect(field.transformedSignal.value).toBe('asd!')
       expect(field.signal.value).toBe('asd')
+    })
+    it("should not handle changes to the transformed signal if it's not mounted", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        transformFromBinding: (value: string) => value.replace('!', ''),
+        transformToBinding: (value) => `${value}!`,
+      })
+
+      expect(field.transformedSignal.value).toBe('test!')
+      expect(field.signal.value).toBe('test')
+      field.handleChangeBound('asd!')
+
+      expect(field.transformedSignal.value).toBe('test!')
+      expect(field.signal.value).toBe('test')
+    })
+    it("should touch the field if handle change is called with shouldTouch: true", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        transformFromBinding: (value: string) => value.replace('!', ''),
+        transformToBinding: (value) => `${value}!`,
+      })
+      field.mount()
+
+      expect(field.isTouched.value).toBe(false)
+      field.handleChangeBound('asd!', { shouldTouch: true })
+
+      expect(field.isTouched.value).toBe(true)
     })
   })
 })

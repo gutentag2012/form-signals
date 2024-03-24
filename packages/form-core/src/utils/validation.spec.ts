@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   type ValidationErrorMap,
   type ValidatorEvents,
-  validateWithValidators,
+  validateWithValidators, clearSubmitEventErrors,
 } from './validation'
 
 describe('validation', () => {
@@ -646,4 +646,63 @@ describe('validation', () => {
     expect(validate).not.toHaveBeenCalled()
     expect(errorMap.value).toEqual({})
   })
+
+  describe('clearSubmitEventErrors', () => {
+    it("should not change the error map if there are no submit errors", () => {
+      const errorMap = signal<Partial<ValidationErrorMap>>({
+        sync: 'error',
+        syncErrorEvent: 'onChange',
+        async: 'error',
+        asyncErrorEvent: 'onChange',
+      })
+
+      const updated = vi.fn()
+      effect(() => {
+        updated(errorMap.value)
+      })
+      // Reset this, since the effect triggers once in the beginning
+      updated.mockReset()
+
+      clearSubmitEventErrors(errorMap)
+
+      expect(updated).not.toHaveBeenCalled()
+    })
+    it("should clear the sync error if it was a submit error", () => {
+      const errorMap = signal<Partial<ValidationErrorMap>>({
+        sync: 'error',
+        syncErrorEvent: 'onSubmit',
+      })
+
+      clearSubmitEventErrors(errorMap)
+
+      expect(errorMap.value).toEqual({ sync: undefined, syncErrorEvent: undefined })
+    })
+    it("should clear the async error if it was a submit error", () => {
+      const errorMap = signal<Partial<ValidationErrorMap>>({
+        async: 'error',
+        asyncErrorEvent: 'onSubmit',
+      })
+
+      clearSubmitEventErrors(errorMap)
+
+      expect(errorMap.value).toEqual({ async: undefined, asyncErrorEvent: undefined })
+    })
+    it("should clear both errors if they were submit errors", () => {
+      const errorMap = signal<Partial<ValidationErrorMap>>({
+        sync: 'error',
+        syncErrorEvent: 'onSubmit',
+        async: 'error',
+        asyncErrorEvent: 'onSubmit',
+      })
+
+      clearSubmitEventErrors(errorMap)
+
+      expect(errorMap.value).toEqual({
+        sync: undefined,
+        syncErrorEvent: undefined,
+        async: undefined,
+        asyncErrorEvent: undefined,
+      })
+    })
+  });
 })

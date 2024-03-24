@@ -38,7 +38,7 @@ function getLeftUnequalPathsInternal(
   // Primitives + object references
   if (a === b) return acc
   if (isNullOrUndefined<unknown>(a) || isNullOrUndefined<unknown>(b))
-    return a === b ? acc : [...internalAcc, currentKey]
+    return [...internalAcc, currentKey]
   if (a instanceof Date && b instanceof Date)
     return a.getTime() === b.getTime() ? acc : [...internalAcc, currentKey]
 

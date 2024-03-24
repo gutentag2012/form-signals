@@ -95,11 +95,10 @@ export function unSignalifyValue<T>(
   return unSignalifyStep(peekedValue, unSignalifyValue)
 }
 
-export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
-  const peekedValue =
-    typeof value === 'object' && value instanceof Signal ? value.value : value
-
-  return unSignalifyStep(peekedValue, unSignalifyValueSubscribed)
+export function unSignalifyValueSubscribed<T>(
+  value: SignalifiedData<T>
+): T {
+  return unSignalifyStep(value.value, unSignalifyValueSubscribed)
 }
 
 export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
@@ -196,7 +195,7 @@ export function setSignalValuesFromObject<
           return
         }
         // If it does exist we update the value deeply
-        setSignalValuesFromObject(objValue.signal, entry)
+        setSignalValuesFromObject(objValue.signal, entry, isPartial)
       })
       if ((obj.peek() as Array<never>).length === value.length) {
         return obj
@@ -211,11 +210,7 @@ export function setSignalValuesFromObject<
       }
       return obj
     }
-    if (value instanceof Date) {
-      ;(obj as Signal<Date>).value = value
-      return obj
-    }
-    if (typeof value === 'object' && value !== null) {
+    if (!(value instanceof Date) && typeof value === 'object' && value !== null) {
       // If the value currently does not exist we need to create it
       if (typeof obj.peek() !== 'object') {
         ;(obj as Signal<object>).value = {}
@@ -234,7 +229,7 @@ export function setSignalValuesFromObject<
           continue
         }
         // If it does exist we update the value deeply
-        setSignalValuesFromObject(objValue, entry)
+        setSignalValuesFromObject(objValue, entry, isPartial)
       }
       // In case there were also values removed, we need to remove them if this is not a partial update
       if (!isPartial) {
@@ -277,7 +272,6 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     let current: Signal = obj
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
-
       const nextPart = parts[i + 1]
       const element = 'signal' in current ? (current.signal as Signal) : current
 

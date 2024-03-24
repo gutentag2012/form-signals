@@ -231,9 +231,9 @@ export const clearSubmitEventErrors = (
   errorMap: Signal<Partial<ValidationErrorMap>>,
 ) => {
   const newValue = { ...errorMap.peek() }
-  const changed =
-    newValue.syncErrorEvent === 'onSubmit' ||
-    newValue.asyncErrorEvent === 'onSubmit'
+
+  if (newValue.syncErrorEvent !== 'onSubmit' && newValue.asyncErrorEvent !== 'onSubmit') return
+
   if (newValue.syncErrorEvent === 'onSubmit') {
     newValue.sync = undefined
     newValue.syncErrorEvent = undefined
@@ -242,7 +242,6 @@ export const clearSubmitEventErrors = (
     newValue.async = undefined
     newValue.asyncErrorEvent = undefined
   }
-  if (!changed) return
 
   errorMap.value = newValue
 }
