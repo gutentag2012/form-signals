@@ -1,5 +1,5 @@
 import { FormLogic, type FormLogicOptions } from '@signal-forms/form-core'
-import React from 'react'
+import React, {useEffect} from 'react'
 import { useIsomorphicLayoutEffect } from '../utils'
 import { type FormContextType, formLogicToFormContext } from './form.context'
 
@@ -12,12 +12,15 @@ export function useForm<TData>(
     return formLogicToFormContext(form)
   }, [])
 
+  finalForm.updateOptions(options)
+
   useIsomorphicLayoutEffect(() => {
     finalForm.mount()
     return () => {
       finalForm.unmount()
     }
   }, [finalForm])
+
 
   return finalForm
 }

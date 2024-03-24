@@ -1,7 +1,6 @@
 export {
   useFieldContext,
   type FieldContextType,
-  fieldContextToFieldLogic,
   fieldLogicToFieldContext,
 } from './field.context'
 export { useField, useFieldWithComponents } from './field.hooks'

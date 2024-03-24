@@ -1,6 +1,5 @@
 import type { FormLogic } from '@signal-forms/form-core'
 import type React from 'react'
-import type { FormContextType } from './form.context'
 
 const RestrictedInputTypes = [
   'checkbox',
@@ -39,7 +38,7 @@ function shouldSkipSubmitKeyboardEvent(
   )
 }
 export function handleSubmitOnEnterForForm<TData>(
-  form: FormLogic<TData> | FormContextType<TData>,
+  form: Pick<FormLogic<TData>, "handleSubmit">,
 ): (event: React.KeyboardEvent<HTMLDivElement>) => void {
   return (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (shouldSkipSubmitKeyboardEvent(event)) {

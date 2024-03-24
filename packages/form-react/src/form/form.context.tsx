@@ -1,6 +1,6 @@
 import type { FormLogic, Paths } from '@signal-forms/form-core'
 import React, { type PropsWithChildren, type ReactNode } from 'react'
-import { type FieldProps, FieldWithForm } from '../field/field.provider'
+import { type FieldProps, FieldWithForm } from '../field'
 import { FormProvider } from './form.provider'
 import { handleSubmitOnEnterForForm } from './form.utils'
 
@@ -10,20 +10,6 @@ export interface FormContextType<TData> extends FormLogic<TData> {
     props: FieldProps<TData, TName, TBoundData>,
   ) => ReactNode
   handleSubmitOnEnter: ReturnType<typeof handleSubmitOnEnterForForm>
-}
-
-export const FormContext = React.createContext<
-  FormContextType<never> | undefined
->(undefined)
-
-export function formContextToFormLogic<TData>(
-  context: FormContextType<TData>,
-): FormLogic<TData> {
-  const castedContext = context as FormLogic<TData>
-  ;(castedContext as any).FormProvider = undefined
-  ;(castedContext as any).FieldProvider = undefined
-  ;(castedContext as any).handleSubmitOnEnter = undefined
-  return castedContext
 }
 
 export function formLogicToFormContext<TData>(
@@ -41,6 +27,10 @@ export function formLogicToFormContext<TData>(
   castedLogic.handleSubmitOnEnter = handleSubmitOnEnterForForm(castedLogic)
   return castedLogic
 }
+
+export const FormContext = React.createContext<
+  FormContextType<never> | undefined
+>(undefined)
 
 export function useFormContext<TData>(): FormContextType<TData> {
   const form = React.useContext(FormContext)

@@ -24,19 +24,6 @@ export interface FieldContextType<
   ) => ReactNode
 }
 
-export function fieldContextToFieldLogic<
-  TData,
-  TName extends Paths<TData>,
-  TBoundData = never,
->(
-  context: FieldContextType<TData, TName, TBoundData>,
-): FieldLogic<TData, TName, TBoundData> {
-  const castedContext = context as FieldLogic<TData, TName, TBoundData>
-  ;(castedContext as any).FieldProvider = undefined
-  ;(castedContext as any).SubFieldProvider = undefined
-  return castedContext
-}
-
 export function fieldLogicToFieldContext<
   TData,
   TName extends Paths<TData>,
