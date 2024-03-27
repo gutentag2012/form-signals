@@ -47,7 +47,9 @@ import {
   useForm,
   useFormContext,
 } from '@signal-forms/form-react'
+import { ZodAdapter } from '@signal-forms/validation-adapter-zod'
 import { createRoot } from 'react-dom/client'
+import { z } from 'zod'
 import { Button } from './components/ui/button'
 import './index.css'
 
@@ -65,12 +67,13 @@ const emptyDefaultValues: Product = {
     ],
   },
   variants: [],
-} satisfies Product
+}
 
 const selectedCurrency = signal('EUR')
 export const Index = () => {
-  const form = useForm<Product>({
+  const form = useForm({
     defaultValues: emptyDefaultValues,
+    validatorAdapter: ZodAdapter,
     onSubmit: (values) => {
       window.alert(
         `Form submitted with values\n${JSON.stringify(values, null, 2)}`,
@@ -124,9 +127,9 @@ export const Index = () => {
 
           <form.FieldProvider
             name="name"
-            validator={(value) =>
-              value.length <= 5 && 'Value must be longer than 5 characters'
-            }
+            validator={z
+              .string()
+              .min(5, 'Value must be longer than 5 characters')}
           >
             <FormTextInput label="Name" maxLength={45} />
           </form.FieldProvider>
@@ -384,9 +387,10 @@ export const Index = () => {
                 <form.FieldProvider
                   name={`variants.${index}.name`}
                   preserveValueOnUnmount
-                  validator={{
-                    validate: (value) =>
-                      !value && 'The variant needs to have a name.',
+                  validator={(value) =>
+                    !value && 'The variant needs to have a name.'
+                  }
+                  validatorOptions={{
                     validateOnMount: true,
                   }}
                 >
@@ -549,13 +553,11 @@ const VariantTabsTrigger = ({
 }: { selectedVariant: Signal<number> }) => {
   const form = useFormContext<Product>()
   const field = useField<Product, 'variants', never>(form, 'variants', {
-    validator: {
-      validate: (value) =>
-        value.some(
-          (variant, index, array) =>
-            index !== array.findIndex((v) => v.name === variant.name),
-        ) && 'Variants must be unique.',
-    },
+    validator: (value) =>
+      value.some(
+        (variant, index, array) =>
+          index !== array.findIndex((v) => v.name === variant.name),
+      ) && 'Variants must be unique.',
     validateOnNestedChange: true,
   })
   return (
