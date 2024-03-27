@@ -1,0 +1,41 @@
+{
+  "name": "@signal-forms/validation-adapter-zod",
+  "version": "0.0.1",
+  "description": "Validation adapter for zod enabling the usage of zod schemas with signal forms",
+  "author": "joshua.gawenda",
+  "license": "todo",
+  "repository": "todo",
+  "homepage": "todo",
+  "type": "module",
+  "types": "dist/esm/index.d.ts",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./dist/esm/index.js",
+        "types": "./dist/esm/index.d.ts"
+      },
+      "require": {
+        "default": "./dist/cjs/index.cjs",
+        "types": "./dist/cjs/index.d.ts"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": ["dist", "src"],
+  "dependencies": {
+    "@signal-forms/form-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@signal-forms/form-core": "^0.0.1",
+    "zod": "^3.22.4"
+  },
+  "keywords": ["signals", "form", "zod", "validation"],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest",
+    "prepublishOnly": "pnpm build"
+  }
+}
