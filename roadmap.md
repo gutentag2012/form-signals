@@ -14,7 +14,7 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **form-core**: Add support for `.moveItemToIndex(index: number, options)` method
 - [ ] **form-core**: Add support for `.pushItemToIndex(item: any, index: number, options)` method
 - [ ] **form-core**: Add support for form reset
-- [ ] **form-validation-adapter-zod**: Add Validation adapter for zod
+- [x] **form-validation-adapter-zod**: Add Validation adapter for zod
 - [ ] **examples-react**: Add example for complex nested form
 - [ ] **examples-react**: Add example for form validation
 - [ ] **examples-react**: Add example how to use with shadcn/ui form components
@@ -50,6 +50,7 @@ This document outlines the planned features and improvements for the project. It
 
 ## Version 1.3.0
 
+- [ ] **form-react**: Measure performance and optimize with `React.memo` and `useMemo`
 - [ ] **form-core**: Add support for bracket syntax for field names
 - [ ] **form-core**: Add type support for partial default values
 - [ ] **form-core**: Add support for typed default values
