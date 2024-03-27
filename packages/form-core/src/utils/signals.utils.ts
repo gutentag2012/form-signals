@@ -95,9 +95,7 @@ export function unSignalifyValue<T>(
   return unSignalifyStep(peekedValue, unSignalifyValue)
 }
 
-export function unSignalifyValueSubscribed<T>(
-  value: SignalifiedData<T>
-): T {
+export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
   return unSignalifyStep(value.value, unSignalifyValueSubscribed)
 }
 
@@ -210,7 +208,11 @@ export function setSignalValuesFromObject<
       }
       return obj
     }
-    if (!(value instanceof Date) && typeof value === 'object' && value !== null) {
+    if (
+      !(value instanceof Date) &&
+      typeof value === 'object' &&
+      value !== null
+    ) {
       // If the value currently does not exist we need to create it
       if (typeof obj.peek() !== 'object') {
         ;(obj as Signal<object>).value = {}

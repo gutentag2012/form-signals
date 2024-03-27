@@ -152,7 +152,7 @@ describe('signals.utils', () => {
       expect(obj.value.a.value.length).toBe(1)
       expect(obj.value.a.value[0].signal.value).toBe(2)
     })
-    it("should do nothing if the parent is undefined", () => {
+    it('should do nothing if the parent is undefined', () => {
       const obj = deepSignalifyValue({ a: { b: undefined } })
       removeSignalValueAtPath(obj, 'a.b.c.d' as never)
       expect(obj.value.a.value.b.value).toBe(undefined)
@@ -223,18 +223,22 @@ describe('signals.utils', () => {
       setSignalValuesFromObject(obj, { a: { b: { c: 1 } } })
       expect(obj.value.a.value.b.value.c.value).toBe(1)
     })
-    it("should create an empty array if the parent value is not an array", () => {
-      const obj = deepSignalifyValue<{a: number[]}>({ a: 1 as unknown as number[] })
+    it('should create an empty array if the parent value is not an array', () => {
+      const obj = deepSignalifyValue<{ a: number[] }>({
+        a: 1 as unknown as number[],
+      })
       setSignalValuesFromObject(obj, { a: [1, 2] })
       expect(obj.value.a.value[0].signal.value).toBe(1)
       expect(obj.value.a.value[1].signal.value).toBe(2)
     })
-    it("should create an empty object if the parent value is not an object", () => {
-      const obj = deepSignalifyValue<{a: {b: number}}>({ a: 1 as unknown as {b: number} })
+    it('should create an empty object if the parent value is not an object', () => {
+      const obj = deepSignalifyValue<{ a: { b: number } }>({
+        a: 1 as unknown as { b: number },
+      })
       setSignalValuesFromObject(obj, { a: { b: 1 } })
       expect(obj.value.a.value.b.value).toBe(1)
     })
-    it("should be possible to do partial updates for arrays and ignore removed values", () => {
+    it('should be possible to do partial updates for arrays and ignore removed values', () => {
       const obj = deepSignalifyValue({ a: [1, 2, 3] })
       const change = [1, 4]
       setSignalValuesFromObject(obj, { a: change }, true)
@@ -242,7 +246,7 @@ describe('signals.utils', () => {
       expect(obj.value.a.value[1].signal.value).toEqual(4)
       expect(obj.value.a.value[2].signal.value).toEqual(3)
     })
-    it("should remove values if no partial update was made on the array", () => {
+    it('should remove values if no partial update was made on the array', () => {
       const obj = deepSignalifyValue({ a: [1, 2, 3] })
       const change = [1, 4]
       setSignalValuesFromObject(obj, { a: change }, false)
@@ -422,8 +426,8 @@ describe('signals.utils', () => {
       setSignalValueAtPath(obj, 'a.b.c', 1)
       expect(obj.value.a.value.b.value.c.value).toBe(1)
     })
-    it("should create an empty array if the parent value is not an array", () => {
-      const obj = deepSignalifyValue<{a?: number[]}>({  })
+    it('should create an empty array if the parent value is not an array', () => {
+      const obj = deepSignalifyValue<{ a?: number[] }>({})
       setSignalValueAtPath(obj, 'a.1', 1)
       expect(obj.value.a?.value?.[0]).toBe(undefined)
       expect(obj.value.a?.value?.[1].signal.value).toBe(1)
