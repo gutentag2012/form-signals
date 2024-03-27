@@ -1,4 +1,4 @@
-import type { FormLogic } from '@signal-forms/form-core'
+import type { FormLogic, ValidatorAdapter } from '@signal-forms/form-core'
 import type React from 'react'
 
 const RestrictedInputTypes = [
@@ -37,8 +37,11 @@ function shouldSkipSubmitKeyboardEvent(
     !isRestrictedTargetInput
   )
 }
-export function handleSubmitOnEnterForForm<TData>(
-  form: Pick<FormLogic<TData>, "handleSubmit">,
+export function handleSubmitOnEnterForForm<
+  TData,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+>(
+  form: Pick<FormLogic<TData, TAdapter>, 'handleSubmit'>,
 ): (event: React.KeyboardEvent<HTMLDivElement>) => void {
   return (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (shouldSkipSubmitKeyboardEvent(event)) {

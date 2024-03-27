@@ -1,6 +1,24 @@
 import { type Signal, batch } from '@preact/signals-core'
 
 //region Types
+export type ValidatorSync<TValue> = (value: TValue) => ValidationError
+
+export type ValidatorAsync<TValue> = (
+  value: TValue,
+  abortSignal: AbortSignal,
+) => Promise<ValidationError> | ValidationError
+
+export interface ValidatorAdapter {
+  sync<TValue>(schema: any): ValidatorSync<TValue>
+  async<TValue>(schema: any): ValidatorAsync<TValue>
+}
+
+// @ts-expect-error The generic type is supposed to be used by the adapter libs
+export interface ValidatorSchemaType<TValue> {
+  // biome-ignore lint/style/useShorthandFunctionType: We need this to be an interface to allow for it to be overridden
+  (): never
+}
+
 export const ValidatorEventsArray = [
   'onChange',
   'onBlur',
@@ -18,7 +36,7 @@ export type ValidationErrorMap = {
 }
 
 // TODO Add mixins to add more values to the validation
-interface ValidatorBase {
+export interface ValidatorOptions {
   /**
    * Whether this validator should not run when the value changes
    */
@@ -36,46 +54,33 @@ interface ValidatorBase {
    */
   validateOnChangeIfTouched?: boolean
 }
-
-export type ValidatorSyncFn<TValue> = (value: TValue) => ValidationError
-export interface ValidatorSyncConfigured<TValue> extends ValidatorBase {
-  validate: ValidatorSyncFn<TValue>
-}
-export type ValidatorSync<TValue> =
-  | ValidatorSyncConfigured<TValue>
-  | ValidatorSyncFn<TValue>
-
-export type ValidatorAsyncFn<TValue> = (
-  value: TValue,
-  abortSignal: AbortSignal,
-) => Promise<ValidationError> | ValidationError
-export interface ValidatorAsyncConfigured<TValue> extends ValidatorBase {
-  validate: ValidatorAsyncFn<TValue>
+export interface ValidatorAsyncOptions extends ValidatorOptions {
   debounceMs?: number
 }
-export type ValidatorAsync<TValue> =
-  | ValidatorAsyncConfigured<TValue>
-  | ValidatorAsyncFn<TValue>
-
 //endregion
 
-const shouldValidateEvent = (
+function shouldValidateEvent(
   event: ValidatorEvents,
-  validator: ValidatorSync<never> | ValidatorAsync<never>,
+  options?: ValidatorOptions,
   isTouched?: boolean,
-) => {
-  if (typeof validator === 'function') return event !== 'onMount'
-  if (event === 'onChange') return !validator.disableOnChangeValidation && (!validator.validateOnChangeIfTouched || isTouched)
-  if (event === 'onBlur') return !validator.disableOnBlurValidation
-  if (event === 'onMount') return validator.validateOnMount
+): boolean {
+  if (!options) return event !== 'onMount'
+  if (event === 'onChange')
+    return (
+      !options.disableOnChangeValidation &&
+      (!options.validateOnChangeIfTouched || !!isTouched)
+    )
+  if (event === 'onBlur') return !options.disableOnBlurValidation
+  if (event === 'onMount') return !!options.validateOnMount
   return true
 }
 
-const validateWithDebounce = async <TValue>(
-  validator: ValidatorAsyncConfigured<TValue>,
+async function validateWithDebounce<TValue>(
+  validator: ValidatorAsync<TValue>,
+  validatorOptions: ValidatorAsyncOptions,
   value: TValue,
   abortSignal: AbortSignal,
-) => {
+) {
   return new Promise<ValidationError>((resolve) => {
     // Set the timeout for the debounced time (we do not need to clear the timeout, since we are using an AbortController)
     setTimeout(async () => {
@@ -84,9 +89,9 @@ const validateWithDebounce = async <TValue>(
         return resolve(undefined)
       }
 
-      const error = await validator.validate(value, abortSignal)
+      const error = await validator(value, abortSignal)
       resolve(error)
-    }, validator.debounceMs)
+    }, validatorOptions.debounceMs)
   })
 }
 
@@ -94,6 +99,7 @@ function validateSync<TValue>(
   value: TValue,
   event: ValidatorEvents,
   validatorSync: ValidatorSync<TValue> | undefined,
+  validatorSyncOptions: ValidatorOptions | undefined,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isTouched?: boolean,
 ) {
@@ -101,15 +107,12 @@ function validateSync<TValue>(
   if (!validatorSync) return false
 
   // Check if this event should be validated
-  if (!shouldValidateEvent(event, validatorSync, isTouched)) {
+  if (!shouldValidateEvent(event, validatorSyncOptions, isTouched)) {
     return false
   }
 
   // Get and assign the error / reset previous error
-  const error =
-    typeof validatorSync !== 'function'
-      ? validatorSync.validate(value)
-      : validatorSync(value)
+  const error = validatorSync(value)
 
   const currentErrorMap = errorMap.peek()
   if (
@@ -132,6 +135,7 @@ async function validateAsync<TValue>(
   value: TValue,
   event: ValidatorEvents,
   validatorAsync: ValidatorAsync<TValue> | undefined,
+  validatorAsyncOptions: ValidatorAsyncOptions | undefined,
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isValidating: Signal<boolean>,
@@ -141,7 +145,7 @@ async function validateAsync<TValue>(
   if (!validatorAsync) return
 
   // Check if this event should be validated
-  if (!shouldValidateEvent(event, validatorAsync, isTouched)) {
+  if (!shouldValidateEvent(event, validatorAsyncOptions, isTouched)) {
     return
   }
 
@@ -152,14 +156,17 @@ async function validateAsync<TValue>(
   // Start the validation
   isValidating.value = true
 
-  const error = await (typeof validatorAsync !== 'function' &&
-  validatorAsync.debounceMs
-    ? validateWithDebounce(validatorAsync, value, abortController.signal)
-    : typeof validatorAsync !== 'function'
-      ? validatorAsync.validate(value, abortController.signal)
-      : validatorAsync(value, abortController.signal))
+  const error = await (validatorAsyncOptions?.debounceMs
+    ? validateWithDebounce(
+        validatorAsync,
+        validatorAsyncOptions,
+        value,
+        abortController.signal,
+      )
+    : validatorAsync(value, abortController.signal))
+
   // If the validation was aborted during the async validation, we just ignore the result
-  // NOTE: We do not need to set the isValidating to false, since there is a newer validation round which will take care of that
+  // NOTE: We do not need to set the isValidating to false, since there is a newer validation round that will take care of that
   if (abortController.signal.aborted) return
 
   // Assign the final errors
@@ -187,30 +194,35 @@ async function validateAsync<TValue>(
  * @param value The value to validate
  * @param event The event that triggered the validation (used to check if the validation should run)
  * @param validatorSync The synchronous validator
+ * @param validatorSyncOptions Options for the synchronous validator
  * @param validatorAsync The asynchronous validator
+ * @param validatorAsyncOptions Options for the asynchronous validator
  * @param previousAbortController The previous abort controller to abort the previous async validation
  * @param errorMap The error map to update
  * @param isValidating The state to keep track of the async validation
  * @param accumulateErrors Whether to accumulate errors or not
- * @param isToched Whether the field is touched or not
+ * @param isTouched Whether the field is touched or not
  */
 export function validateWithValidators<TValue>(
   value: TValue,
   event: ValidatorEvents,
   validatorSync: ValidatorSync<TValue> | undefined,
+  validatorSyncOptions: ValidatorOptions | undefined,
   validatorAsync: ValidatorAsync<TValue> | undefined,
+  validatorAsyncOptions: ValidatorAsyncOptions | undefined,
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isValidating: Signal<boolean>,
   accumulateErrors?: boolean,
-  isToched?: boolean,
+  isTouched?: boolean,
 ) {
   const failedSyncValidation = validateSync(
     value,
     event,
     validatorSync,
+    validatorSyncOptions,
     errorMap,
-    isToched
+    isTouched,
   )
   if (!accumulateErrors && failedSyncValidation) {
     return
@@ -220,10 +232,11 @@ export function validateWithValidators<TValue>(
     value,
     event,
     validatorAsync,
+    validatorAsyncOptions,
     previousAbortController,
     errorMap,
     isValidating,
-    isToched
+    isTouched,
   )
 }
 
@@ -232,7 +245,11 @@ export const clearSubmitEventErrors = (
 ) => {
   const newValue = { ...errorMap.peek() }
 
-  if (newValue.syncErrorEvent !== 'onSubmit' && newValue.asyncErrorEvent !== 'onSubmit') return
+  if (
+    newValue.syncErrorEvent !== 'onSubmit' &&
+    newValue.asyncErrorEvent !== 'onSubmit'
+  )
+    return
 
   if (newValue.syncErrorEvent === 'onSubmit') {
     newValue.sync = undefined

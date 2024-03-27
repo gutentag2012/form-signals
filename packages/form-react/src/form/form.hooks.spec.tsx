@@ -1,9 +1,9 @@
 import { FormLogic } from '@signal-forms/form-core'
 import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React, {useEffect} from 'react'
-import {describe, expect, it, vi} from 'vitest'
-import {useForm, useFormWithComponents} from "./form.hooks";
+import React, { useEffect } from 'react'
+import { describe, expect, it, vi } from 'vitest'
+import { useForm, useFormWithComponents } from './form.hooks'
 
 describe('Form hooks', () => {
   describe('useForm', () => {
@@ -35,7 +35,7 @@ describe('Form hooks', () => {
         useEffect(() => {
           mounted(form.isMounted.value)
           return () => mounted(form.isMounted.value)
-        }, []);
+        }, [form, mounted])
         return <div>{form.data.value.name.value}</div>
       }
 
@@ -68,12 +68,12 @@ describe('Form hooks', () => {
       cleanup()
     })
   })
-  describe("useFormWithComponents", () => {
+  describe('useFormWithComponents', () => {
     it('should return the field context from the provided field logic', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: 'John',
-            }
+        },
       })
 
       function MyComponent() {
@@ -82,8 +82,7 @@ describe('Form hooks', () => {
         return (
           <div>
             <p>
-              Has Provider:{' '}
-              {JSON.stringify(!!fieldWithComponents.FormProvider)}
+              Has Provider: {JSON.stringify(!!fieldWithComponents.FormProvider)}
             </p>
             <p>
               Has FieldProvider:{' '}
@@ -93,7 +92,10 @@ describe('Form hooks', () => {
               Has handleSubmitOnEnter:{' '}
               {JSON.stringify(!!fieldWithComponents.handleSubmitOnEnter)}
             </p>
-            <p>Has Value: {JSON.stringify(fieldWithComponents.data.value.name.value)}</p>
+            <p>
+              Has Value:{' '}
+              {JSON.stringify(fieldWithComponents.data.value.name.value)}
+            </p>
           </div>
         )
       }

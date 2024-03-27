@@ -12,8 +12,12 @@ import {
   type SignalifiedData,
   type ValidationError,
   type ValidationErrorMap,
+  type ValidatorAdapter,
   type ValidatorAsync,
+  type ValidatorAsyncOptions,
   type ValidatorEvents,
+  type ValidatorOptions,
+  type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
   clearSubmitEventErrors,
@@ -34,15 +38,34 @@ import {
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
-export type FormLogicOptions<TData> = {
+export type FormLogicOptions<
+  TData,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+> = {
+  /**
+   * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+   */
+  validatorAdapter?: TAdapter
   /**
    * Synchronous validator for the value of the field.
    */
-  validator?: ValidatorSync<TData>
+  validator?: TAdapter extends undefined
+    ? ValidatorSync<TData> | 'first'
+    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData>> | 'second'
+  /**
+   * Options for the validator
+   */
+  validatorOptions?: ValidatorOptions
   /**
    * Async validator for the value of the field, this will be run after the sync validator if both are set.
    */
-  validatorAsync?: ValidatorAsync<TData>
+  validatorAsync?: TAdapter extends undefined
+    ? ValidatorAsync<TData>
+    : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData>>
+  /**
+   * Options for the async validator
+   */
+  validatorAsyncOptions?: ValidatorAsyncOptions
   /**
    * If true, all errors on validators will be accumulated and validation will not stop on the first error.
    * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
@@ -61,7 +84,14 @@ export type FormLogicOptions<TData> = {
   onSubmit?: (data: TData) => void | Promise<void>
 }
 
-export class FormLogic<TData> {
+// TODO Add helper for dynamic objects
+// TODO Add handleChange for specific field
+// TODO Add further array helpers
+
+export class FormLogic<
+  TData,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+> {
   /**
    * Single source of truth for the form data
    * @private
@@ -150,7 +180,9 @@ export class FormLogic<TData> {
     AbortController | undefined
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
-  private readonly _options: Signal<FormLogicOptions<TData> | undefined>
+  private readonly _options: Signal<
+    FormLogicOptions<TData, TAdapter> | undefined
+  >
   private readonly _isDirty = computed(() => {
     const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
     // Get any possible default value overrides from the fields
@@ -169,8 +201,17 @@ export class FormLogic<TData> {
 
     return getLeftUnequalPaths(defaultValues, this._jsonData.value)
   })
+  private readonly _canSubmit = computed(() => {
+    return (
+      !this._isSubmitting.value &&
+      !this._isValidating.value &&
+      this._isValid.value
+    )
+  })
+  //region Value helpers
+  private readonly _optionsReadOnly = computed(() => this._options.value)
 
-  constructor(options?: FormLogicOptions<TData>) {
+  constructor(options?: FormLogicOptions<TData, TAdapter>) {
     if (options?.defaultValues) {
       this._data = deepSignalifyValue(options.defaultValues)
     } else {
@@ -182,6 +223,7 @@ export class FormLogic<TData> {
   }
 
   private _isMounted = signal(false)
+
   private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
   //region Getter
@@ -196,13 +238,6 @@ export class FormLogic<TData> {
   private readonly _isValidating = computed(
     () => this._isValidatingForm.value || this._isValidatingFields.value,
   )
-  private readonly _canSubmit = computed(() => {
-    return (
-      !this._isSubmitting.value &&
-      !this._isValidating.value &&
-      this._isValid.value
-    )
-  })
 
   public get isValidatingFields(): ReadonlySignal<boolean> {
     return this._isValidatingFields
@@ -290,13 +325,20 @@ export class FormLogic<TData> {
   public get isSubmitted(): ReadonlySignal<boolean> {
     return this._isSubmitted
   }
+  //endregion
 
   public get canSubmit(): ReadonlySignal<boolean> {
     return this._canSubmit
   }
+
+  public get options(): ReadonlySignal<
+    FormLogicOptions<TData, TAdapter> | undefined
+  > {
+    return this._optionsReadOnly
+  }
   //endregion
 
-  public updateOptions(options?: FormLogicOptions<TData>): void {
+  public updateOptions(options?: FormLogicOptions<TData, TAdapter>): void {
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
 
@@ -319,11 +361,38 @@ export class FormLogic<TData> {
     if (!this._isMounted.peek() && event !== 'onSubmit') return
 
     const value = checkValue ?? unSignalifyValue(this.data)
+
+    const adapter = this._options.peek()?.validatorAdapter
+    const passedSyncValidator = this._options.peek()?.validator
+    const syncValidator =
+      adapter &&
+      passedSyncValidator &&
+      typeof passedSyncValidator !== 'function'
+        ? adapter.sync(passedSyncValidator)
+        : passedSyncValidator
+
+    const passedAsyncValidator = this._options.peek()?.validatorAsync
+    const asyncValidator =
+      adapter &&
+      passedAsyncValidator &&
+      typeof passedAsyncValidator !== 'function'
+        ? adapter.async(passedAsyncValidator)
+        : passedAsyncValidator
+
+    if (syncValidator && typeof syncValidator !== 'function') {
+      throw new Error('The sync validator must be a function')
+    }
+    if (asyncValidator && typeof asyncValidator !== 'function') {
+      throw new Error('The async validator must be a function')
+    }
+
     return validateWithValidators(
       value,
       event,
-      this._options.peek()?.validator,
-      this._options.peek()?.validatorAsync,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
       this._previousAbortController,
       this._errorMap,
       this._isValidatingForm,
@@ -425,34 +494,49 @@ export class FormLogic<TData> {
 
     this._unsubscribeFromChangeEffect?.()
   }
-  //endregion
 
   //region Field helpers
-  public getOrCreateField<TPath extends Paths<TData>, TBoundValue = never>(
+  public getOrCreateField<
+    TPath extends Paths<TData>,
+    TBoundValue = never,
+    TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+  >(
     path: TPath,
-    fieldOptions?: FieldLogicOptions<TData, TPath, TBoundValue>,
-  ): FieldLogic<TData, TPath, TBoundValue> {
+    fieldOptions?: FieldLogicOptions<
+      TData,
+      TPath,
+      TBoundValue,
+      TFieldAdapter extends undefined ? TAdapter : TFieldAdapter
+    >,
+  ): FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter> {
     const existingField = this._fields.peek().get(path) as
-      | FieldLogic<TData, TPath, TBoundValue>
+      | FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter>
       | undefined
 
     if (existingField) {
       existingField.updateOptions(fieldOptions)
-      return existingField as FieldLogic<TData, TPath, TBoundValue>
+      return existingField as FieldLogic<
+        TData,
+        TPath,
+        TBoundValue,
+        TFieldAdapter,
+        TAdapter
+      >
     }
 
-    const field = new FieldLogic<TData, TPath, TBoundValue>(
-      this,
-      path,
-      fieldOptions,
-    )
+    const field = new FieldLogic(this, path, fieldOptions)
     this.registerField(path, field, this.getDefaultValueForPath(path))
     return field
   }
+  //endregion
 
-  public registerField<TPath extends Paths<TData>, TBoundValue = never>(
+  public registerField<
+    TPath extends Paths<TData>,
+    TBoundValue = never,
+    TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+  >(
     path: TPath,
-    field: FieldLogic<TData, TPath, TBoundValue>,
+    field: FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter>,
     defaultValues?: ValueAtPath<TData, TPath>,
   ): void {
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
@@ -486,13 +570,6 @@ export class FormLogic<TData> {
     } else {
       removeSignalValueAtPath(this._data, path)
     }
-  }
-  //endregion
-
-  //region Value helpers
-  private readonly _optionsReadOnly = computed(() => this._options.value)
-  public get options(): ReadonlySignal<FormLogicOptions<TData> | undefined> {
-    return this._optionsReadOnly
   }
 
   public getDefaultValueForPath<TPath extends Paths<TData>>(

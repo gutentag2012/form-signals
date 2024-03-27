@@ -2,6 +2,23 @@ import { effect } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
+import {ValidatorAdapter, ValidatorAsync, ValidatorSync} from "./utils";
+
+const adapter: ValidatorAdapter = {
+  sync<TValue>(schema: number): ValidatorSync<TValue> {
+    return value => {
+      if(typeof value === "number") return value <= schema ? undefined : `Value must be less than or equal to ${schema}`
+      return "Value must be a number"
+    }
+  },
+  async<TValue>(schema: number): ValidatorAsync<TValue> {
+    return async value => {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      if(typeof value === "number") return value <= schema ? undefined : `Value must be less than or equal to ${schema}`
+      return "Value must be a number"
+    }
+  }
+}
 
 describe('FieldLogic', () => {
   describe('construction', () => {
@@ -94,26 +111,26 @@ describe('FieldLogic', () => {
 
       expect(field.errors.value).toEqual(['error'])
     })
-    it("should return the currentNamePart of the field", () => {
+    it('should return the currentNamePart of the field', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
-      const field = new FieldLogic(form, "name")
+      const field = new FieldLogic(form, 'name')
       field.mount()
 
-      expect(field.currentNamePart).toBe("name")
+      expect(field.currentNamePart).toBe('name')
     })
-    it("should return the array index with currentNamePart of the field if it is an array item", () => {
+    it('should return the array index with currentNamePart of the field if it is an array item', () => {
       const form = new FormLogic<{ name: string[] }>()
       form.mount()
-      const field = new FieldLogic(form, "name.0")
+      const field = new FieldLogic(form, 'name.0')
       field.mount()
 
       expect(field.currentNamePart).toBe(0)
     })
-    it("should return the form used for construction", () => {
+    it('should return the form used for construction', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
-      const field = new FieldLogic(form, "name")
+      const field = new FieldLogic(form, 'name')
       field.mount()
 
       expect(field.form).toBe(form)
@@ -434,9 +451,7 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
-        },
+        validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
 
@@ -490,12 +505,12 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validatorAsync: {
-          validate: async (value) => {
-            validateFn(value)
-            await new Promise((resolve) => setTimeout(resolve, 100))
-            return value === 'test' ? undefined : 'error'
-          },
+        validatorAsync: async (value) => {
+          validateFn(value)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return value === 'test' ? undefined : 'error'
+        },
+        validatorAsyncOptions: {
           debounceMs: 100,
         },
       })
@@ -527,8 +542,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           disableOnChangeValidation: true,
         },
       })
@@ -542,9 +557,7 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
-        },
+        validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
 
@@ -556,8 +569,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           disableOnBlurValidation: true,
         },
       })
@@ -571,8 +584,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           validateOnMount: true,
         },
       })
@@ -584,9 +597,7 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
-        },
+        validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
 
@@ -596,8 +607,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           disableOnChangeValidation: true,
           disableOnBlurValidation: true,
         },
@@ -613,8 +624,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           disableOnChangeValidation: true,
         },
       })
@@ -649,8 +660,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate: (value) => (value === 'test' ? undefined : 'error'),
+        validator: (value) => (value === 'test' ? undefined : 'error'),
+        validatorOptions: {
           disableOnChangeValidation: true,
         },
       })
@@ -728,8 +739,8 @@ describe('FieldLogic', () => {
       form.mount()
       const validate = vi.fn(() => undefined)
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate,
+        validator: validate,
+        validatorOptions: {
           validateOnMount: true,
         },
       })
@@ -748,7 +759,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         validator: validate,
       })
-      await field.mount().then(unmount => unmount())
+      await field.mount().then((unmount) => unmount())
 
       await field.handleBlur()
       field.handleChange('test')
@@ -760,8 +771,8 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       const validate = vi.fn(() => undefined)
       const field = new FieldLogic(form, 'name', {
-        validator: {
-          validate,
+        validator: validate,
+        validatorOptions: {
           validateOnMount: true,
         },
       })
@@ -830,23 +841,90 @@ describe('FieldLogic', () => {
       expect(field.errors.value).toEqual([])
       expect(field.signal).toBeUndefined()
     })
-    it("should only validate on change after the field was touched if configured", () => {
-      const form = new FormLogic<{name: string}>()
+    it('should only validate on change after the field was touched if configured', () => {
+      const form = new FormLogic<{ name: string }>()
       form.mount()
-      const field = new FieldLogic(form, "name", {
-        validator: {
-          validate: (value) => (value === "test" && "error"),
+      const field = new FieldLogic(form, 'name', {
+        /**/
+        validator: (value) => value === 'test' && 'error',
+        validatorOptions: {
           validateOnChangeIfTouched: true,
         },
       })
       field.mount()
 
-      field.handleChange("test")
+      field.handleChange('test')
       expect(field.errors.value).toEqual([])
       field.handleBlur()
-      expect(field.errors.value).toEqual(["error"])
-      field.handleChange("test1")
+      expect(field.errors.value).toEqual(['error'])
+      field.handleChange('test1')
       expect(field.errors.value).toEqual([])
+    })
+    it("should validate with a given adapter", () => {
+      const form = new FormLogic<{ name: number }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validatorAdapter: adapter,
+        validator: 5 as never,
+      })
+      field.mount()
+
+      field.handleChange(6)
+      expect(field.errors.value).toEqual(["Value must be less than or equal to 5"])
+      field.handleChange(4)
+      expect(field.errors.value).toEqual([])
+    })
+    it("should validate with the usual validation even if an adapter is given", () => {
+      const form = new FormLogic<{ name: number }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validatorAdapter: adapter,
+        validator: value => value === 5 ? "Value must not be 5" : undefined,
+      })
+      field.mount()
+
+      field.handleChange(5)
+      expect(field.errors.value).toEqual(["Value must not be 5"])
+      field.handleChange(6)
+      expect(field.errors.value).toEqual([])
+    })
+    it("should work with an adapter and async validation", async () => {
+      vi.useFakeTimers()
+
+      const form = new FormLogic<{ name: number }>()
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validatorAdapter: adapter,
+        validatorAsync: 5 as never,
+      })
+      await field.mount()
+
+      field.handleChange(6)
+      const validationPromise = field.validateForEvent("onChange")
+      expect(field.errors.value).toEqual([])
+      await vi.advanceTimersByTimeAsync(100)
+      await validationPromise
+      expect(field.errors.value).toEqual(["Value must be less than or equal to 5"])
+
+      vi.useRealTimers()
+    })
+    it("should throw an error if non-function validator is given without an adapter for sync validation", async () => {
+      const form = new FormLogic<{ name: number }>()
+      form.mount()
+      const field =         new FieldLogic(form, 'name', {
+        validator: 5 as never,
+      })
+
+      await expect(field.mount()).rejects.toThrowError("The sync validator must be a function")
+    })
+    it("should throw an error if non-function validator is given without an adapter for async validation", async () => {
+      const form = new FormLogic<{ name: number }>()
+      form.mount()
+      const field =         new FieldLogic(form, 'name', {
+        validatorAsync: 5 as never,
+      })
+
+      await expect(field.mount()).rejects.toThrowError("The async validator must be a function")
     })
   })
   describe('state', () => {
@@ -1288,12 +1366,12 @@ describe('FieldLogic', () => {
       field.updateOptions({ defaultValue: 'new another' })
       expect(form.data.value.name.value).toEqual('new another')
     })
-    it("should reset the value back to the default without running validation", () => {
+    it('should reset the value back to the default without running validation', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
-        validator: (value) => value === "default" && "error"
+        validator: (value) => value === 'default' && 'error',
       })
       field.mount()
 
@@ -1303,12 +1381,12 @@ describe('FieldLogic', () => {
       expect(field.signal.value).toBe('default')
       expect(field.errors.value).toEqual([])
     })
-    it("should reset both value and state", () => {
+    it('should reset both value and state', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
-        validator: (value) => value === "new" && "error"
+        validator: (value) => value === 'new' && 'error',
       })
       field.mount()
 
@@ -1316,7 +1394,7 @@ describe('FieldLogic', () => {
       field.handleBlur()
 
       expect(field.signal.value).toBe('new')
-      expect(field.errors.value).toEqual(["error"])
+      expect(field.errors.value).toEqual(['error'])
       expect(field.isTouched.value).toBe(true)
 
       field.reset()
@@ -1430,7 +1508,7 @@ describe('FieldLogic', () => {
       expect(field.transformedSignal.value).toBe('test!')
       expect(field.signal.value).toBe('test')
     })
-    it("should touch the field if handle change is called with shouldTouch: true", () => {
+    it('should touch the field if handle change is called with shouldTouch: true', () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'test',

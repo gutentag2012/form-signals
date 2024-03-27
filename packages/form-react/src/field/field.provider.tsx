@@ -2,6 +2,7 @@ import type {
   FieldLogic,
   FieldLogicOptions,
   Paths,
+  ValidatorAdapter,
   ValueAtPath,
 } from '@signal-forms/form-core'
 // biome-ignore lint/style/useImportType: This is the React import
@@ -14,17 +15,23 @@ export type FieldChildren<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 > =
-  | ((field: FieldLogic<TData, TName, TBoundData>) => React.ReactNode)
+  | ((
+      field: FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+    ) => React.ReactNode)
   | React.ReactNode
 
 function useUnwrappedChildren<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 >(
-  children: FieldChildren<TData, TName, TBoundData>,
-  field: FieldContextType<TData, TName, TBoundData>,
+  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+  field: FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter>,
 ): React.ReactNode {
   if (typeof children === 'function') {
     return children(field)
@@ -37,20 +44,24 @@ export interface FieldProviderProps<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 > {
-  field: FieldContextType<TData, TName, TBoundData>
-  children: FieldChildren<TData, TName, TBoundData>
+  field: FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter>
+  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>
 }
 
 export function FieldProvider<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
->(props: FieldProviderProps<TData, TName, TBoundData>): React.ReactElement {
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
+>(
+  props: FieldProviderProps<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+): React.ReactElement {
   return (
-    <FieldContext.Provider
-      value={props.field as unknown as FieldContextType<never, never, unknown>}
-    >
+    <FieldContext.Provider value={props.field}>
       {useUnwrappedChildren(props.children, props.field)}
     </FieldContext.Provider>
   )
@@ -60,19 +71,23 @@ export interface FieldWithFormProps<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
-> extends FieldProps<TData, TName, TBoundData> {
-  form: FormContextType<TData>
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
+> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  form: FormContextType<TData, TFormAdapter>
 }
 export function FieldWithForm<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 >({
   form,
   name,
   children,
   ...props
-}: FieldWithFormProps<TData, TName, TBoundData>) {
+}: FieldWithFormProps<TData, TName, TBoundData, TAdapter, TFormAdapter>) {
   const field = useField(form, name, props)
   return <FieldProvider field={field}>{children}</FieldProvider>
 }
@@ -81,16 +96,35 @@ export interface FieldProps<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
-> extends FieldLogicOptions<TData, TName, TBoundData> {
-  children: FieldChildren<TData, TName, TBoundData>
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
+> extends FieldLogicOptions<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter extends undefined ? TFormAdapter : TAdapter
+  > {
+  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>
   name: TName
 }
-export function Field<TData, TName extends Paths<TData>, TBoundData = never>({
+export function Field<
+  TData,
+  TName extends Paths<TData>,
+  TBoundData = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
+>({
   name,
   children,
   ...props
-}: FieldProps<TData, TName, TBoundData>): React.ReactElement {
-  const form = useFormContext<TData>()
+}: FieldProps<
+  TData,
+  TName,
+  TBoundData,
+  TAdapter,
+  TFormAdapter
+>): React.ReactElement {
+  const form = useFormContext<TData, TFormAdapter>()
   return (
     <FieldWithForm form={form} name={name} {...props}>
       {children}
@@ -105,8 +139,18 @@ export interface SubFieldProps<
   TData,
   TName extends Paths<TData>,
   TBoundData = never,
-> extends FieldProps<TData, TName, TBoundData> {
-  parentField: FieldContextType<TParentData, TParentName, TParentBoundData>
+  TParentAdapter extends ValidatorAdapter | undefined = undefined,
+  TParentFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
+> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  parentField: FieldContextType<
+    TParentData,
+    TParentName,
+    TParentBoundData,
+    TParentAdapter,
+    TParentFormAdapter
+  >
 }
 export function SubField<
   TParentData,
@@ -115,6 +159,10 @@ export function SubField<
   TData extends ValueAtPath<TParentData, TParentName>,
   TName extends Paths<TData>,
   TBoundData = never,
+  TParentAdapter extends ValidatorAdapter | undefined = undefined,
+  TParentFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 >({
   parentField,
   name,
@@ -126,10 +174,14 @@ export function SubField<
   TParentBoundData,
   TData,
   TName,
-  TBoundData
+  TBoundData,
+  TParentAdapter,
+  TParentFormAdapter,
+  TAdapter,
+  TFormAdapter
 >) {
   const field = useField(
-    parentField.form as unknown as FormContextType<TData>,
+    parentField.form as unknown as FormContextType<TData, TFormAdapter>,
     `${parentField.name}.${name}` as unknown as TName,
     props,
   )

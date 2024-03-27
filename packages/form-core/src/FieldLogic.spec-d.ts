@@ -239,35 +239,12 @@ describe('FieldLogic (types)', () => {
   })
   //endregion
   //region validator
-  it('should infer the type of the value from the configured validator', () => {
-    const form = new FormLogic<{ name: string }>()
-    new FieldLogic(form, 'name', {
-      validator: {
-        validate: (value) => {
-          assertType<string>(value)
-          return undefined
-        },
-      },
-    })
-  })
   it('should infer the type of the value from the validator function', () => {
     const form = new FormLogic<{ name: string }>()
     new FieldLogic(form, 'name', {
       validator: (value) => {
         assertType<string>(value)
         return undefined
-      },
-    })
-  })
-  it('should infer the type of the value from the configured async validator', () => {
-    const form = new FormLogic<{ name: string }>()
-    new FieldLogic(form, 'name', {
-      validatorAsync: {
-        validate: async (value, abortSignal) => {
-          assertType<string>(value)
-          assertType<AbortSignal>(abortSignal)
-          return undefined
-        },
       },
     })
   })

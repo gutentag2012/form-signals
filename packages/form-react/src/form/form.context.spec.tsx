@@ -1,9 +1,9 @@
 import { FormLogic } from '@signal-forms/form-core'
-import {cleanup, render} from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
-import {describe, expect, it} from 'vitest'
-import {formLogicToFormContext, useFormContext} from "./form.context";
+import { describe, expect, it } from 'vitest'
+import { formLogicToFormContext, useFormContext } from './form.context'
 
 describe('Form Context', () => {
   describe('formLogicToFormContext', () => {
@@ -21,11 +21,10 @@ describe('Form Context', () => {
         return (
           <div>
             <p>Has FormProvider: {JSON.stringify(!!context.FormProvider)}</p>
+            <p>Has FieldProvider: {JSON.stringify(!!context.FieldProvider)}</p>
             <p>
-              Has FieldProvider: {JSON.stringify(!!context.FieldProvider)}
-            </p>
-            <p>
-              Has handleSubmitOnEnter: {JSON.stringify(!!context.handleSubmitOnEnter)}
+              Has handleSubmitOnEnter:{' '}
+              {JSON.stringify(!!context.handleSubmitOnEnter)}
             </p>
             <p>Has Value: {JSON.stringify(!!context.data.value)}</p>
           </div>
@@ -59,20 +58,20 @@ describe('Form Context', () => {
         const context = useFormContext<FormValues>()
         return (
           <context.FieldProvider name="name">
-            {field => field.signal.value}
+            {(field) => field.signal.value}
           </context.FieldProvider>
         )
       }
       const form = new FormLogic({
         defaultValues: {
-          name: "default",
+          name: 'default',
         },
       })
       const formContext = formLogicToFormContext(form)
 
       const screen = render(
         <formContext.FormProvider>
-            <ContextConsumer />
+          <ContextConsumer />
         </formContext.FormProvider>,
       )
 
@@ -82,7 +81,7 @@ describe('Form Context', () => {
     })
   })
   describe('useFormContext', () => {
-    it("should throw an error when used outside of a FormProvider", () => {
+    it('should throw an error when used outside of a FormProvider', () => {
       function ContextConsumer() {
         const context = useFormContext()
         return (
@@ -96,7 +95,7 @@ describe('Form Context', () => {
         render(<ContextConsumer />)
       }).toThrowError('useFormContext must be used within a FormProvider')
     })
-    it("should return the form context when used within a FormProvider", () => {
+    it('should return the form context when used within a FormProvider', () => {
       function ContextConsumer() {
         const context = useFormContext()
         return (

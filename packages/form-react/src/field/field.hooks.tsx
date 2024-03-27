@@ -3,6 +3,7 @@ import type {
   FieldLogicOptions,
   FormLogic,
   Paths,
+  ValidatorAdapter,
 } from '@signal-forms/form-core'
 import React from 'react'
 import type { FormContextType } from '../form'
@@ -16,11 +17,18 @@ export function useField<
   TData,
   TName extends Paths<TData>,
   TBoundValue = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 >(
-  form: FormContextType<TData> | FormLogic<TData>,
+  form: FormContextType<TData, TFormAdapter> | FormLogic<TData, TFormAdapter>,
   name: TName,
-  options?: FieldLogicOptions<TData, TName, TBoundValue>,
-): FieldContextType<TData, TName, TBoundValue> {
+  options?: FieldLogicOptions<
+    TData,
+    TName,
+    TBoundValue,
+    TAdapter extends undefined ? TFormAdapter : TAdapter
+  >,
+): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter> {
   const field = form.getOrCreateField(name, options)
   const finalField = React.useMemo(
     () => fieldLogicToFieldContext(field),
@@ -41,8 +49,10 @@ export function useFieldWithComponents<
   TData,
   TName extends Paths<TData>,
   TBoundValue = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 >(
-  field: FieldLogic<TData, TName, TBoundValue>,
-): FieldContextType<TData, TName, TBoundValue> {
+  field: FieldLogic<TData, TName, TBoundValue, TAdapter, TFormAdapter>,
+): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter> {
   return React.useMemo(() => fieldLogicToFieldContext(field), [field])
 }

@@ -14,8 +14,12 @@ import {
   type SignalifiedData,
   type ValidationError,
   type ValidationErrorMap,
+  type ValidatorAdapter,
   type ValidatorAsync,
+  type ValidatorAsyncOptions,
   type ValidatorEvents,
+  type ValidatorOptions,
+  type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
   clearSubmitEventErrors,
@@ -34,15 +38,36 @@ export type FieldLogicOptions<
   TData,
   TName extends Paths<TData>,
   TBoundValue = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
 > = {
+  /**
+   * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+   */
+  validatorAdapter?: TAdapter
   /**
    * Synchronous validator for the value of the field.
    */
-  validator?: ValidatorSync<ValueAtPath<TData, TName>>
+  validator?: TAdapter extends undefined
+    ? ValidatorSync<ValueAtPath<TData, TName>>
+    :
+        | ValidatorSync<ValueAtPath<TData, TName>>
+        | ReturnType<ValidatorSchemaType<ValueAtPath<TData, TName>>>
+  /**
+   * Options for the validator
+   */
+  validatorOptions?: ValidatorOptions
   /**
    * Async validator for the value of the field, this will be run after the sync validator if both are set.
    */
-  validatorAsync?: ValidatorAsync<ValueAtPath<TData, TName>>
+  validatorAsync?: TAdapter extends undefined
+    ? ValidatorAsync<ValueAtPath<TData, TName>>
+    :
+        | ValidatorAsync<ValueAtPath<TData, TName>>
+        | ReturnType<ValidatorSchemaType<ValueAtPath<TData, TName>>>
+  /**
+   * Options for the async validator
+   */
+  validatorAsyncOptions?: ValidatorAsyncOptions
   /**
    * If true, all errors on validators will be accumulated and validation will not stop on the first error.
    * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
@@ -99,6 +124,8 @@ export class FieldLogic<
   TData,
   TName extends Paths<TData>,
   TBoundValue = never,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+  TFormAdapter extends ValidatorAdapter | undefined = undefined,
 > {
   private readonly _isTouched = signal(false)
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
@@ -119,7 +146,13 @@ export class FieldLogic<
   > = signal(undefined)
   private _unsubscribeFromChangeEffect?: () => void
   private readonly _options: Signal<
-    FieldLogicOptions<TData, TName, TBoundValue> | undefined
+    | FieldLogicOptions<
+        TData,
+        TName,
+        TBoundValue,
+        TAdapter extends undefined ? TFormAdapter : TAdapter
+      >
+    | undefined
   >
   private readonly _defaultValue = computed(() => {
     return (
@@ -141,9 +174,14 @@ export class FieldLogic<
   private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
 
   constructor(
-    private readonly _form: FormLogic<TData>,
+    private readonly _form: FormLogic<TData, TFormAdapter>,
     private readonly _name: TName,
-    options?: FieldLogicOptions<TData, TName, TBoundValue>,
+    options?: FieldLogicOptions<
+      TData,
+      TName,
+      TBoundValue,
+      TAdapter extends undefined ? TFormAdapter : TAdapter
+    >,
   ) {
     this._options = signal(options)
 
@@ -181,7 +219,7 @@ export class FieldLogic<
     return pathToParts(this._name).pop() as LastPath<TName>
   }
 
-  public get form(): FormLogic<TData> {
+  public get form(): FormLogic<TData, TFormAdapter> {
     return this._form
   }
 
@@ -212,7 +250,12 @@ export class FieldLogic<
   }
 
   public updateOptions(
-    options?: FieldLogicOptions<TData, TName, TBoundValue>,
+    options?: FieldLogicOptions<
+      TData,
+      TName,
+      TBoundValue,
+      TAdapter extends undefined ? TFormAdapter : TAdapter
+    >,
   ): void {
     const isDirty = this._isDirty.peek()
     this._options.value = options
@@ -307,16 +350,45 @@ export class FieldLogic<
     if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.signal)
       return
     const value = checkValue ?? unSignalifyValue(this.signal)
+
+    const adapter =
+      this._options.peek()?.validatorAdapter ??
+      this.form.options.peek()?.validatorAdapter
+    const passedSyncValidator = this._options.peek()?.validator
+    const syncValidator =
+      adapter &&
+      passedSyncValidator &&
+      typeof passedSyncValidator !== 'function'
+        ? adapter.sync(passedSyncValidator)
+        : passedSyncValidator
+
+    const passedAsyncValidator = this._options.peek()?.validatorAsync
+    const asyncValidator =
+      adapter &&
+      passedAsyncValidator &&
+      typeof passedAsyncValidator !== 'function'
+        ? adapter.async(passedAsyncValidator)
+        : passedAsyncValidator
+
+    if (syncValidator && typeof syncValidator !== 'function') {
+      throw new Error('The sync validator must be a function')
+    }
+    if (asyncValidator && typeof asyncValidator !== 'function') {
+      throw new Error('The async validator must be a function')
+    }
+
     return validateWithValidators(
       value,
       event,
-      this._options.peek()?.validator,
-      this._options.peek()?.validatorAsync,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
       this._previousAbortController,
       this._errorMap,
       this._isValidating,
       this._options.peek()?.accumulateErrors,
-    this._isTouched.peek(),
+      this._isTouched.peek(),
     )
   }
 

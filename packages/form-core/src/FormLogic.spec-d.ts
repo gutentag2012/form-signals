@@ -179,32 +179,11 @@ describe('FormLogic (types)', () => {
   })
   //endregion
   //region validator
-  it('should infer the type of the value from the configured validator', () => {
-    new FormLogic<{ name: string }>({
-      validator: {
-        validate: (value) => {
-          assertType<{ name: string }>(value)
-          return undefined
-        },
-      },
-    })
-  })
   it('should infer the type of the value from the validator function', () => {
     new FormLogic<{ name: string }>({
       validator: (value) => {
         assertType<{ name: string }>(value)
         return undefined
-      },
-    })
-  })
-  it('should infer the type of the value from the configured async validator', () => {
-    new FormLogic<{ name: string }>({
-      validatorAsync: {
-        validate: async (value, abortSignal) => {
-          assertType<{ name: string }>(value)
-          assertType<AbortSignal>(abortSignal)
-          return undefined
-        },
       },
     })
   })

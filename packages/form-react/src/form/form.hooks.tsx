@@ -1,11 +1,18 @@
-import { FormLogic, type FormLogicOptions } from '@signal-forms/form-core'
-import React, {useEffect} from 'react'
+import {
+  FormLogic,
+  type FormLogicOptions,
+  type ValidatorAdapter,
+} from '@signal-forms/form-core'
+import React from 'react'
 import { useIsomorphicLayoutEffect } from '../utils'
 import { type FormContextType, formLogicToFormContext } from './form.context'
 
-export function useForm<TData>(
-  options: FormLogicOptions<TData>,
-): FormContextType<TData> {
+export function useForm<
+  TData,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+>(
+  options: FormLogicOptions<TData, TAdapter>,
+): FormContextType<TData, TAdapter> {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a form once
   const finalForm = React.useMemo(() => {
     const form = new FormLogic(options)
@@ -21,12 +28,12 @@ export function useForm<TData>(
     }
   }, [finalForm])
 
-
   return finalForm
 }
 
-export function useFormWithComponents<TData>(
-  form: FormLogic<TData>,
-): FormContextType<TData> {
+export function useFormWithComponents<
+  TData,
+  TAdapter extends ValidatorAdapter | undefined = undefined,
+>(form: FormLogic<TData, TAdapter>): FormContextType<TData, TAdapter> {
   return React.useMemo(() => formLogicToFormContext(form), [form])
 }
