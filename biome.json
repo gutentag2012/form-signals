@@ -2,7 +2,15 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
     "ignore": ["**/node_modules/**", "**/dist/**", "**/coverage/**", "*.d.ts"],
-    "include": ["packages", "examples"]
+    "include": [
+      "packages",
+      "examples",
+      "package.json",
+      "tsconfig.json",
+      "roadmap.md",
+      "pnpm-workspace.yaml",
+      "nx.json"
+    ]
   },
   "organizeImports": {
     "enabled": true
