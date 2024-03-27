@@ -20,9 +20,9 @@ type SignalifiedTuple<
   ? Acc
   : Tuple extends readonly [infer Curr, ...infer RestTuple]
     ? SignalifiedTuple<
-      RestTuple,
-      [...Acc, { key: number; data: SignalifiedData<Curr> }]
-    >
+        RestTuple,
+        [...Acc, { key: number; data: SignalifiedData<Curr> }]
+      >
     : never
 
 export type SignalifiedData<T> = Signal<
@@ -222,7 +222,7 @@ export function setSignalValuesFromObject<
         // We get the current item, if it does not exist we create a new one
         const objValue = (obj.peek() as Record<typeof key, Signal<unknown>>)[
           key
-          ]
+        ]
         if (objValue === undefined) {
           ;(obj as Signal<object>).value = {
             ...obj.peek(),

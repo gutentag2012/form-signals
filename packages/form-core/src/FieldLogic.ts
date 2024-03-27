@@ -132,11 +132,11 @@ export class FieldLogic<
 
   private readonly _options: Signal<
     | FieldLogicOptions<
-    TData,
-    TName,
-    TBoundValue,
-    TAdapter extends undefined ? TFormAdapter : TAdapter
-  >
+        TData,
+        TName,
+        TBoundValue,
+        TAdapter extends undefined ? TFormAdapter : TAdapter
+      >
     | undefined
   >
 

@@ -37,8 +37,8 @@ describe('signals.utils', () => {
       }
       const signalified = deepSignalifyValue(object)
       expect(
-        signalified.value.deep.value.nested.value[0].data.value[0].data
-          .value.object.value,
+        signalified.value.deep.value.nested.value[0].data.value[0].data.value
+          .object.value,
       ).toBe(object.deep.nested[0][0].object)
     })
   })

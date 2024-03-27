@@ -159,10 +159,7 @@ describe('FormLogic (types)', () => {
     })
 
     assertType<
-      [
-        { key: number; data: Signal<Date> },
-        { key: number; data: Signal<Date> },
-      ]
+      [{ key: number; data: Signal<Date> }, { key: number; data: Signal<Date> }]
     >(form.data.value.dateRange.value)
     assertType<{
       EUR: Signal<

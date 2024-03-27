@@ -2,23 +2,34 @@ import { effect } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
-import {deepSignalifyValue, ValidatorAdapter, ValidatorAsync, ValidatorSync} from './utils'
+import {
+  type ValidatorAdapter,
+  type ValidatorAsync,
+  type ValidatorSync,
+  deepSignalifyValue,
+} from './utils'
 import { Truthy } from './utils/internal.utils'
 
 const adapter: ValidatorAdapter = {
   sync<TValue>(schema: number): ValidatorSync<TValue> {
-    return value => {
-      if(typeof value === "number") return value <= schema ? undefined : `Value must be less than or equal to ${schema}`
-      return "Value must be a number"
+    return (value) => {
+      if (typeof value === 'number')
+        return value <= schema
+          ? undefined
+          : `Value must be less than or equal to ${schema}`
+      return 'Value must be a number'
     }
   },
   async<TValue>(schema: number): ValidatorAsync<TValue> {
-    return async value => {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      if(typeof value === "number") return value <= schema ? undefined : `Value must be less than or equal to ${schema}`
-      return "Value must be a number"
+    return async (value) => {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      if (typeof value === 'number')
+        return value <= schema
+          ? undefined
+          : `Value must be less than or equal to ${schema}`
+      return 'Value must be a number'
     }
-  }
+  },
 }
 
 describe('FormLogic', () => {
@@ -892,7 +903,7 @@ describe('FormLogic', () => {
       expect(form.mountedFieldErrors.value).toEqual([])
       expect(form.unmountedFieldErrors.value).toEqual([])
     })
-    it("should validate with a given adapter", () => {
+    it('should validate with a given adapter', () => {
       const form = new FormLogic<number, typeof adapter>({
         validatorAdapter: adapter,
         validator: 5 as never,
@@ -900,23 +911,25 @@ describe('FormLogic', () => {
       form.mount()
 
       form.data.value = 6
-      expect(form.errors.value).toEqual(["Value must be less than or equal to 5"])
+      expect(form.errors.value).toEqual([
+        'Value must be less than or equal to 5',
+      ])
       form.data.value = 4
       expect(form.errors.value).toEqual([])
     })
-    it("should validate with the usual validation even if an adapter is given", () => {
+    it('should validate with the usual validation even if an adapter is given', () => {
       const form = new FormLogic<number, typeof adapter>({
         validatorAdapter: adapter,
-        validator: value => value === 5 ? "Value must not be 5" : undefined,
+        validator: (value) => (value === 5 ? 'Value must not be 5' : undefined),
       })
       form.mount()
 
       form.data.value = 5
-      expect(form.errors.value).toEqual(["Value must not be 5"])
+      expect(form.errors.value).toEqual(['Value must not be 5'])
       form.data.value = 6
       expect(form.errors.value).toEqual([])
     })
-    it("should work with an adapter and async validation", async () => {
+    it('should work with an adapter and async validation', async () => {
       vi.useFakeTimers()
 
       const form = new FormLogic<number, typeof adapter>({
@@ -925,28 +938,34 @@ describe('FormLogic', () => {
       })
       await form.mount()
 
-      form.data.value = (6)
-      const validationPromise = form.validateForEvent("onChange")
+      form.data.value = 6
+      const validationPromise = form.validateForEvent('onChange')
       expect(form.errors.value).toEqual([])
       await vi.advanceTimersByTimeAsync(100)
       await validationPromise
-      expect(form.errors.value).toEqual(["Value must be less than or equal to 5"])
+      expect(form.errors.value).toEqual([
+        'Value must be less than or equal to 5',
+      ])
 
       vi.useRealTimers()
     })
-    it("should throw an error if non-function validator is given without an adapter for sync validation", async () => {
+    it('should throw an error if non-function validator is given without an adapter for sync validation', async () => {
       const form = new FormLogic<number, typeof adapter>({
         validator: 5 as never,
       })
 
-      await expect(form.mount()).rejects.toThrowError("The sync validator must be a function")
+      await expect(form.mount()).rejects.toThrowError(
+        'The sync validator must be a function',
+      )
     })
-    it("should throw an error if non-function validator is given without an adapter for async validation", async () => {
+    it('should throw an error if non-function validator is given without an adapter for async validation', async () => {
       const form = new FormLogic<number, typeof adapter>({
         validatorAsync: 5 as never,
       })
 
-      await expect(form.mount()).rejects.toThrowError("The async validator must be a function")
+      await expect(form.mount()).rejects.toThrowError(
+        'The async validator must be a function',
+      )
     })
   })
   describe('handleSubmit', () => {

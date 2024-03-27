@@ -85,9 +85,7 @@ describe('FieldLogic (types)', () => {
     const form = new FormLogic({ defaultValues: { names: ['John'] } })
     const field = new FieldLogic(form, 'names' as const)
 
-    assertType<Array<{ key: number; data: Signal<string> }>>(
-      field.data.value,
-    )
+    assertType<Array<{ key: number; data: Signal<string> }>>(field.data.value)
   })
   it('should infer the type of all tuple members from the default value', () => {
     const form = new FormLogic({
@@ -204,10 +202,7 @@ describe('FieldLogic (types)', () => {
     const fieldPricesEurEl = new FieldLogic(form, 'prices.EUR.0' as const)
 
     assertType<
-      [
-        { key: number; data: Signal<Date> },
-        { key: number; data: Signal<Date> },
-      ]
+      [{ key: number; data: Signal<Date> }, { key: number; data: Signal<Date> }]
     >(fieldTuple.data.value)
     assertType<{
       EUR: Signal<
