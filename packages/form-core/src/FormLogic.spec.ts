@@ -464,21 +464,21 @@ describe('FormLogic', () => {
       expect(form.data.value.name.value).toBe('another')
     })
 
-    it("should update the data when using the handleChange method", () => {
+    it('should update the data when using the handleChange method', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
 
-      form.handleChange("name", 'value')
+      form.handleChange('name', 'value')
       expect(form.data.value.name.value).toBe('value')
     })
-    it("should update the data when using the handleChange method when the nested value does not exist", () => {
+    it('should update the data when using the handleChange method when the nested value does not exist', () => {
       const form = new FormLogic<{ name: { nested: string } }>()
       form.mount()
 
-      form.handleChange("name.nested", 'value')
+      form.handleChange('name.nested', 'value')
       expect(form.data.value.name.value.nested.value).toBe('value')
     })
-    it("should touch a connected field when handling calling handleChange with a field connected", () => {
+    it('should touch a connected field when handling calling handleChange with a field connected', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name')
@@ -486,20 +486,20 @@ describe('FormLogic', () => {
 
       expect(field.isTouched.value).toBe(false)
       expect(form.isTouched.value).toBe(false)
-      form.handleChange("name", 'value', { shouldTouch: true })
+      form.handleChange('name', 'value', { shouldTouch: true })
       expect(field.isTouched.value).toBe(true)
       expect(form.isTouched.value).toBe(true)
     })
-    it("should not touch anything when handling calling handleChange with no field connected", () => {
+    it('should not touch anything when handling calling handleChange with no field connected', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
 
-      form.handleChange("name", 'value', { shouldTouch: true })
+      form.handleChange('name', 'value', { shouldTouch: true })
       expect(form.isTouched.value).toBe(false)
     })
-    it("should not handleChange if form is not mounted", () => {
+    it('should not handleChange if form is not mounted', () => {
       const form = new FormLogic<{ name: string }>()
-      form.handleChange("name", 'value')
+      form.handleChange('name', 'value')
       expect(form.data.value.name).toBeUndefined()
     })
   })

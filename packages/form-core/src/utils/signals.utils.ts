@@ -287,13 +287,25 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
         continue
       }
 
-      if (nextPart === undefined && !!element.peek() && part in element.peek()){
-        const nextSignal = "data" in element.peek()[part] ? element.peek()[part].data : element.peek()[part]
+      if (
+        nextPart === undefined &&
+        !!element.peek() &&
+        part in element.peek()
+      ) {
+        const nextSignal =
+          'data' in element.peek()[part]
+            ? element.peek()[part].data
+            : element.peek()[part]
         setSignalValuesFromObject(nextSignal, value)
         return current
       }
 
-      const newValue = nextPart === undefined ? deepSignalifyValue(value) : typeof nextPart === 'number' ? signal([]) : signal({})
+      const newValue =
+        nextPart === undefined
+          ? deepSignalifyValue(value)
+          : typeof nextPart === 'number'
+            ? signal([])
+            : signal({})
 
       // If the current part is a number, then we need to set the value in an array
       if (typeof part === 'number') {

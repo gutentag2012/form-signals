@@ -406,7 +406,7 @@ export class FieldLogic<
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if(!this._isMounted.peek()) return
+    if (!this._isMounted.peek()) return
     this._form.handleChange(this._name, newValue, options)
   }
 
@@ -534,10 +534,7 @@ export class FieldLogic<
     )
   }
 
-  public moveValueInArray<
-    IndexA extends number,
-    IndexB extends number,
-  >(
+  public moveValueInArray<IndexA extends number, IndexB extends number>(
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
       : ValueAtPath<TData, TName> extends readonly any[]
@@ -563,9 +560,7 @@ export class FieldLogic<
     this._form.moveValueInArray(this._name, indexA, indexB, options)
   }
 
-  public moveSelfInArray<
-    IndexB extends number,
-  >(
+  public moveSelfInArray<IndexB extends number>(
     indexB: ValueAtPath<TData, ParentPath<TName>> extends any[]
       ? number
       : ValueAtPath<TData, ParentPath<TName>> extends readonly any[]
@@ -578,7 +573,12 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    this._form.moveValueInArray(this.getParentNamePart, this.currentNamePart as never, indexB as never, options)
+    this._form.moveValueInArray(
+      this.getParentNamePart,
+      this.currentNamePart as never,
+      indexB as never,
+      options,
+    )
   }
   //endregion
 

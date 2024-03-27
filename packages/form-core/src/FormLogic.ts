@@ -435,7 +435,7 @@ export class FormLogic<
     newValue: ValueAtPath<TData, TPath>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if(!this._isMounted.peek()) return
+    if (!this._isMounted.peek()) return
     const field = this.getFieldForPath(path)
     batch(() => {
       setSignalValueAtPath(this._data, path, newValue)
@@ -676,7 +676,9 @@ export class FormLogic<
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
-      console.error(`Tried to push a value into a non-array field at ${name} and index ${index}`)
+      console.error(
+        `Tried to push a value into a non-array field at ${name} and index ${index}`,
+      )
       return
     }
 

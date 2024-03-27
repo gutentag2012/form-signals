@@ -386,7 +386,7 @@ describe('signals.utils', () => {
       expect(obj.value.first.value).toEqual(3)
       expect(obj.value.second).toBeUndefined()
     })
-    it("should set a primitive value if passed as the object", () => {
+    it('should set a primitive value if passed as the object', () => {
       const obj = deepSignalifyValue({ a: 1 })
       setSignalValuesFromObject(obj.value.a, 2)
       expect(obj.value.a.value).toBe(2)
