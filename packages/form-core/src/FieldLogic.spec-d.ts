@@ -9,31 +9,31 @@ describe('FieldLogic (types)', () => {
     const form = new FormLogic<{ name: string }>()
     const field = new FieldLogic(form, 'name')
 
-    assertType<string>(field.signal.value)
+    assertType<string>(field.data.value)
   })
   it('should get the correct primitive type for numbers', () => {
     const form = new FormLogic<{ age: number }>()
     const field = new FieldLogic(form, 'age')
 
-    assertType<number>(field.signal.value)
+    assertType<number>(field.data.value)
   })
   it('should get the correct primitive type for booleans', () => {
     const form = new FormLogic<{ isHuman: boolean }>()
     const field = new FieldLogic(form, 'isHuman')
 
-    assertType<boolean>(field.signal.value)
+    assertType<boolean>(field.data.value)
   })
   it('should get the correct primitive type for dates', () => {
     const form = new FormLogic<{ birthday: Date }>()
     const field = new FieldLogic(form, 'birthday')
 
-    assertType<Date>(field.signal.value)
+    assertType<Date>(field.data.value)
   })
   it('should get the correct constant type for strings', () => {
     const form = new FormLogic<{ name: 'John' | 'Lee' }>()
     const field = new FieldLogic(form, 'name')
 
-    assertType<'John' | 'Lee'>(field.signal.value)
+    assertType<'John' | 'Lee'>(field.data.value)
   })
   //endregion
   //region inferring types
@@ -41,31 +41,31 @@ describe('FieldLogic (types)', () => {
     const form = new FormLogic({ defaultValues: { name: 'John' } })
     const field = new FieldLogic(form, 'name')
 
-    assertType<string>(field.signal.value)
+    assertType<string>(field.data.value)
   })
   it('should infer the primitive number type of a field from the default value', () => {
     const form = new FormLogic({ defaultValues: { age: 25 } })
     const field = new FieldLogic(form, 'age')
 
-    assertType<number>(field.signal.value)
+    assertType<number>(field.data.value)
   })
   it('should infer the primitive boolean type of a field from the default value', () => {
     const form = new FormLogic({ defaultValues: { isHuman: true } })
     const field = new FieldLogic(form, 'isHuman')
 
-    assertType<boolean>(field.signal.value)
+    assertType<boolean>(field.data.value)
   })
   it('should infer the primitive date type of a field from the default value', () => {
     const form = new FormLogic({ defaultValues: { birthday: new Date() } })
     const field = new FieldLogic(form, 'birthday')
 
-    assertType<Date>(field.signal.value)
+    assertType<Date>(field.data.value)
   })
   it('should infer the constant type of a field from the default value', () => {
     const form = new FormLogic({ defaultValues: { name: 'John' as const } })
     const field = new FieldLogic(form, 'name')
 
-    assertType<'John'>(field.signal.value)
+    assertType<'John'>(field.data.value)
   })
   //endregion
   //region array types
@@ -73,20 +73,20 @@ describe('FieldLogic (types)', () => {
     const form = new FormLogic<{ names: string[] }>()
     const field = new FieldLogic(form, 'names' as const)
 
-    assertType<{ key: number; signal: Signal<string> }[]>(field.signal.value)
+    assertType<{ key: number; data: Signal<string> }[]>(field.data.value)
   })
   it('should type the members of an array', () => {
     const form = new FormLogic<{ names: string[] }>()
     const field = new FieldLogic(form, 'names.0' as const)
 
-    assertType<string>(field.signal.value)
+    assertType<string>(field.data.value)
   })
   it('should infer the type of the array members from the default value', () => {
     const form = new FormLogic({ defaultValues: { names: ['John'] } })
     const field = new FieldLogic(form, 'names' as const)
 
-    assertType<Array<{ key: number; signal: Signal<string> }>>(
-      field.signal.value,
+    assertType<Array<{ key: number; data: Signal<string> }>>(
+      field.data.value,
     )
   })
   it('should infer the type of all tuple members from the default value', () => {
@@ -97,18 +97,18 @@ describe('FieldLogic (types)', () => {
 
     assertType<
       [
-        { key: number; signal: Signal<'John'> },
-        { key: number; signal: Signal<'Lee'> },
+        { key: number; data: Signal<'John'> },
+        { key: number; data: Signal<'Lee'> },
       ]
-    >(field.signal.value)
+    >(field.data.value)
   })
   it('should type the members of a tuple in subfields', () => {
     const form = new FormLogic<{ names: [string, number] }>()
     const field1 = new FieldLogic(form, 'names.0' as const)
     const field2 = new FieldLogic(form, 'names.1' as const)
 
-    assertType<string>(field1.signal.value)
-    assertType<number>(field2.signal.value)
+    assertType<string>(field1.data.value)
+    assertType<number>(field2.data.value)
   })
   it('should not allow to push values into a tuple', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
@@ -184,7 +184,7 @@ describe('FieldLogic (types)', () => {
           num: Signal<number>
         }>
       }>
-    >(field.signal)
+    >(field.data)
   })
   it('should deeply signalify array data based on the default value', () => {
     const form = new FormLogic({
@@ -205,37 +205,37 @@ describe('FieldLogic (types)', () => {
 
     assertType<
       [
-        { key: number; signal: Signal<Date> },
-        { key: number; signal: Signal<Date> },
+        { key: number; data: Signal<Date> },
+        { key: number; data: Signal<Date> },
       ]
-    >(fieldTuple.signal.value)
+    >(fieldTuple.data.value)
     assertType<{
       EUR: Signal<
         Array<{
           key: number
-          signal: Signal<{
+          data: Signal<{
             id: Signal<string>
             value: Signal<number>
             count: Signal<number>
           }>
         }>
       >
-    }>(fieldPrices.signal.value)
+    }>(fieldPrices.data.value)
     assertType<
       Array<{
         key: number
-        signal: Signal<{
+        data: Signal<{
           id: Signal<string>
           value: Signal<number>
           count: Signal<number>
         }>
       }>
-    >(fieldPricesEur.signal.value)
+    >(fieldPricesEur.data.value)
     assertType<{
       id: Signal<string>
       value: Signal<number>
       count: Signal<number>
-    }>(fieldPricesEurEl.signal.value)
+    }>(fieldPricesEurEl.data.value)
   })
   //endregion
   //region validator
@@ -291,17 +291,17 @@ describe('FieldLogic (types)', () => {
       },
     })
 
-    assertType<string>(field.signal.value)
-    assertType<number>(field.transformedSignal.value)
+    assertType<string>(field.data.value)
+    assertType<number>(field.transformedData.value)
     assertType<(newValue: number, options: never) => void>(
       field.handleChangeBound,
     )
   })
-  it('should have never type for transformedSignal if no transformers are given', () => {
+  it('should have never type for transformedData if no transformers are given', () => {
     const form = new FormLogic<{ name: string }>()
     const field = new FieldLogic(form, 'name')
 
-    assertType<never>(field.transformedSignal.value)
+    assertType<never>(field.transformedData.value)
   })
   // endregion
 })

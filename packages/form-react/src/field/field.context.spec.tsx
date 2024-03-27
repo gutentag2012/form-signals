@@ -23,7 +23,7 @@ describe('Field Context', () => {
             <p>
               Has SubFieldProvider: {JSON.stringify(!!context.SubFieldProvider)}
             </p>
-            <p>Value: {context.signal.value}</p>
+            <p>Value: {context.data.value}</p>
           </div>
         )
       }
@@ -52,7 +52,7 @@ describe('Field Context', () => {
         const context = useFieldContext()
         return (
           <div>
-            <p>Value: {context.signal.value}</p>
+            <p>Value: {context.data.value}</p>
           </div>
         )
       }

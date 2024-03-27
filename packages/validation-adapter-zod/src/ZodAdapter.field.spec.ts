@@ -34,7 +34,7 @@ describe('ZodAdapter (field)', () => {
     field.mount()
 
     expect(field.errors.value).toEqual([])
-    field.signal.value = {
+    field.data.value = {
       name: 0 as never,
       another: 'string' as never,
     }
@@ -56,7 +56,7 @@ describe('ZodAdapter (field)', () => {
     await field.mount()
 
     expect(field.errors.value).toEqual([])
-    field.signal.value = 'another'
+    field.data.value = 'another'
     expect(field.errors.value).toEqual([])
     await vi.advanceTimersByTimeAsync(1000)
     expect(field.errors.value).toEqual(['Custom validator'])

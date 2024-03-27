@@ -15,7 +15,7 @@ describe('FieldProvider', () => {
 
       function ContextConsumer() {
         const field = useFieldContext()
-        return field.signal.value
+        return field.data.value
       }
 
       function TestComponent() {
@@ -39,7 +39,7 @@ describe('FieldProvider', () => {
       function TestComponent() {
         return (
           <FieldProvider field={field as never}>
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </FieldProvider>
         )
       }
@@ -56,7 +56,7 @@ describe('FieldProvider', () => {
 
       function ContextConsumer() {
         const field = useFieldContext()
-        return field.signal.value
+        return field.data.value
       }
 
       function TestComponent() {
@@ -64,7 +64,7 @@ describe('FieldProvider', () => {
           <FieldProvider field={field as never}>
             {(field) => (
               <>
-                {field.signal.value}
+                {field.data.value}
                 <ContextConsumer />
               </>
             )}
@@ -87,7 +87,7 @@ describe('FieldProvider', () => {
       function TestComponent() {
         return (
           <Field<FormValues, 'name'> name="name" defaultValue="default">
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </Field>
         )
       }
@@ -110,7 +110,7 @@ describe('FieldProvider', () => {
       function TestComponent({ name }: { name: 'name' | 'other' }) {
         return (
           <Field<FormValues, typeof name> name={name} defaultValue="default">
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </Field>
         )
       }
@@ -144,7 +144,7 @@ describe('FieldProvider', () => {
       function TestComponent({ defaultValue }: { defaultValue: string }) {
         return (
           <Field<FormValues, 'name'> name="name" defaultValue={defaultValue}>
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </Field>
         )
       }
@@ -183,7 +183,7 @@ describe('FieldProvider', () => {
             name="name"
             defaultValue="default"
           >
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </FieldWithForm>
         )
       }
@@ -217,7 +217,7 @@ describe('FieldProvider', () => {
             name="first"
             defaultValue="default"
           >
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </SubField>
         )
       }
@@ -254,7 +254,7 @@ describe('FieldProvider', () => {
             name={name}
             defaultValue="default"
           >
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </SubField>
         )
       }
@@ -301,7 +301,7 @@ describe('FieldProvider', () => {
             name="first"
             defaultValue={defaultValue}
           >
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </SubField>
         )
       }

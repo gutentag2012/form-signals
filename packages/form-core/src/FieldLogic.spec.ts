@@ -35,7 +35,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      expect(field.signal?.value).toBe('default')
+      expect(field.data?.value).toBe('default')
     })
     it('should deeply signalify the default value', () => {
       const form = new FormLogic({
@@ -57,7 +57,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      expect(field.signal?.value).toBe('default')
+      expect(field.data?.value).toBe('default')
     })
     it('should fall back on the form default values', () => {
       const form = new FormLogic({
@@ -70,7 +70,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name')
       field.mount()
 
-      expect(field.signal?.value).toBe('test')
+      expect(field.data?.value).toBe('test')
     })
     it('should have default state in beginning (not dirty, not validating, no errors, not touched, isValid)', () => {
       const form = new FormLogic<{ name: string }>()
@@ -78,7 +78,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name')
       field.mount()
 
-      expect(field.signal.value).toBeUndefined()
+      expect(field.data.value).toBeUndefined()
       expect(field.isDirty.value).toBe(false)
       expect(field.isValidating.value).toBe(false)
       expect(field.errors.value).toEqual([])
@@ -149,7 +149,7 @@ describe('FieldLogic', () => {
       field.mount()
       form.data.value.name.value = 'new value'
 
-      expect(field.signal.value).toBe('new value')
+      expect(field.data.value).toBe('new value')
     })
     it('should return the value as a reactive signal', () => {
       const form = new FormLogic({
@@ -164,7 +164,7 @@ describe('FieldLogic', () => {
 
       const spy = vi.fn()
       effect(() => {
-        spy(field.signal.value)
+        spy(field.data.value)
       })
       form.data.value.name.value = 'new value'
 
@@ -199,14 +199,14 @@ describe('FieldLogic', () => {
 
       const fn = vi.fn()
       effect(() => {
-        fn(field.signal.peek().name.value)
+        fn(field.data.peek().name.value)
       })
       field.handleChange({
         name: 'new',
       })
       // It ran twice since it runs once when the effect is set up
       expect(fn).toHaveBeenCalledTimes(2)
-      expect(field.signal.value.name.value).toEqual('new')
+      expect(field.data.value.name.value).toEqual('new')
     })
     it('should reactively insert a value into the array', () => {
       const form = new FormLogic({
@@ -220,7 +220,7 @@ describe('FieldLogic', () => {
       field.mount()
       field.insertValueInArray(1, 2)
 
-      expect(field.signal.value[1].signal.value).toBe(2)
+      expect(field.data.value[1].data.value).toBe(2)
     })
     it('should reactively push a value to the array', () => {
       const form = new FormLogic({
@@ -234,7 +234,7 @@ describe('FieldLogic', () => {
       field.mount()
       field.pushValueToArray(4)
 
-      expect(field.signal.value[3].signal.value).toBe(4)
+      expect(field.data.value[3].data.value).toBe(4)
     })
     it('should reactively remove a value from the array', () => {
       const form = new FormLogic({
@@ -247,10 +247,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'array' as const)
       field.mount()
 
-      expect(field.signal.value.length).toBe(3)
+      expect(field.data.value.length).toBe(3)
       field.removeValueFromArray(1)
 
-      expect(field.signal.value.length).toBe(2)
+      expect(field.data.value.length).toBe(2)
     })
     it('should reactively remove itself from an array', () => {
       const form = new FormLogic({
@@ -280,7 +280,7 @@ describe('FieldLogic', () => {
 
       const spy = vi.fn()
       effect(() => {
-        spy(field.signal.value)
+        spy(field.data.value)
       })
       field.pushValueToArray(4)
 
@@ -300,8 +300,8 @@ describe('FieldLogic', () => {
       field.mount()
       field.swapValuesInArray(0, 2)
 
-      expect(field.signal.value[0].signal.value).toBe(3)
-      expect(field.signal.value[2].signal.value).toBe(1)
+      expect(field.data.value[0].data.value).toBe(3)
+      expect(field.data.value[2].data.value).toBe(1)
     })
     it('should reactively swap itself in an array', () => {
       const form = new FormLogic({
@@ -314,8 +314,8 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'array.1' as const)
       field.mount()
       field.swapSelfInArray(0)
-      expect(form.data.value.array.value[0].signal.value).toBe(2)
-      expect(form.data.value.array.value[1].signal.value).toBe(1)
+      expect(form.data.value.array.value[0].data.value).toBe(2)
+      expect(form.data.value.array.value[1].data.value).toBe(1)
     })
     it('should do nothing when trying to insert a value into a non-array field', () => {
       const form = new FormLogic({
@@ -328,10 +328,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.insertValueInArray(1, 2 as never)
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to push a value into a non-array field', () => {
       const form = new FormLogic({
@@ -344,10 +344,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.pushValueToArray(1 as never)
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to remove a value from a non-array field', () => {
       const form = new FormLogic({
@@ -360,10 +360,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.removeValueFromArray(1 as never)
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to remove itself from a non-array-item field', () => {
       const form = new FormLogic({
@@ -376,10 +376,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.removeSelfFromArray()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to remove a non existing index', () => {
       const form = new FormLogic({
@@ -394,8 +394,8 @@ describe('FieldLogic', () => {
       field.removeValueFromArray(2)
       field.removeValueFromArray(-1)
 
-      expect(field.signal.value[0].signal.value).toBe(1)
-      expect(field.signal.value[1].signal.value).toBe(2)
+      expect(field.data.value[0].data.value).toBe(1)
+      expect(field.data.value[1].data.value).toBe(2)
     })
     it('should do nothing when trying to swap values in a non-array field', () => {
       const form = new FormLogic({
@@ -408,10 +408,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.swapValuesInArray(1 as never, 2 as never)
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to swap itself in a non-array-item field', () => {
       const form = new FormLogic({
@@ -424,10 +424,10 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'someVal')
       field.mount()
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
       field.swapSelfInArray(0 as never)
 
-      expect(field.signal.value).toBe(1)
+      expect(field.data.value).toBe(1)
     })
     it('should do nothing when trying to swap to a non existing index', () => {
       const form = new FormLogic({
@@ -442,8 +442,8 @@ describe('FieldLogic', () => {
       field.swapValuesInArray(0, 2)
       field.swapValuesInArray(-1, 1)
 
-      expect(field.signal.value[0].signal.value).toBe(1)
-      expect(field.signal.value[1].signal.value).toBe(2)
+      expect(field.data.value[0].data.value).toBe(1)
+      expect(field.data.value[1].data.value).toBe(2)
     })
   })
   describe('validation', () => {
@@ -516,9 +516,9 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.signal.value = 'value'
+      field.data.value = 'value'
       await vi.advanceTimersByTime(50)
-      field.signal.value = 'value2'
+      field.data.value = 'value2'
       await vi.advanceTimersByTime(200)
 
       expect(field.errors.value).toEqual([])
@@ -534,7 +534,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.signal.value = 'test1'
+      field.data.value = 'test1'
 
       expect(field.errors.value).toEqual(['error'])
     })
@@ -549,7 +549,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.signal.value = 'test1'
+      field.data.value = 'test1'
 
       expect(field.errors.value).toEqual([])
     })
@@ -631,15 +631,15 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.signal.value = 'test'
+      field.data.value = 'test'
       field.handleSubmit()
       expect(field.errors.peek()).toEqual([])
 
-      field.signal.value = 'asd'
+      field.data.value = 'asd'
       field.handleSubmit()
       expect(field.errors.peek()).toEqual(['error'])
 
-      field.signal.value = 'asdd'
+      field.data.value = 'asdd'
       expect(field.errors.peek()).toEqual([])
     })
     it('should reset the change errors after change', () => {
@@ -650,7 +650,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.signal.value = 'test1'
+      field.data.value = 'test1'
 
       expect(field.errors.value).toEqual(['error'])
       field.handleChange('test')
@@ -824,10 +824,10 @@ describe('FieldLogic', () => {
         validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
-      field.signal.value = 'test'
+      field.data.value = 'test'
       field.unmount()
       expect(field.errors.value).toEqual([])
-      expect(field.signal.value).toEqual('test')
+      expect(field.data.value).toEqual('test')
     })
     it('should not validate fields that are unmounted', () => {
       const form = new FormLogic<{ name: string }>()
@@ -836,10 +836,10 @@ describe('FieldLogic', () => {
         validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
-      field.signal.value = 'test'
+      field.data.value = 'test'
       field.unmount()
       expect(field.errors.value).toEqual([])
-      expect(field.signal).toBeUndefined()
+      expect(field.data).toBeUndefined()
     })
     it('should only validate on change after the field was touched if configured', () => {
       const form = new FormLogic<{ name: string }>()
@@ -973,7 +973,7 @@ describe('FieldLogic', () => {
       field.mount()
 
       expect(field.isDirty.value).toBe(false)
-      form.data.value.name.value.deep.value[0].signal.value = 'changed'
+      form.data.value.name.value.deep.value[0].data.value = 'changed'
 
       expect(field.isDirty.value).toBe(true)
     })
@@ -1220,7 +1220,7 @@ describe('FieldLogic', () => {
       })
       field.mount()
       field.handleBlur()
-      field.signal.value = 'value'
+      field.data.value = 'value'
 
       expect(field.isTouched.value).toBe(true)
       expect(form.data.value.name.value).toBe('value')
@@ -1240,7 +1240,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name')
       field.mount()
       field.handleBlur()
-      field.signal.value = 'value'
+      field.data.value = 'value'
 
       expect(field.isTouched.value).toBe(true)
       expect(form.data.value.name.value).toBe('value')
@@ -1324,9 +1324,9 @@ describe('FieldLogic', () => {
       field.mount()
       field.unmount()
 
-      expect(field.signal).toBeUndefined()
+      expect(field.data).toBeUndefined()
       field.handleChange('test1')
-      expect(field.signal).toBeUndefined()
+      expect(field.data).toBeUndefined()
     })
     it('should update the default values if updated with new ones', () => {
       const form = new FormLogic<{ name: string }>()
@@ -1378,7 +1378,7 @@ describe('FieldLogic', () => {
       field.handleChange('new')
       field.resetValue()
 
-      expect(field.signal.value).toBe('default')
+      expect(field.data.value).toBe('default')
       expect(field.errors.value).toEqual([])
     })
     it('should reset both value and state', () => {
@@ -1393,13 +1393,13 @@ describe('FieldLogic', () => {
       field.handleChange('new')
       field.handleBlur()
 
-      expect(field.signal.value).toBe('new')
+      expect(field.data.value).toBe('new')
       expect(field.errors.value).toEqual(['error'])
       expect(field.isTouched.value).toBe(true)
 
       field.reset()
 
-      expect(field.signal.value).toBe('default')
+      expect(field.data.value).toBe('default')
       expect(field.errors.value).toEqual([])
       expect(field.isTouched.value).toBe(false)
     })
@@ -1411,7 +1411,7 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name')
       field.mount()
 
-      expect(field.transformedSignal.value).toBeUndefined()
+      expect(field.transformedData.value).toBeUndefined()
     })
     it('should not write to the form if no transformFromBinding is given', () => {
       const form = new FormLogic({
@@ -1425,9 +1425,9 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      field.transformedSignal.value = 'asd!'
-      expect(field.signal.value).toBe('test')
-      expect(field.transformedSignal.value).toBe('test!')
+      field.transformedData.value = 'asd!'
+      expect(field.data.value).toBe('test')
+      expect(field.transformedData.value).toBe('test!')
     })
     it('should not read from the form if no transformToBinding is given', () => {
       const form = new FormLogic({
@@ -1441,13 +1441,13 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      expect(field.transformedSignal.value).toBeUndefined()
-      expect(field.signal.value).toBe('test')
+      expect(field.transformedData.value).toBeUndefined()
+      expect(field.data.value).toBe('test')
 
-      field.transformedSignal.value = 'asd!'
+      field.transformedData.value = 'asd!'
 
-      expect(field.transformedSignal.value).toBeUndefined()
-      expect(field.signal.value).toBe('asd')
+      expect(field.transformedData.value).toBeUndefined()
+      expect(field.data.value).toBe('asd')
     })
     it('should return a reactive signal which is a transformed representation of the signal when transformers are given', () => {
       const form = new FormLogic({
@@ -1462,12 +1462,12 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      expect(field.transformedSignal.value).toBe('test!')
-      expect(field.signal.value).toBe('test')
-      field.transformedSignal.value = 'asd!'
+      expect(field.transformedData.value).toBe('test!')
+      expect(field.data.value).toBe('test')
+      field.transformedData.value = 'asd!'
 
-      expect(field.transformedSignal.value).toBe('asd!')
-      expect(field.signal.value).toBe('asd')
+      expect(field.transformedData.value).toBe('asd!')
+      expect(field.data.value).toBe('asd')
     })
     it('should handle changes to the transformed signal', () => {
       const form = new FormLogic({
@@ -1482,12 +1482,12 @@ describe('FieldLogic', () => {
       })
       field.mount()
 
-      expect(field.transformedSignal.value).toBe('test!')
-      expect(field.signal.value).toBe('test')
+      expect(field.transformedData.value).toBe('test!')
+      expect(field.data.value).toBe('test')
       field.handleChangeBound('asd!')
 
-      expect(field.transformedSignal.value).toBe('asd!')
-      expect(field.signal.value).toBe('asd')
+      expect(field.transformedData.value).toBe('asd!')
+      expect(field.data.value).toBe('asd')
     })
     it("should not handle changes to the transformed signal if it's not mounted", () => {
       const form = new FormLogic({
@@ -1501,12 +1501,12 @@ describe('FieldLogic', () => {
         transformToBinding: (value) => `${value}!`,
       })
 
-      expect(field.transformedSignal.value).toBe('test!')
-      expect(field.signal.value).toBe('test')
+      expect(field.transformedData.value).toBe('test!')
+      expect(field.data.value).toBe('test')
       field.handleChangeBound('asd!')
 
-      expect(field.transformedSignal.value).toBe('test!')
-      expect(field.signal.value).toBe('test')
+      expect(field.transformedData.value).toBe('test!')
+      expect(field.data.value).toBe('test')
     })
     it('should touch the field if handle change is called with shouldTouch: true', () => {
       const form = new FormLogic({

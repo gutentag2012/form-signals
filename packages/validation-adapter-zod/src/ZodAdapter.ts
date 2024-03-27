@@ -34,10 +34,10 @@ export function configureZodAdapter(
       }
     },
     async<TValue>(validator: z.ZodType<TValue>) {
-      return async (value: TValue, signal: AbortSignal) => {
-        if (signal.aborted) return undefined
+      return async (value: TValue, abortSignal: AbortSignal) => {
+        if (abortSignal.aborted) return undefined
         const result = await validator.safeParseAsync(value)
-        if (signal.aborted) return undefined
+        if (abortSignal.aborted) return undefined
         return handleZodResult(result, options)
       }
     },

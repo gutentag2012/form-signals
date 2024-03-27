@@ -14,7 +14,7 @@ describe('Field hooks', () => {
         const field = useField(form, 'name', {
           defaultValue: 'John',
         })
-        return <div>{field.signal.value}</div>
+        return <div>{field.data.value}</div>
       }
 
       const screen = render(<MyComponent />)
@@ -31,7 +31,7 @@ describe('Field hooks', () => {
         const field = useField(form, 'name', {
           defaultValue: 'John',
         })
-        return <div>{field.signal.value}</div>
+        return <div>{field.data.value}</div>
       }
 
       const screen = render(<MyComponent />)
@@ -52,7 +52,7 @@ describe('Field hooks', () => {
         const field = useField(form, 'name', {
           defaultValue,
         })
-        return <div>{field.signal.value}</div>
+        return <div>{field.data.value}</div>
       }
 
       const screen = render(<MyComponent defaultValue={'John'} />)
@@ -113,13 +113,13 @@ describe('Field hooks', () => {
               Has SubProvider:{' '}
               {JSON.stringify(!!fieldWithComponents.SubFieldProvider)}
             </p>
-            <p>Has Value: {JSON.stringify(fieldWithComponents.signal.value)}</p>
+            <p>Has Value: {JSON.stringify(fieldWithComponents.data.value)}</p>
           </div>
         )
       }
 
       // We cannot test reactivity since signals do not work in this testing environment
-      field.signal.value = 'John'
+      field.data.value = 'John'
       const screen = render(<MyComponent />)
 
       expect(screen.getByText('Has Provider: true')).toBeDefined()

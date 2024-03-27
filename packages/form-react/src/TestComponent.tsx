@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { useFieldContext } from './field'
 import { useForm } from './form'
 
-function SignalText({ signal }: { signal: Signal<any> }) {
+function SignalText({ signal }: { data: Signal<any> }) {
   const text = useComputed(() =>
     JSON.stringify(unSignalifyValue(signal.value), null, 2),
   )
@@ -15,7 +15,7 @@ function SignalText({ signal }: { signal: Signal<any> }) {
 
 function Debug() {
   const field = useFieldContext()
-  return <SignalText signal={field.signal} />
+  return <SignalText signal={field.data} />
 }
 
 function ListItem() {
@@ -23,7 +23,7 @@ function ListItem() {
   return (
     <li>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <SignalText signal={field.signal} />
+        <SignalText signal={field.data} />
         <button
           type="button"
           onClick={() => {
@@ -58,7 +58,7 @@ function List() {
   return (
     <>
       <ul>
-        {field.signal.value.map((value, index) => (
+        {field.data.value.map((value, index) => (
           <field.SubFieldProvider
             key={value.key}
             name={`${index}`}
@@ -71,7 +71,7 @@ function List() {
       <button
         type="button"
         onClick={() => {
-          field.pushValueToArray(field.signal.peek().length + 1)
+          field.pushValueToArray(field.data.peek().length + 1)
         }}
       >
         Add one

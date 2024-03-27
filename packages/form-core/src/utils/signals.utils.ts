@@ -5,24 +5,24 @@ import type { Paths, ValueAtPath } from './types'
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
 let arrayKey = 0
 
-type SignalArrayEntry<T> = { key: number; signal: SignalifiedData<T> }
+type SignalArrayEntry<T> = { key: number; data: SignalifiedData<T> }
 export function makeArrayEntry<T>(value: T): SignalArrayEntry<T> {
   return {
     key: arrayKey++,
-    signal: deepSignalifyValue(value),
+    data: deepSignalifyValue(value),
   }
 }
 
 type SignalifiedTuple<
   Tuple extends readonly any[],
-  Acc extends { key: number; signal: SignalifiedData<any> }[] = [],
+  Acc extends { key: number; data: SignalifiedData<any> }[] = [],
 > = Tuple extends readonly []
   ? Acc
   : Tuple extends readonly [infer Curr, ...infer RestTuple]
     ? SignalifiedTuple<
-        RestTuple,
-        [...Acc, { key: number; signal: SignalifiedData<Curr> }]
-      >
+      RestTuple,
+      [...Acc, { key: number; data: SignalifiedData<Curr> }]
+    >
     : never
 
 export type SignalifiedData<T> = Signal<
@@ -30,7 +30,7 @@ export type SignalifiedData<T> = Signal<
     ? T extends Date
       ? T
       : T extends Array<infer U>
-        ? Array<{ key: number; signal: SignalifiedData<U> }>
+        ? Array<{ key: number; data: SignalifiedData<U> }>
         : T extends readonly any[]
           ? SignalifiedTuple<T>
           : { [K in keyof T]: SignalifiedData<T[K]> }
@@ -66,7 +66,7 @@ function unSignalifyStep<T>(
   unSignalify: (value: SignalifiedData<T>) => T,
 ): T {
   if (Array.isArray(peekedValue)) {
-    return peekedValue.map((entry) => unSignalify(entry.signal)) as T
+    return peekedValue.map((entry) => unSignalify(entry.data)) as T
   }
 
   if (
@@ -126,7 +126,7 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     }
 
     // Since arrays have nested in the signal, we need to access its signal
-    value = typeof part === 'number' ? valuePeek[part].signal : valuePeek[part]
+    value = typeof part === 'number' ? valuePeek[part].data : valuePeek[part]
   }
 
   return value
@@ -193,7 +193,7 @@ export function setSignalValuesFromObject<
           return
         }
         // If it does exist we update the value deeply
-        setSignalValuesFromObject(objValue.signal, entry, isPartial)
+        setSignalValuesFromObject(objValue.data, entry, isPartial)
       })
       if ((obj.peek() as Array<never>).length === value.length) {
         return obj
@@ -222,7 +222,7 @@ export function setSignalValuesFromObject<
         // We get the current item, if it does not exist we create a new one
         const objValue = (obj.peek() as Record<typeof key, Signal<unknown>>)[
           key
-        ]
+          ]
         if (objValue === undefined) {
           ;(obj as Signal<object>).value = {
             ...obj.peek(),
@@ -275,7 +275,7 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
       const nextPart = parts[i + 1]
-      const element = 'signal' in current ? (current.signal as Signal) : current
+      const element = 'data' in current ? (current.data as Signal) : current
 
       // If the current part is already included in the current value, we can continue with that value
       if (

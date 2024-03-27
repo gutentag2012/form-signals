@@ -114,7 +114,7 @@ describe('FormLogic', () => {
       field.mount()
       expect(form.json.value).toStrictEqual({ name: '', array: [1, 2, 3] })
 
-      form.data.value.array.value[0].signal.value = 9
+      form.data.value.array.value[0].data.value = 9
       field.handleChange('value')
       expect(form.json.value).toStrictEqual({
         name: 'value',
@@ -1154,7 +1154,7 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'test1'
       form.data.value.deep.value.item.value = 2
       form.pushValueToArray('array', { value: 2 })
-      form.data.value.array.value[0].signal.value.value.value = 3
+      form.data.value.array.value[0].data.value.value.value = 3
       // TODO Add helpers for dynamic objects
       form.data.value.deep.value = {
         ...form.data.value.deep.value,
@@ -1197,12 +1197,12 @@ describe('FormLogic', () => {
         )
       })
       effect(() => {
-        const value = form.data.peek().array.peek()[0].signal.peek().value.value
+        const value = form.data.peek().array.peek()[0].data.peek().value.value
         if (ignoreEffect-- > 0) return
         nestedUpdate(value)
       })
       effect(() => {
-        const value = form.data.peek().array.peek()[1].signal.peek().value.value
+        const value = form.data.peek().array.peek()[1].data.peek().value.value
         if (ignoreEffect-- > 0) return
         // This should not trigger
         nestedUpdate(value)
@@ -1439,7 +1439,7 @@ describe('FormLogic', () => {
         expect(form.fields.value.length).toBe(0)
         const field = form.getOrCreateField('name')
         expect(field).toBeInstanceOf(FieldLogic)
-        expect(field.signal.value).toEqual('default')
+        expect(field.data.value).toEqual('default')
         expect(form.fields.value.length).toBe(1)
       })
       it('should retrieve an existing field if it is already existing', () => {
@@ -1478,7 +1478,7 @@ describe('FormLogic', () => {
         const field = form.getOrCreateField('name', {
           defaultValue: 'new default',
         })
-        expect(field.signal.value).toEqual('new default')
+        expect(field.data.value).toEqual('new default')
       })
     })
   })

@@ -144,7 +144,7 @@ export const Index = () => {
                   placeholder="Description"
                   rows={4}
                   onBlur={() => field.handleBlur()}
-                  value={field.signal}
+                  value={field.data}
                 />
               </div>
             )}
@@ -164,7 +164,7 @@ export const Index = () => {
                     <DatePicker
                       id={field.name}
                       variant="outline"
-                      value={field.signal}
+                      value={field.data}
                       onBlur={() => field.handleBlur()}
                     />
                     <ErrorText />
@@ -183,7 +183,7 @@ export const Index = () => {
                     <DatePicker
                       id={field.name}
                       variant="outline"
-                      value={field.signal}
+                      value={field.data}
                       onBlur={() => field.handleBlur()}
                     />
                     <ErrorText />
@@ -280,7 +280,7 @@ export const Index = () => {
                           <>
                             <Label htmlFor={field.name}>Min Count</Label>
                             <InputSignal
-                              value={field.transformedSignal}
+                              value={field.transformedData}
                               id={field.name}
                               name={field.name}
                               type="number"
@@ -308,7 +308,7 @@ export const Index = () => {
                           <>
                             <Label htmlFor={field.name}>New price</Label>
                             <InputSignal
-                              value={field.transformedSignal}
+                              value={field.transformedData}
                               id={field.name}
                               name={field.name}
                               type="number"
@@ -337,7 +337,7 @@ export const Index = () => {
                             <Label htmlFor={field.name}>Tax Rate</Label>
                             <SelectSignal
                               name={field.name}
-                              value={field.transformedSignal}
+                              value={field.transformedData}
                             >
                               <SelectTrigger className="w-full">
                                 <SelectValue />
@@ -401,7 +401,7 @@ export const Index = () => {
                         <InputSignal
                           type="text"
                           placeholder="Name"
-                          value={field.signal}
+                          value={field.data}
                         />
                         <Button
                           type="button"
@@ -519,7 +519,7 @@ const VariantOptionsList = ({
 }: { justAddedOption: Signal<boolean> }) => {
   const parentField = useFieldContext<Product, `variants.${number}.options`>()
 
-  return parentField.signal.value.map((option, optionIndex) => (
+  return parentField.data.value.map((option, optionIndex) => (
     <parentField.SubFieldProvider
       key={option.key}
       name={`${optionIndex}`}
@@ -529,7 +529,7 @@ const VariantOptionsList = ({
         <InputSignal
           type="text"
           placeholder="Option"
-          value={field.signal}
+          value={field.data}
           onBlur={() => field.handleBlur()}
           onChange={(e) => {
             if (!e.target.value) {
@@ -540,7 +540,7 @@ const VariantOptionsList = ({
           }}
           autoFocus={
             justAddedOption.peek() &&
-            optionIndex === parentField.signal.value.length - 1
+            optionIndex === parentField.data.value.length - 1
           }
         />
       )}
@@ -563,9 +563,9 @@ const VariantTabsTrigger = ({
   return (
     <field.FieldProvider>
       <TabsList>
-        {field.signal.value?.map((variant, index) => (
+        {field.data.value?.map((variant, index) => (
           <TabsTrigger key={variant.key} value={`${index}`}>
-            {variant.signal.value.name.value || '...'}
+            {variant.data.value.name.value || '...'}
           </TabsTrigger>
         ))}
         <TabsTrigger
@@ -575,7 +575,7 @@ const VariantTabsTrigger = ({
               name: '',
               options: [],
             })
-            selectedVariant.value = field.signal.peek().length - 1
+            selectedVariant.value = field.data.peek().length - 1
           }}
         >
           +
@@ -592,12 +592,12 @@ const VariantTabsTrigger = ({
  */
 const PriceTableBody = () => {
   const field = useFieldContext<Product, `prices.${string}`, never>()
-  return field.signal.value?.map((arrayEntry, index) => (
+  return field.data.value?.map((arrayEntry, index) => (
     <TableRow key={arrayEntry.key}>
       {/* TODO This might not be so nice to deal with (being forced to use nested signals) */}
-      <TableCell>{arrayEntry.signal.value.count.value}</TableCell>
-      <TableCell>€ {arrayEntry.signal.value.price.value.toFixed(2)}</TableCell>
-      <TableCell>{arrayEntry.signal.value.taxRate.value}%</TableCell>
+      <TableCell>{arrayEntry.data.value.count.value}</TableCell>
+      <TableCell>€ {arrayEntry.data.value.price.value.toFixed(2)}</TableCell>
+      <TableCell>{arrayEntry.data.value.taxRate.value}%</TableCell>
       <TableCell align="right">
         <Button
           type="button"
@@ -646,7 +646,7 @@ const FormTextInput = ({
   const field = useFieldContext()
 
   const currentCount = useComputed(() => {
-    const value = field.signal.value
+    const value = field.data.value
     if (typeof value === 'string') return (value as string).length
     return 0
   })
@@ -667,7 +667,7 @@ const FormTextInput = ({
         placeholder={label}
         // TODO Find out why method reference is not working here
         onBlur={() => field.handleBlur()}
-        value={field.signal}
+        value={field.data}
         maxLength={maxLength}
       />
       <div

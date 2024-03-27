@@ -58,7 +58,7 @@ describe('Form Context', () => {
         const context = useFormContext<FormValues>()
         return (
           <context.FieldProvider name="name">
-            {(field) => field.signal.value}
+            {(field) => field.data.value}
           </context.FieldProvider>
         )
       }

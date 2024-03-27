@@ -106,20 +106,18 @@ export type FieldLogicOptions<
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
    * @param value The value from the binding
-   * @note This will only affect the {@link handleChangeBound} method and the {@link transformedSignal}, so changes directly to the {@link signal} will not be transformed.
+   * @note This will only affect the {@link handleChangeBound} method and the {@link transformedData}, so changes directly to the {@link signal} will not be transformed.
    */
   transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName>
   /**
-   * This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedSignal.
+   * This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedData.
    * @param value The value from the form
-   * @note This will only affect the {@link transformedSignal} and not the {@link signal}.
+   * @note This will only affect the {@link transformedData} and not the {@link signal}.
    */
   transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
 }
 
 // TODO Add async annotations so you only need to await if it is really needed
-// TODO Add core method to get a subfield
-// TODO Enable to update the configuration of a field after it has been created
 export class FieldLogic<
   TData,
   TName extends Paths<TData>,
@@ -127,33 +125,36 @@ export class FieldLogic<
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
 > {
-  private readonly _isTouched = signal(false)
-  private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
-  private readonly _isValidating = signal(false)
-  private readonly _isValidatingReadOnly = computed(
-    () => this._isValidating.value,
-  )
-  private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
-  private readonly _errors = computed(() => {
-    const { sync, async } = this._errorMap.value
-    return [sync, async].filter(Truthy)
-  })
-  private readonly _isValid = computed(
-    () => !this._errors.value.filter(Truthy).length,
-  )
+  //region Utility State
+  private _transformedData?: Signal<TBoundValue | undefined> & {
+    get base(): SignalifiedData<ValueAtPath<TData, TName>>
+  }
+
+  private readonly _options: Signal<
+    | FieldLogicOptions<
+    TData,
+    TName,
+    TBoundValue,
+    TAdapter extends undefined ? TFormAdapter : TAdapter
+  >
+    | undefined
+  >
+
   private readonly _previousAbortController: Signal<
     AbortController | undefined
   > = signal(undefined)
+
   private _unsubscribeFromChangeEffect?: () => void
-  private readonly _options: Signal<
-    | FieldLogicOptions<
-        TData,
-        TName,
-        TBoundValue,
-        TAdapter extends undefined ? TFormAdapter : TAdapter
-      >
-    | undefined
-  >
+  //endregion
+
+  //region State
+  private readonly _isMounted = signal(false)
+  private readonly _isTouched = signal(false)
+  private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
+  private readonly _isValidating = signal(false)
+  //endregion
+
+  //region Computed State
   private readonly _defaultValue = computed(() => {
     return (
       this._options.value?.defaultValue ??
@@ -167,11 +168,25 @@ export class FieldLogic<
     () =>
       !isEqualDeep(
         this._defaultValue.value,
-        unSignalifyValueSubscribed(this.signal),
+        unSignalifyValueSubscribed(this.data),
       ),
   )
-  private readonly _isMounted = signal(false)
+  private readonly _errors = computed(() => {
+    const { sync, async } = this._errorMap.value
+    return [sync, async].filter(Truthy)
+  })
+  private readonly _isValid = computed(
+    () => !this._errors.value.filter(Truthy).length,
+  )
+  //endregion
+
+  //region Readonly State
   private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
+  private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
+  private readonly _isValidatingReadOnly = computed(
+    () => this._isValidating.value,
+  )
+  //endregion
 
   constructor(
     private readonly _form: FormLogic<TData, TFormAdapter>,
@@ -184,31 +199,23 @@ export class FieldLogic<
     >,
   ) {
     this._options = signal(options)
-
     this._form.registerField(_name, this, options?.defaultValue)
 
     this.setupDataSignals()
-
     this.updateOptions(options)
   }
 
-  public get isMounted(): Signal<boolean> {
-    return this._isMountedReadOnly
-  }
-
-  private _transformedSignal?: Signal<TBoundValue | undefined> & {
-    get base(): SignalifiedData<ValueAtPath<TData, TName>>
-  }
-
-  public get transformedSignal(): Signal<TBoundValue> {
-    return this._transformedSignal as Signal<TBoundValue>
-  }
-
-  /**
-   * The reactive signal of the field value, you can get, subscribe and set the value of the field with this signal.
-   */
-  public get signal(): SignalifiedData<ValueAtPath<TData, TName>> {
+  //region State Getters
+  public get data(): SignalifiedData<ValueAtPath<TData, TName>> {
     return this._form.getValueForPath(this._name)
+  }
+
+  public get transformedData(): Signal<TBoundValue> {
+    return this._transformedData as Signal<TBoundValue>
+  }
+
+  public get form(): FormLogic<TData, TFormAdapter> {
+    return this._form
   }
 
   public get name(): TName {
@@ -219,8 +226,8 @@ export class FieldLogic<
     return pathToParts(this._name).pop() as LastPath<TName>
   }
 
-  public get form(): FormLogic<TData, TFormAdapter> {
-    return this._form
+  public get isMounted(): Signal<boolean> {
+    return this._isMountedReadOnly
   }
 
   public get isValidating(): ReadonlySignal<boolean> {
@@ -248,7 +255,9 @@ export class FieldLogic<
   > {
     return this._defaultValue
   }
+  //endregion
 
+  //region Lifecycle
   public updateOptions(
     options?: FieldLogicOptions<
       TData,
@@ -276,7 +285,7 @@ export class FieldLogic<
     if (isDirty) return
 
     if (options?.defaultValue !== undefined) {
-      setSignalValuesFromObject(this.signal, options.defaultValue)
+      setSignalValuesFromObject(this.data, options.defaultValue)
     }
   }
 
@@ -300,13 +309,13 @@ export class FieldLogic<
     }
     if (this._options.peek()?.validateOnNestedChange) {
       this._unsubscribeFromChangeEffect = effect(async () => {
-        const currentValue = unSignalifyValueSubscribed(this.signal)
+        const currentValue = unSignalifyValueSubscribed(this.data)
         await runOnChangeValidation(currentValue)
       })
     } else {
       this._unsubscribeFromChangeEffect = effect(async () => {
         const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(
-          this.signal.value,
+          this.data.value,
         )
         await runOnChangeValidation(currentValue)
       })
@@ -322,7 +331,7 @@ export class FieldLogic<
 
   public unmount(): void {
     this._isMounted.value = false
-    this._transformedSignal = undefined
+    this._transformedData = undefined
 
     if (!this._options.peek()?.preserveValueOnUnmount) {
       this.resetState()
@@ -337,19 +346,16 @@ export class FieldLogic<
       this._options.peek()?.resetValueToDefaultOnUnmount,
     )
   }
+  //endregion
 
-  /**
-   * Manually validate the field for a specific event. This will run all validators for the event and update the field state.
-   * @param event The event to validate for
-   * @param checkValue The value to validate, if not provided the current value of the field will be used
-   */
+  //region Handlers
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.signal)
+    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.data)
       return
-    const value = checkValue ?? unSignalifyValue(this.signal)
+    const value = checkValue ?? unSignalifyValue(this.data)
 
     const adapter =
       this._options.peek()?.validatorAdapter ??
@@ -392,19 +398,13 @@ export class FieldLogic<
     )
   }
 
-  /**
-   * Handle a change in the field value. You can also directly set the value of the field with `field.signal.value = newValue`.
-   * This is just a convenience method to be passed as a method reference.
-   * @param newValue The new value of the field
-   * @param options Options for the change
-   */
   public handleChange(
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
   ): void {
     if (!this._isMounted.peek()) return
     batch(() => {
-      setSignalValuesFromObject(this.signal, newValue)
+      setSignalValuesFromObject(this.data, newValue)
       if (options?.shouldTouch) {
         this._isTouched.value = true
       }
@@ -418,26 +418,20 @@ export class FieldLogic<
     const transform = this._options.peek()?.transformFromBinding
     if (!this._isMounted.peek() || !transform) return
     batch(() => {
-      setSignalValuesFromObject(this.signal, transform(newValue))
+      setSignalValuesFromObject(this.data, transform(newValue))
       if (options?.shouldTouch) {
         this._isTouched.value = true
       }
     })
   }
 
-  /**
-   * Handle a blur event on the field. This will set the field as touched and run all validators for the onBlur event.
-   */
   public async handleBlur(): Promise<void> {
     if (!this._isMounted.peek()) return
-    this._isTouched.value = true
+    this.handleTouched()
     await this.validateForEvent('onBlur')
     await this._form.handleBlur()
   }
 
-  /**
-   * Handle a submit-event on the field. This will run all validators for the onSubmit event.
-   */
   public async handleSubmit(): Promise<void> {
     await this.validateForEvent('onSubmit')
   }
@@ -445,15 +439,9 @@ export class FieldLogic<
   public handleTouched(): void {
     this._isTouched.value = true
   }
+  //endregion
 
-  // TODO Handle these via a type, so that they are not displayed on a non array element
-  /**
-   * Insert a value into an array. If the field is not an array, it will throw an error. For readonly arrays you can only insert values at existing indexes with the correct types.
-   * This method should not be used to update the value of an array item, use `field.signal.value[index].value = newValue` instead.
-   * @param index The index to insert the value at (if there already is a value at this index, it will be overwritten without triggering a reactive update of that value and the array item key will change)
-   * @param value The value to insert
-   * @param options Options for the insert
-   */
+  //region Array Helpers
   public insertValueInArray<Index extends number>(
     index: Index,
     value: ValueAtPath<TData, TName> extends any[]
@@ -466,11 +454,6 @@ export class FieldLogic<
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
-  /**
-   * Push a value to an array. If the field is not an array it will throw an error. You should also not push a value to a readonly array, this is also intended to give type errors.
-   * @param value The value to push to the array
-   * @param options Options for the push
-   */
   public pushValueToArray(
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
@@ -480,12 +463,6 @@ export class FieldLogic<
     this._form.pushValueToArray(this._name, value, options)
   }
 
-  /**
-   * Remove a value from an array. If the field is not an array it will throw an error. You should also not remove a value from a readonly array, this is also intended to give type errors.
-   * Removing a value will shift the index of all its following values, the key for all the items will stay the same.
-   * @param index The index of the value to remove
-   * @param options Options for the remove
-   */
   public removeValueFromArray(
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
@@ -511,12 +488,6 @@ export class FieldLogic<
     )
   }
 
-  /**
-   * Swap two values in an array. If the field is not an array it will throw an error. You should also not swap values in a readonly array, this is also intended to give type errors.
-   * @param indexA The index of the first value to swap
-   * @param indexB The index of the second value to swap
-   * @param options Options for the swap
-   */
   public swapValuesInArray<IndexA extends number, IndexB extends number>(
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
@@ -573,7 +544,9 @@ export class FieldLogic<
       options,
     )
   }
+  //endregion
 
+  //region Resets
   public resetState(): void {
     batch(() => {
       this._errorMap.value = {}
@@ -585,7 +558,7 @@ export class FieldLogic<
   public resetValue(): void {
     batch(() => {
       this._isMounted.value = false
-      setSignalValuesFromObject(this.signal, this._defaultValue.peek())
+      setSignalValuesFromObject(this.data, this._defaultValue.peek())
     })
     this._isMounted.value = true
   }
@@ -596,27 +569,29 @@ export class FieldLogic<
       this.resetValue()
     })
   }
+  //endregion
 
+  //region Setups
   private setupDataSignals() {
     this._form.initFieldSignal(this._name, this.defaultValue.peek())
     this.setupTransformedSignal()
   }
 
   private setupTransformedSignal() {
-    const baseSignal = this.signal
+    const baseSignal = this.data
 
     // If the base signal is not changed, then we do not need to recreate the transformed signal
-    if (this._transformedSignal?.base === baseSignal) {
+    if (this._transformedData?.base === baseSignal) {
       return
     }
 
     const options = this._options.peek()
     const wrappedSignal = computed(() => {
       if (!options?.transformToBinding) return undefined
-      return options.transformToBinding(unSignalifyValueSubscribed(this.signal))
+      return options.transformToBinding(unSignalifyValueSubscribed(this.data))
     })
 
-    this._transformedSignal = {
+    this._transformedData = {
       get base() {
         return baseSignal
       },
@@ -636,4 +611,6 @@ export class FieldLogic<
       subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
     }
   }
+  //endregion
 }
+// TODO Add core method to get a subfield

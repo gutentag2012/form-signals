@@ -61,19 +61,19 @@ describe('FormLogic (types)', () => {
   it('should type the array items with keys and signals separately', () => {
     const form = new FormLogic<{ names: string[] }>()
 
-    assertType<Array<{ key: number; signal: Signal<string> }>>(
+    assertType<Array<{ key: number; data: Signal<string> }>>(
       form.data.value.names.value,
     )
   })
   it('should type the members of an array', () => {
     const form = new FormLogic<{ names: string[] }>()
 
-    assertType<string>(form.data.value.names.value[0].signal.value)
+    assertType<string>(form.data.value.names.value[0].data.value)
   })
   it('should infer the type of the array members from the default value', () => {
     const form = new FormLogic({ defaultValues: { names: ['John'] } })
 
-    assertType<Array<{ key: number; signal: Signal<string> }>>(
+    assertType<Array<{ key: number; data: Signal<string> }>>(
       form.data.value.names.value,
     )
   })
@@ -84,8 +84,8 @@ describe('FormLogic (types)', () => {
 
     assertType<
       [
-        { key: number; signal: Signal<'John'> },
-        { key: number; signal: Signal<'Lee'> },
+        { key: number; data: Signal<'John'> },
+        { key: number; data: Signal<'Lee'> },
       ]
     >(form.data.value.names.value)
   })
@@ -160,15 +160,15 @@ describe('FormLogic (types)', () => {
 
     assertType<
       [
-        { key: number; signal: Signal<Date> },
-        { key: number; signal: Signal<Date> },
+        { key: number; data: Signal<Date> },
+        { key: number; data: Signal<Date> },
       ]
     >(form.data.value.dateRange.value)
     assertType<{
       EUR: Signal<
         Array<{
           key: number
-          signal: Signal<{
+          data: Signal<{
             id: Signal<string>
             value: Signal<number>
             count: Signal<number>

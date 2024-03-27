@@ -92,36 +92,47 @@ export class FormLogic<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
 > {
-  /**
-   * Single source of truth for the form data
-   * @private
-   */
+  //region Data
   private readonly _data: SignalifiedData<TData>
   private readonly _jsonData = computed(() =>
     unSignalifyValueSubscribed(this._data),
   )
+  //endregion
 
-  /**
-   * Map of all the fields in the form
-   * @private
-   */
+  //region Utility State
+  private readonly _options: Signal<
+    FormLogicOptions<TData, TAdapter> | undefined
+  >
+
+  private readonly _previousAbortController: Signal<
+    AbortController | undefined
+  > = signal(undefined)
+
+  private _unsubscribeFromChangeEffect?: () => void
+  //endregion
+
+  //region Fields
+  // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
+  private _currentlyRegisteringFields = 0
+
   private readonly _fields: Signal<
     Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>
   > = signal(new Map())
   private readonly _fieldsArray = computed(() =>
     Array.from(this._fields.value.values()),
   )
+  //endregion
 
-  /**
-   * Errors specific for the whole form
-   * @private
-   */
+  //region State
+  private readonly _isMounted = signal(false)
+  private readonly _submitCountSuccessful = signal(0)
+  private readonly _submitCountUnsuccessful = signal(0)
+  private readonly _isSubmitting = signal(false)
   private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
-  /**
-   * @NOTE on errors
-   * Each validator can trigger its own errors and can override only its own errors
-   * Each list of errors is stored with a key that is unique to the validator, therefore, only this validator can override it
-   */
+  private readonly _isValidatingForm = signal(false)
+  //endregion
+
+  //region Computed Error State
   private readonly _errors = computed(() => {
     const { sync, async } = this._errorMap.value
     return [sync, async].filter(Truthy)
@@ -138,6 +149,15 @@ export class FormLogic<
     )
     return unmountedFields.flatMap((field) => field.errors.value).filter(Truthy)
   })
+  //endregion
+
+  //region Computed Valid State
+  private readonly _isValidatingFields = computed(() =>
+    this._fieldsArray.value.some((field) => field.isValidating.value),
+  )
+  private readonly _isValidating = computed(
+    () => this._isValidatingForm.value || this._isValidatingFields.value,
+  )
   private readonly _isValidForm = computed(
     () => !this._errors.value.filter(Boolean).length,
   )
@@ -147,42 +167,19 @@ export class FormLogic<
   private readonly _isValid = computed(
     () => this._isValidForm.value && this._isValidFields.value,
   )
+  //endregion
 
+  //region Computed State
   private readonly _isTouched = computed(() =>
     this._fieldsArray.value.some((field) => field.isTouched.value),
-  )
-  private readonly _submitCountSuccessful = signal(0)
-  private readonly _submitCountSuccessfulReadOnly = computed(
-    () => this._submitCountSuccessful.value,
-  )
-  private readonly _submitCountUnsuccessful = signal(0)
-  private readonly _submitCountUnsuccessfulReadOnly = computed(
-    () => this._submitCountUnsuccessful.value,
   )
   private readonly _submitCount = computed(
     () =>
       this._submitCountSuccessful.value + this._submitCountUnsuccessful.value,
   )
-  private readonly _isValidatingForm = signal(false)
-  private readonly _isValidatingFormReadOnly = computed(
-    () => this._isValidatingForm.value,
-  )
-  private readonly _isSubmitting = signal(false)
-  private readonly _isSubmittingReadOnly = computed(
-    () => this._isSubmitting.value,
-  )
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
-  // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
-  private _currentlyRegisteringFields = 0
-  private readonly _previousAbortController: Signal<
-    AbortController | undefined
-  > = signal(undefined)
-  private _unsubscribeFromChangeEffect?: () => void
-  private readonly _options: Signal<
-    FormLogicOptions<TData, TAdapter> | undefined
-  >
   private readonly _isDirty = computed(() => {
     const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
     // Get any possible default value overrides from the fields
@@ -208,8 +205,24 @@ export class FormLogic<
       this._isValid.value
     )
   })
-  //region Value helpers
+  //endregion
+
+  //region Readonly State
+  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
   private readonly _optionsReadOnly = computed(() => this._options.value)
+  private readonly _isValidatingFormReadOnly = computed(
+    () => this._isValidatingForm.value,
+  )
+  private readonly _submitCountSuccessfulReadOnly = computed(
+    () => this._submitCountSuccessful.value,
+  )
+  private readonly _submitCountUnsuccessfulReadOnly = computed(
+    () => this._submitCountUnsuccessful.value,
+  )
+  private readonly _isSubmittingReadOnly = computed(
+    () => this._isSubmitting.value,
+  )
+  //endregion
 
   constructor(options?: FormLogicOptions<TData, TAdapter>) {
     if (options?.defaultValues) {
@@ -222,27 +235,7 @@ export class FormLogic<
     this.updateOptions(options)
   }
 
-  private _isMounted = signal(false)
-
-  private readonly _isMountedReadOnly = computed(() => this._isMounted.value)
-
-  //region Getter
-  public get isMounted(): ReadonlySignal<boolean> {
-    return this._isMountedReadOnly
-  }
-
-  private _isValidatingFields = computed(() =>
-    this._fieldsArray.value.some((field) => field.isValidating.value),
-  )
-
-  private readonly _isValidating = computed(
-    () => this._isValidatingForm.value || this._isValidatingFields.value,
-  )
-
-  public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields
-  }
-
+  //region State Getters
   public get data(): SignalifiedData<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._data
@@ -251,6 +244,14 @@ export class FormLogic<
   public get json(): ReadonlySignal<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._jsonData
+  }
+
+  public get isMounted(): ReadonlySignal<boolean> {
+    return this._isMountedReadOnly
+  }
+
+  public get isValidatingFields(): ReadonlySignal<boolean> {
+    return this._isValidatingFields
   }
 
   public get errors(): ReadonlySignal<Array<ValidationError>> {
@@ -289,23 +290,14 @@ export class FormLogic<
     return this._isDirty
   }
 
-  /**
-   * The amount of times the form finished submission successfully
-   */
   public get submitCountSuccessful(): ReadonlySignal<number> {
     return this._submitCountSuccessfulReadOnly
   }
 
-  /**
-   * The amount of times the form finished submission with either validation errors or a failing onSubmit function
-   */
   public get submitCountUnsuccessful(): ReadonlySignal<number> {
     return this._submitCountUnsuccessfulReadOnly
   }
 
-  /**
-   * The amount of times the form finished submission, regardless of the outcome
-   */
   public get submitCount(): ReadonlySignal<number> {
     return this._submitCount
   }
@@ -325,7 +317,6 @@ export class FormLogic<
   public get isSubmitted(): ReadonlySignal<boolean> {
     return this._isSubmitted
   }
-  //endregion
 
   public get canSubmit(): ReadonlySignal<boolean> {
     return this._canSubmit
@@ -338,6 +329,7 @@ export class FormLogic<
   }
   //endregion
 
+  //region Lifecycle
   public updateOptions(options?: FormLogicOptions<TData, TAdapter>): void {
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
@@ -354,6 +346,43 @@ export class FormLogic<
     setSignalValuesFromObject(this._data, newDefaultValues, true)
   }
 
+  public async mount(): Promise<() => void> {
+    // Once mounted, we want to listen to all changes to the form
+    this._unsubscribeFromChangeEffect?.()
+    this._unsubscribeFromChangeEffect = effect(async () => {
+      const currentJson = this._jsonData.value
+
+      if (!this._isMounted.peek()) {
+        return
+      }
+
+      if (this._currentlyRegisteringFields > 0) {
+        this._currentlyRegisteringFields--
+        return
+      }
+      // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
+      // Clear all onSubmit errors when the value changes
+      clearSubmitEventErrors(this._errorMap)
+
+      await this.validateForEvent('onChange', currentJson as TData)
+    })
+
+    this._isMounted.value = true
+    await this.validateForEvent('onMount')
+
+    return () => {
+      this.unmount()
+    }
+  }
+
+  public unmount(): void {
+    this._isMounted.value = false
+
+    this._unsubscribeFromChangeEffect?.()
+  }
+  //endregion
+
+  //region Handlers
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: TData,
@@ -400,9 +429,7 @@ export class FormLogic<
       this._isTouched.peek(),
     )
   }
-  //endregion
 
-  //region Functions
   public handleBlur = async (): Promise<void> => {
     if (!this._isMounted.peek()) return
     await this.validateForEvent('onBlur')
@@ -459,43 +486,7 @@ export class FormLogic<
   }
   //endregion
 
-  //region Lifecycle
-  public async mount(): Promise<() => void> {
-    // Once mounted, we want to listen to all changes to the form
-    this._unsubscribeFromChangeEffect?.()
-    this._unsubscribeFromChangeEffect = effect(async () => {
-      const currentJson = this._jsonData.value
-
-      if (!this._isMounted.peek()) {
-        return
-      }
-
-      if (this._currentlyRegisteringFields > 0) {
-        this._currentlyRegisteringFields--
-        return
-      }
-      // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
-      // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
-
-      await this.validateForEvent('onChange', currentJson as TData)
-    })
-
-    this._isMounted.value = true
-    await this.validateForEvent('onMount')
-
-    return () => {
-      this.unmount()
-    }
-  }
-
-  public unmount(): void {
-    this._isMounted.value = false
-
-    this._unsubscribeFromChangeEffect?.()
-  }
-
-  //region Field helpers
+  //region Field Helpers
   public getOrCreateField<
     TPath extends Paths<TData>,
     TBoundValue = never,
@@ -528,7 +519,6 @@ export class FormLogic<
     this.registerField(path, field, this.getDefaultValueForPath(path))
     return field
   }
-  //endregion
 
   public registerField<
     TPath extends Paths<TData>,
@@ -551,6 +541,15 @@ export class FormLogic<
 
     if (defaultValues === undefined) return
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
+  }
+
+  // TODO Add tests
+  public initFieldSignal<TPath extends Paths<TData>>(
+    path: TPath,
+    defaultValue?: ValueAtPath<TData, TPath>,
+  ): void {
+    if (this.getValueForPath(path)) return
+    setSignalValueAtPath(this._data, path, defaultValue)
   }
 
   public unregisterField<TPath extends Paths<TData>>(
@@ -592,62 +591,14 @@ export class FormLogic<
     ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
 
-  // TODO Add tests
-  public initFieldSignal<TPath extends Paths<TData>>(
-    path: TPath,
-    defaultValue?: ValueAtPath<TData, TPath>,
-  ): void {
-    if (this.getValueForPath(path)) return
-    setSignalValueAtPath(this._data, path, defaultValue)
-  }
-
   public getFieldForPath<TPath extends Paths<TData>, TBoundData>(
     path: TPath,
   ): FieldLogic<TData, TPath, TBoundData> {
     return this._fields.peek().get(path) as FieldLogic<TData, TPath, TBoundData>
   }
-
-  public resetStateForm(): void {
-    this._submitCountSuccessful.value = 0
-    this._submitCountUnsuccessful.value = 0
-    this._isValidatingForm.value = false
-    this._isSubmitting.value = false
-    this._errorMap.value = {}
-  }
-
-  public resetStateFields(): void {
-    for (const field of this._fieldsArray.peek()) {
-      field.resetState()
-    }
-  }
-
-  public resetState(): void {
-    this.resetStateForm()
-    this.resetStateFields()
-  }
-
-  public resetValues(): void {
-    this._isMounted.value = false
-    setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
-    this._isMounted.value = true
-  }
-
-  // TODO Allow similar reset to RHF https://www.react-hook-form.com/api/useform/reset/
-  public reset(): void {
-    this.resetState()
-    this.resetValues()
-  }
   //endregion
 
   //region Array Helpers
-  /**
-   * Insert a value into an array. If the field is not an array it will throw an error. For readonly arrays you can only insert values at existing indexes with the correct types.
-   * This method should not be used to update the value of an array item, use `field.signal.value[index].value = newValue` instead.
-   * @param name The name of the field
-   * @param index The index to insert the value at (if there already is a value at this index, it will be overwritten without triggering a reactive update of that value and the array item key will change)
-   * @param value The value to insert
-   * @param options Options for the insert
-   */
   public insertValueInArray<TName extends Paths<TData>, Index extends number>(
     name: TName,
     index: Index,
@@ -675,12 +626,6 @@ export class FormLogic<
     })
   }
 
-  /**
-   * Push a value to an array. If the field is not an array it will throw an error. You should also not push a value to a readonly array, this is also intended to give type errors.
-   * @param name The name of the field
-   * @param value The value to push to the array
-   * @param options Options for the push
-   */
   public pushValueToArray<TName extends Paths<TData>>(
     name: TName,
     value: ValueAtPath<TData, TName> extends any[]
@@ -706,15 +651,6 @@ export class FormLogic<
     })
   }
 
-  /**
-   * Remove a value from an array. If the field is not an array it will throw an error. You should also not remove a value from a readonly array, this is also intended to give type errors.
-   * Removing a value will shift the index of all its following values, the key for all the items will stay the same.
-   * @param name The name of the field
-   * @param index The index of the value to remove
-   * @param options Options for the remove
-   *
-   * TODO Add a helper to remove a value from a signal array by key
-   */
   public removeValueFromArray<TName extends Paths<TData>>(
     name: TName,
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
@@ -745,13 +681,6 @@ export class FormLogic<
     })
   }
 
-  /**
-   * Swap two values in an array. If the field is not an array it will throw an error. You should also not swap values in a readonly array, this is also intended to give type errors.
-   * @param name The name of the field
-   * @param indexA The index of the first value to swap
-   * @param indexB The index of the second value to swap
-   * @param options Options for the swap
-   */
   public swapValuesInArray<
     TName extends Paths<TData>,
     IndexA extends number,
@@ -809,6 +738,39 @@ export class FormLogic<
         this.getFieldForPath(name)?.handleTouched()
       }
     })
+  }
+  //endregion
+
+  //region Resets
+  public resetStateForm(): void {
+    this._submitCountSuccessful.value = 0
+    this._submitCountUnsuccessful.value = 0
+    this._isValidatingForm.value = false
+    this._isSubmitting.value = false
+    this._errorMap.value = {}
+  }
+
+  public resetStateFields(): void {
+    for (const field of this._fieldsArray.peek()) {
+      field.resetState()
+    }
+  }
+
+  public resetState(): void {
+    this.resetStateForm()
+    this.resetStateFields()
+  }
+
+  public resetValues(): void {
+    this._isMounted.value = false
+    setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
+    this._isMounted.value = true
+  }
+
+  // TODO Allow similar reset to RHF https://www.react-hook-form.com/api/useform/reset/
+  public reset(): void {
+    this.resetState()
+    this.resetValues()
   }
   //endregion
 }
