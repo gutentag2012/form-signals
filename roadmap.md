@@ -12,7 +12,7 @@ This document outlines the planned features and improvements for the project. It
 - [x] **form-core**: Add support for form enter capture without html form element
 - [x] **form-core**: Add support for field value typed transformation
 - [ ] **form-core**: Add support for `.moveItemToIndex(index: number, options)` method
-- [ ] **form-core**: Add support for `.pushItemToIndex(item: any, index: number, options)` method
+- [x] **form-core**: Add support for `.pushItemToIndex(item: any, index: number, options)` method
 - [ ] **form-core**: Add support for form reset
 - [x] **form-validation-adapter-zod**: Add Validation adapter for zod
 - [ ] **examples-react**: Add example for complex nested form

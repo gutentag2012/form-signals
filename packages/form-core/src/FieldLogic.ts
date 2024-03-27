@@ -458,6 +458,16 @@ export class FieldLogic<
     this._form.pushValueToArray(this._name, value, options)
   }
 
+  public pushValueToArrayAtIndex(
+    index: ValueAtPath<TData, TName> extends any[] ? number : never,
+    value: ValueAtPath<TData, TName> extends any[]
+      ? ValueAtPath<TData, TName>[number]
+      : never,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    this._form.pushValueToArrayAtIndex(this._name, index, value, options)
+  }
+
   public removeValueFromArray(
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },

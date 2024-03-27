@@ -1439,6 +1439,38 @@ describe('FormLogic', () => {
       form.pushValueToArray('array', 4, { shouldTouch: true })
       expect(field.isTouched.value).toBe(true)
     })
+    it('should push a value into a form value array at an index', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      form.pushValueToArrayAtIndex('array', 1, 4)
+      expect(form.json.value.array).toEqual([1, 4, 2, 3])
+    })
+    it('should not do anything when trying to push a value at an index into a form value that is not an array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        },
+      })
+      form.mount()
+      form.pushValueToArrayAtIndex('array', 1 as never, 4 as never)
+      expect(form.data.value.array.value).toEqual(1)
+    })
+    it('should touch a field when pushing a value into a form value array at an index if a field is attached', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'array')
+      field.mount()
+      form.pushValueToArrayAtIndex('array', 1, 4, { shouldTouch: true })
+      expect(field.isTouched.value).toBe(true)
+    })
     it('should swap two values in a form value array', () => {
       const form = new FormLogic({
         defaultValues: {

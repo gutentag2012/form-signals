@@ -96,6 +96,16 @@ describe('FormLogic (types)', () => {
       .parameter(1)
       .toBeNever()
   })
+  it('should not allow to push values at an index into a tuple', () => {
+    const form = new FormLogic<{ names: readonly [string, number] }>()
+
+    expectTypeOf(form.pushValueToArrayAtIndex<'names'>)
+      .parameter(1)
+      .toBeNever()
+    expectTypeOf(form.pushValueToArrayAtIndex<'names'>)
+      .parameter(2)
+      .toBeNever()
+  })
   it('should not allow to remove values from a tuple', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
 

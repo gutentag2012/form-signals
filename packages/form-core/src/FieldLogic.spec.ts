@@ -242,6 +242,20 @@ describe('FieldLogic', () => {
 
       expect(field.data.value[3].data.value).toBe(4)
     })
+    it('should reactively push a value to the array at an index', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, undefined, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const)
+      field.mount()
+      field.pushValueToArrayAtIndex(1, 4)
+
+      expect(field.data.value[1].data.value).toBe(4)
+    })
     it('should reactively remove a value from the array', () => {
       const form = new FormLogic({
         defaultValues: {

@@ -665,6 +665,32 @@ export class FormLogic<
     })
   }
 
+  public pushValueToArrayAtIndex<TName extends Paths<TData>>(
+    name: TName,
+    index: ValueAtPath<TData, TName> extends any[] ? number : never,
+    value: ValueAtPath<TData, TName> extends any[]
+      ? ValueAtPath<TData, TName>[number]
+      : never,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    const signal = this.getValueForPath(name)
+    const currentValue = signal.value
+    if (!Array.isArray(currentValue)) {
+      console.error(`Tried to push a value into a non-array field at ${name} and index ${index}`)
+      return
+    }
+
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
+      Array<unknown>
+    arrayCopy.splice(index, 0, makeArrayEntry(value))
+    batch(() => {
+      signal.value = arrayCopy as typeof currentValue
+      if (options?.shouldTouch) {
+        this.getFieldForPath(name)?.handleTouched()
+      }
+    })
+  }
+
   public removeValueFromArray<TName extends Paths<TData>>(
     name: TName,
     index: ValueAtPath<TData, TName> extends any[] ? number : never,

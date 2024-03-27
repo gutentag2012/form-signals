@@ -114,6 +114,13 @@ describe('FieldLogic (types)', () => {
 
     expectTypeOf(field.pushValueToArray).parameter(0).toBeNever()
   })
+  it('should not allow to push values into a tuple at an index', () => {
+    const form = new FormLogic<{ names: readonly [string, number] }>()
+    const field = new FieldLogic(form, 'names' as const)
+
+    expectTypeOf(field.pushValueToArrayAtIndex).parameter(0).toBeNever()
+    expectTypeOf(field.pushValueToArrayAtIndex).parameter(1).toBeNever()
+  })
   it('should not allow to remove values from a tuple', () => {
     const form = new FormLogic<{ names: readonly [string, number] }>()
     const field = new FieldLogic(form, 'names' as const)
