@@ -1525,6 +1525,60 @@ describe('FormLogic', () => {
       form.swapValuesInArray('array', -1, 4)
       expect(form.json.value.array).toEqual([1, 2, 3])
     })
+    it('should move a value in a form value array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      form.moveValueInArray('array', 0, 2)
+      expect(form.json.value.array).toEqual([2, 3, 1])
+    })
+    it('should not do anything when trying to move a value in a form value that is not an array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: 1,
+        },
+      })
+      form.mount()
+      form.moveValueInArray('array', 1 as never, 2 as never)
+      expect(form.data.value.array.value).toEqual(1)
+    })
+    it('should touch a field when moving a value in a form value array if a field is attached', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'array')
+      field.mount()
+      form.moveValueInArray('array', 1, 2, { shouldTouch: true })
+      expect(field.isTouched.value).toBe(true)
+    })
+    it('should not touch a field when moving a value in a form value array if no field is attached', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      expect(() =>
+        form.moveValueInArray('array', 1, 2, { shouldTouch: true }),
+      ).not.toThrow()
+    })
+    it('should do nothing when trying to move a value from non existing indexes', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      form.moveValueInArray('array', 3, 4)
+      form.moveValueInArray('array', -1, 4)
+      expect(form.json.value.array).toEqual([1, 2, 3])
+    })
 
     describe('getOrCreateField', () => {
       it('should create a new field if it is not already existing', () => {

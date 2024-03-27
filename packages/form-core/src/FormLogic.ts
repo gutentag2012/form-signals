@@ -779,6 +779,64 @@ export class FormLogic<
       }
     })
   }
+
+  public moveValueInArray<
+    TName extends Paths<TData>,
+    IndexA extends number,
+    IndexB extends number,
+  >(
+    name: TName,
+    indexA: ValueAtPath<TData, TName> extends any[]
+      ? number
+      : ValueAtPath<TData, TName> extends readonly any[]
+        ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
+            TData,
+            TName
+          >[IndexB]
+          ? number
+          : never
+        : never,
+    indexB: ValueAtPath<TData, TName> extends any[]
+      ? number
+      : ValueAtPath<TData, TName> extends readonly any[]
+        ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
+            TData,
+            TName
+          >[IndexA]
+          ? number
+          : never
+        : never,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    const signal = this.getValueForPath(name)
+    const currentValue = signal.value
+    if (!Array.isArray(currentValue)) {
+      console.error(`Tried to move value in a non-array field at path ${name}`)
+      return
+    }
+    if (
+      currentValue.length <= indexA ||
+      indexA < 0 ||
+      currentValue.length <= indexB ||
+      indexB < 0
+    ) {
+      console.error(
+        `Tried to move value in an array at path ${name} at index ${indexA} that does not exist`,
+      )
+      return
+    }
+    const arrayCopy = [...currentValue] as ValueAtPath<TData, TName> &
+      Array<unknown>
+    const [elementToMove] = arrayCopy.splice(indexA, 1)
+    arrayCopy.splice(indexB, 0, elementToMove)
+
+    batch(() => {
+      signal.value = arrayCopy as typeof currentValue
+      if (options?.shouldTouch) {
+        this.getFieldForPath(name)?.handleTouched()
+      }
+    })
+  }
   //endregion
 
   //region Resets

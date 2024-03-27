@@ -170,6 +170,38 @@ describe('FieldLogic (types)', () => {
       .parameter(0)
       .toBeNumber()
   })
+  it('should only allow to move index in a tuple if the types are the same', () => {
+    const form = new FormLogic<{ names: readonly [string, number, string] }>()
+    const field = new FieldLogic(form, 'names' as const)
+
+    // You cannot swap a string with a number
+    expectTypeOf(field.moveValueInArray<0, 1>)
+      .parameter(0)
+      .toBeNever()
+    // You can swap two strings
+    expectTypeOf(field.moveValueInArray<0, 2>)
+      .parameter(0)
+      .toBeNumber()
+  })
+  it('should only allow to move self if parent is an array', () => {
+    const form = new FormLogic<{ names: string }>()
+    const field = new FieldLogic(form, 'names' as const)
+
+    expectTypeOf(field.swapSelfInArray).parameter(0).toBeNever()
+  })
+  it('should only allow to move self in tuple if target has the same type', () => {
+    const form = new FormLogic<{ names: readonly [string, number, string] }>()
+    const field = new FieldLogic(form, 'names.0' as const)
+
+    // You cannot swap a string with a number
+    expectTypeOf(field.moveSelfInArray<1>)
+      .parameter(0)
+      .toBeNever()
+    // You can swap two strings
+    expectTypeOf(field.moveSelfInArray<2>)
+      .parameter(0)
+      .toBeNumber()
+  })
   //endregion
   //region nested types
   it('should type all nested fields as signals', () => {

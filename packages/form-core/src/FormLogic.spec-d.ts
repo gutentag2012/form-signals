@@ -135,6 +135,18 @@ describe('FormLogic (types)', () => {
       .parameter(1)
       .toBeNumber()
   })
+  it('should only allow to move index in a tuple if the types are the same', () => {
+    const form = new FormLogic<{ names: readonly [string, number, string] }>()
+
+    // You cannot swap a string with a number
+    expectTypeOf(form.moveValueInArray<'names', 0, 1>)
+      .parameter(1)
+      .toBeNever()
+    // You can swap two strings
+    expectTypeOf(form.moveValueInArray<'names', 0, 2>)
+      .parameter(1)
+      .toBeNumber()
+  })
   //endregion
   //region nested types
   it('should type all nested fields as signals', () => {

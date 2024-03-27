@@ -226,6 +226,10 @@ export class FieldLogic<
     return pathToParts(this._name).pop() as LastPath<TName>
   }
 
+  public get getParentNamePart(): ParentPath<TName> {
+    return pathToParts(this._name).slice(0, -1).join('.') as ParentPath<TName>
+  }
+
   public get isMounted(): Signal<boolean> {
     return this._isMountedReadOnly
   }
@@ -476,19 +480,9 @@ export class FieldLogic<
   }
 
   public removeSelfFromArray(options?: { shouldTouch?: boolean }) {
-    const path = pathToParts(this._name)
-    const index = path.splice(path.length - 1, 1)[0]
-    const parent = path.join('.')
-    if (index === undefined || typeof index !== 'number') {
-      console.error(
-        `Tried to remove self from a non-array-item field at ${this._name}`,
-      )
-      return
-    }
-    // TODO Check if this can be typed better
     this._form.removeValueFromArray(
-      parent as Paths<TData>,
-      index as never,
+      this.getParentNamePart,
+      this.currentNamePart as never,
       options,
     )
   }
@@ -532,22 +526,59 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ) {
-    const path = pathToParts(this._name)
-    const index = path.splice(path.length - 1, 1)[0]
-    const parent = path.join('.')
-    if (index === undefined || typeof index !== 'number') {
-      console.error(
-        `Tried to swap self from a non-array-item field at ${this._name}`,
-      )
-      return
-    }
-    // TODO Check if this can be typed better
     this._form.swapValuesInArray(
-      parent as Paths<TData>,
-      index as never,
+      this.getParentNamePart,
+      this.currentNamePart as never,
       indexB as never,
       options,
     )
+  }
+
+  public moveValueInArray<
+    IndexA extends number,
+    IndexB extends number,
+  >(
+    indexA: ValueAtPath<TData, TName> extends any[]
+      ? number
+      : ValueAtPath<TData, TName> extends readonly any[]
+        ? ValueAtPath<TData, TName>[IndexA] extends ValueAtPath<
+            TData,
+            TName
+          >[IndexB]
+          ? number
+          : never
+        : never,
+    indexB: ValueAtPath<TData, TName> extends any[]
+      ? number
+      : ValueAtPath<TData, TName> extends readonly any[]
+        ? ValueAtPath<TData, TName>[IndexB] extends ValueAtPath<
+            TData,
+            TName
+          >[IndexA]
+          ? number
+          : never
+        : never,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    this._form.moveValueInArray(this._name, indexA, indexB, options)
+  }
+
+  public moveSelfInArray<
+    IndexB extends number,
+  >(
+    indexB: ValueAtPath<TData, ParentPath<TName>> extends any[]
+      ? number
+      : ValueAtPath<TData, ParentPath<TName>> extends readonly any[]
+        ? ValueAtPath<TData, ParentPath<TName>>[IndexB] extends ValueAtPath<
+            TData,
+            TName
+          >
+          ? number
+          : never
+        : never,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    this._form.moveValueInArray(this.getParentNamePart, this.currentNamePart as never, indexB as never, options)
   }
   //endregion
 

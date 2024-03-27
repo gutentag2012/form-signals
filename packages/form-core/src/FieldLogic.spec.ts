@@ -337,6 +337,35 @@ describe('FieldLogic', () => {
       expect(form.data.value.array.value[0].data.value).toBe(2)
       expect(form.data.value.array.value[1].data.value).toBe(1)
     })
+    it('should reactively move a value in the array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const)
+      field.mount()
+      field.moveValueInArray(0, 2)
+
+      expect(field.data.value[0].data.value).toBe(2)
+      expect(field.data.value[2].data.value).toBe(1)
+    })
+    it('should reactively move itself in an array', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.0' as const)
+      field.mount()
+      field.moveSelfInArray(2)
+      expect(form.data.value.array.value[0].data.value).toBe(2)
+      expect(form.data.value.array.value[2].data.value).toBe(1)
+    })
     it('should do nothing when trying to insert a value into a non-array field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -461,6 +490,54 @@ describe('FieldLogic', () => {
       field.mount()
       field.swapValuesInArray(0, 2)
       field.swapValuesInArray(-1, 1)
+
+      expect(field.data.value[0].data.value).toBe(1)
+      expect(field.data.value[1].data.value).toBe(2)
+    })
+    it('should do nothing when trying to move value in a non-array field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          someVal: 1,
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'someVal')
+      field.mount()
+
+      expect(field.data.value).toBe(1)
+      field.moveValueInArray(1 as never, 2 as never)
+
+      expect(field.data.value).toBe(1)
+    })
+    it('should do nothing when trying to move itself in a non-array-item field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          someVal: 1,
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'someVal')
+      field.mount()
+
+      expect(field.data.value).toBe(1)
+      field.moveSelfInArray(0 as never)
+
+      expect(field.data.value).toBe(1)
+    })
+    it('should do nothing when trying to move to a non existing index', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const)
+      field.mount()
+      field.moveValueInArray(0, 2)
+      field.moveValueInArray(-1, 1)
 
       expect(field.data.value[0].data.value).toBe(1)
       expect(field.data.value[1].data.value).toBe(2)
