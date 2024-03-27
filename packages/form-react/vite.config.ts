@@ -14,7 +14,12 @@ export default defineConfig({
       enabled: true,
       provider: 'istanbul',
       include: ['src/**/*'],
-      exclude: ['src/**/*.spec.ts', 'src/**/*.spec-d.ts', "src/TestComponent.tsx", "src/utils/useIsomorphicLayoutEffect.ts"],
+      exclude: [
+        'src/**/*.spec.ts',
+        'src/**/*.spec-d.ts',
+        'src/TestComponent.tsx',
+        'src/utils/useIsomorphicLayoutEffect.ts',
+      ],
       reporter: ['html', 'lcov', 'text', 'text-summary'],
     },
     typecheck: { enabled: true },
