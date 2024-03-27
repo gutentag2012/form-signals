@@ -402,13 +402,8 @@ export class FieldLogic<
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (!this._isMounted.peek()) return
-    batch(() => {
-      setSignalValuesFromObject(this.data, newValue)
-      if (options?.shouldTouch) {
-        this._isTouched.value = true
-      }
-    })
+    if(!this._isMounted.peek()) return
+    this._form.handleChange(this._name, newValue, options)
   }
 
   public handleChangeBound(

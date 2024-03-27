@@ -386,6 +386,11 @@ describe('signals.utils', () => {
       expect(obj.value.first.value).toEqual(3)
       expect(obj.value.second).toBeUndefined()
     })
+    it("should set a primitive value if passed as the object", () => {
+      const obj = deepSignalifyValue({ a: 1 })
+      setSignalValuesFromObject(obj.value.a, 2)
+      expect(obj.value.a.value).toBe(2)
+    })
   })
   describe('setSignalValueAtPath', () => {
     it('should do nothing for an undefined signalified object', () => {
@@ -431,6 +436,74 @@ describe('signals.utils', () => {
       setSignalValueAtPath(obj, 'a.1', 1)
       expect(obj.value.a?.value?.[0]).toBe(undefined)
       expect(obj.value.a?.value?.[1].data.value).toBe(1)
+    })
+    it('should reactively update the values of an existing subpath', () => {
+      const obj = deepSignalifyValue({
+        deep: {
+          nested: 1,
+        },
+      })
+      const fn = vi.fn()
+      effect(() => {
+        const value = obj.peek().deep.peek().nested.value
+        fn(value)
+      })
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      setSignalValueAtPath(obj, 'deep', { nested: 2 })
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(obj.value.deep.value.nested.value).toBe(2)
+    })
+    it('should reactively update the values of an existing subpath for an array entry', () => {
+      const obj = deepSignalifyValue({
+        deep: {
+          nested: [1],
+        },
+      })
+      const fn = vi.fn()
+      effect(() => {
+        const value = obj.peek().deep.peek().nested.peek()[0].data.value
+        fn(value)
+      })
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      setSignalValueAtPath(obj, 'deep', { nested: [2] })
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(obj.value.deep.value.nested.value[0].data.value).toBe(2)
+    })
+    it('should reactively update the values of an existing subpath for an array entry with a deep path', () => {
+      const obj = deepSignalifyValue({
+        deep: {
+          nested: [1],
+        },
+      })
+      const fn = vi.fn()
+      effect(() => {
+        const value = obj.peek().deep.peek().nested.peek()[0].data.value
+        fn(value)
+      })
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      setSignalValueAtPath(obj, 'deep.nested.0', 2)
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(obj.value.deep.value.nested.value[0].data.value).toBe(2)
+    })
+    it('should reactively update the values of an existing subpath for an array entry without an existing array entry', () => {
+      const obj = deepSignalifyValue({
+        deep: {
+          nested: [] as number[],
+        },
+      })
+      const fn = vi.fn()
+      effect(() => {
+        const value = obj.peek().deep.peek().nested.value
+        fn(value)
+      })
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      setSignalValueAtPath(obj, 'deep', { nested: [2] })
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(obj.value.deep.value.nested.value[0].data.value).toBe(2)
     })
   })
 })

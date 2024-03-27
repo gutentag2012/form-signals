@@ -430,6 +430,21 @@ export class FormLogic<
     )
   }
 
+  public handleChange<TPath extends Paths<TData>>(
+    path: TPath,
+    newValue: ValueAtPath<TData, TPath>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    if(!this._isMounted.peek()) return
+    const field = this.getFieldForPath(path)
+    batch(() => {
+      setSignalValueAtPath(this._data, path, newValue)
+      if (field && options?.shouldTouch) {
+        field.handleTouched()
+      }
+    })
+  }
+
   public handleBlur = async (): Promise<void> => {
     if (!this._isMounted.peek()) return
     await this.validateForEvent('onBlur')
@@ -535,7 +550,6 @@ export class FormLogic<
     this._currentlyRegisteringFields++
 
     const newMap = new Map(this._fields.peek())
-    // TODO Fix type here
     newMap.set(path, field as any)
     this._fields.value = newMap
 

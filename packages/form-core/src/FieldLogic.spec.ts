@@ -1354,6 +1354,7 @@ describe('FieldLogic', () => {
     })
     it('should not update the default values if the value is dirty', () => {
       const form = new FormLogic<{ name: string }>()
+      form.mount()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
@@ -1366,6 +1367,7 @@ describe('FieldLogic', () => {
     })
     it('should treat value as default, if the default value is updated to the current value of the form (makes it not dirty and overridable by updates to the options)', () => {
       const form = new FormLogic<{ name: string }>()
+      form.mount()
       const field = new FieldLogic(form, 'name', {
         defaultValue: 'default',
       })
