@@ -1,5 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type {
+  ConnectPath,
+  KeepOptionalKeys,
   LastPath,
   MakeOptionalIfNotExistInCheck,
   ParentPath,
@@ -91,6 +93,56 @@ describe('types', () => {
     expectTypeOf<LastPath<'person.deep.object.path.0'>>().toEqualTypeOf<0>()
     expectTypeOf<LastPath<'array.2.0.1.test'>>().toEqualTypeOf<'test'>()
     expectTypeOf<LastPath<`array.${number}`>>().toEqualTypeOf<number>()
+  })
+  //endregion
+  //region ConnectPath
+  it('should combine two paths into one path', () => {
+    expectTypeOf<ConnectPath<'person', 'name'>>().toEqualTypeOf<'person.name'>()
+    expectTypeOf<
+      ConnectPath<'person.deep.object', 'path'>
+    >().toEqualTypeOf<'person.deep.object.path'>()
+    expectTypeOf<ConnectPath<'array', '0'>>().toEqualTypeOf<'array.0'>()
+    expectTypeOf<
+      ConnectPath<'array.0', 'name'>
+    >().toEqualTypeOf<'array.0.name'>()
+  })
+  it('should return the second path if the first path is empty', () => {
+    expectTypeOf<ConnectPath<'', 'name'>>().toEqualTypeOf<'name'>()
+    expectTypeOf<
+      ConnectPath<'', 'person.name'>
+    >().toEqualTypeOf<'person.name'>()
+    expectTypeOf<
+      ConnectPath<'', 'person.deep.object.path'>
+    >().toEqualTypeOf<'person.deep.object.path'>()
+    expectTypeOf<ConnectPath<'', 'array.0'>>().toEqualTypeOf<'array.0'>()
+    expectTypeOf<
+      ConnectPath<'', 'array.0.name'>
+    >().toEqualTypeOf<'array.0.name'>()
+  })
+  //endregion
+  //region KeepOptionalKeys
+  it('should only return keys that are optional', () => {
+    type Obj = { name: string; age?: number; another: string | undefined }
+    expectTypeOf<KeepOptionalKeys<Obj, 'name'>>().toBeNever()
+    expectTypeOf<KeepOptionalKeys<Obj, 'age'>>().toEqualTypeOf<'age'>()
+    expectTypeOf<KeepOptionalKeys<Obj, 'another'>>().toBeNever()
+  })
+  it('should work for nested object', () => {
+    type Obj = {
+      person: { name: string; age?: number; another: string | undefined }
+      optionalParent?: { requiredChild: boolean }
+    }
+    expectTypeOf<KeepOptionalKeys<Obj, 'person.name'>>().toBeNever()
+    expectTypeOf<
+      KeepOptionalKeys<Obj, 'person.age'>
+    >().toEqualTypeOf<'person.age'>()
+    expectTypeOf<KeepOptionalKeys<Obj, 'person.another'>>().toBeNever()
+    expectTypeOf<
+      KeepOptionalKeys<Obj, 'optionalParent'>
+    >().toEqualTypeOf<'optionalParent'>()
+    expectTypeOf<
+      KeepOptionalKeys<Obj, 'optionalParent.requiredChild'>
+    >().toBeNever()
   })
   //endregion
   //region ValueAtPath

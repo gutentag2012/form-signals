@@ -8,6 +8,8 @@ import {
 } from '@preact/signals-core'
 import type { FormLogic } from './FormLogic'
 import {
+  type ConnectPath,
+  type KeepOptionalKeys,
   type LastPath,
   type ParentPath,
   type Paths,
@@ -437,6 +439,23 @@ export class FieldLogic<
 
   public handleTouched(): void {
     this._isTouched.value = true
+  }
+  //endregion
+
+  //region Object Helpers
+  public setValueInObject<TKey extends Paths<ValueAtPath<TData, TName>>>(
+    key: TKey,
+    value: ValueAtPath<TData, ConnectPath<TName, TKey>>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    this._form.setValueInObject(this._name, key, value, options)
+  }
+
+  public removeValueInObject<TKey extends Paths<ValueAtPath<TData, TName>>>(
+    key: KeepOptionalKeys<ValueAtPath<TData, TName>, TKey>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    this._form.removeValueInObject(this._name, key, options)
   }
   //endregion
 

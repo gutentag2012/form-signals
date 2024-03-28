@@ -153,11 +153,13 @@ export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
 
   const part = parts[parts.length - 1]
   if (typeof part === 'number' && Array.isArray(peekedValue)) {
+    if (part >= peekedValue.length) return
     const arrayCopy = [...peekedValue]
     arrayCopy.splice(part, 1)
     parent.value = arrayCopy as (typeof parent)['value']
   } else {
-    const { [part as keyof TValue]: _, ...rest } = peekedValue
+    const { [part as keyof TValue]: removedValue, ...rest } = peekedValue
+    if (removedValue === undefined) return
     parent.value = rest as (typeof parent)['value']
   }
 }

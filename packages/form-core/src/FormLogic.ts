@@ -8,6 +8,8 @@ import {
 } from '@preact/signals-core'
 import { FieldLogic, type FieldLogicOptions } from './FieldLogic'
 import {
+  type ConnectPath,
+  type KeepOptionalKeys,
   type Paths,
   type SignalifiedData,
   type ValidationError,
@@ -85,8 +87,6 @@ export type FormLogicOptions<
 }
 
 // TODO Add helper for dynamic objects
-// TODO Add handleChange for specific field
-// TODO Add further array helpers
 
 export class FormLogic<
   TData,
@@ -609,6 +609,61 @@ export class FormLogic<
     path: TPath,
   ): FieldLogic<TData, TPath, TBoundData> {
     return this._fields.peek().get(path) as FieldLogic<TData, TPath, TBoundData>
+  }
+  //endregion
+
+  //region Object Helpers
+  public setValueInObject<
+    TPath extends Paths<TData>,
+    TKey extends Paths<ValueAtPath<TData, TPath>>,
+  >(
+    path: TPath,
+    key: TKey,
+    value: ValueAtPath<TData, ConnectPath<TPath, TKey>>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    const signal = this.getValueForPath(path)
+    const currentValue = signal.value
+    if (typeof currentValue !== 'object' || currentValue instanceof Date) {
+      console.error(
+        `Tried to add a value to a non-object field at path ${path}`,
+      )
+      return
+    }
+
+    batch(() => {
+      setSignalValuesFromObject(signal, {
+        [key]: value,
+      } as any)
+      if (options?.shouldTouch) {
+        this.getFieldForPath(path)?.handleTouched()
+      }
+    })
+  }
+
+  public removeValueInObject<
+    TPath extends Paths<TData>,
+    TKey extends Paths<ValueAtPath<TData, TPath>>,
+  >(
+    path: TPath,
+    key: KeepOptionalKeys<ValueAtPath<TData, TPath>, TKey>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    const signal = this.getValueForPath(path)
+    const currentValue = signal.value
+    if (typeof currentValue !== 'object' || currentValue instanceof Date) {
+      console.error(
+        `Tried to remove a value from a non-object field at path ${path}`,
+      )
+      return
+    }
+
+    batch(() => {
+      removeSignalValueAtPath(signal, key)
+      if (options?.shouldTouch) {
+        this.getFieldForPath(path)?.handleTouched()
+      }
+    })
   }
   //endregion
 

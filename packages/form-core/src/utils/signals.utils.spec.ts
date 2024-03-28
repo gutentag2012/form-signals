@@ -157,6 +157,42 @@ describe('signals.utils', () => {
       removeSignalValueAtPath(obj, 'a.b.c.d' as never)
       expect(obj.value.a.value.b.value).toBe(undefined)
     })
+    it('should do nothing if an already removed key is not inside the object', () => {
+      const obj = deepSignalifyValue({ a: 1 })
+
+      const fn = vi.fn()
+      effect(() => {
+        fn(obj.value)
+      })
+      fn.mockReset()
+
+      removeSignalValueAtPath(obj, 'b' as never)
+      expect(fn).toHaveBeenCalledTimes(0)
+    })
+    it('should do an update if the removed key is already undefined', () => {
+      const obj = deepSignalifyValue({ a: 1, b: undefined })
+
+      const fn = vi.fn()
+      effect(() => {
+        fn(obj.value)
+      })
+      fn.mockReset()
+
+      removeSignalValueAtPath(obj, 'b')
+      expect(fn).toHaveBeenCalledTimes(1)
+    })
+    it('should do nothing if an index is removed from an array, that is not included in the array', () => {
+      const obj = deepSignalifyValue({ a: [1, 2] })
+
+      const fn = vi.fn()
+      effect(() => {
+        fn(obj.value)
+      })
+      fn.mockReset()
+
+      removeSignalValueAtPath(obj, 'a.2')
+      expect(fn).toHaveBeenCalledTimes(0)
+    })
   })
   describe('setSignalValuesFromObject', () => {
     it('should do nothing for an undefined object', () => {

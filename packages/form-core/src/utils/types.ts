@@ -59,6 +59,11 @@ export type LastPath<T> = T extends `${infer _}.${infer NextBranch}`
       : Extracted
     : ''
 
+export type ConnectPath<
+  FirstPart extends string,
+  SecondPart extends string,
+> = FirstPart extends '' ? SecondPart : `${FirstPart}.${SecondPart}`
+
 export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
   ? TProp extends `${infer TBranch}.${infer TDeepProp}`
     ? ValueAtPath<T[TBranch], TDeepProp>
@@ -66,6 +71,13 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
       ? T
       : T[TProp & string]
   : never
+
+export type KeepOptionalKeys<TValue, TKey extends Paths<TValue>> = Pick<
+  ValueAtPath<TValue, ParentPath<TKey>>,
+  LastPath<TKey>
+> extends Required<Pick<ValueAtPath<TValue, ParentPath<TKey>>, LastPath<TKey>>>
+  ? never
+  : TKey
 
 type MakeOptionalIfNotExistInCheckTuple<
   Tuple,

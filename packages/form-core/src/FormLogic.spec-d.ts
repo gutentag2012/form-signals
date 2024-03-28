@@ -148,6 +148,31 @@ describe('FormLogic (types)', () => {
       .toBeNumber()
   })
   //endregion
+  //region object types
+  it('should only allow to add keys to an object that allows that key', () => {
+    const form = new FormLogic<{
+      name: string
+      multiple: { [key: string]: number }
+    }>()
+
+    expectTypeOf(form.setValueInObject<'', 'name'>)
+      .parameter(2)
+      .toBeString()
+    expectTypeOf(form.setValueInObject<'multiple', string>)
+      .parameter(2)
+      .toBeNumber()
+  })
+  it('should only allow to remove keys on optional fields', () => {
+    const form = new FormLogic<{ name?: string; age: number }>()
+
+    expectTypeOf(form.removeValueInObject<'', 'name'>)
+      .parameter(1)
+      .toEqualTypeOf<'name'>()
+    expectTypeOf(form.removeValueInObject<'', 'age'>)
+      .parameter(1)
+      .toBeNever()
+  })
+  //endregion
   //region nested types
   it('should type all nested fields as signals', () => {
     type Val = {
