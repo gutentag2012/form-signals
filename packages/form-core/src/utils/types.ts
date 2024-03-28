@@ -24,8 +24,33 @@ type CombinePath<
   : never
 
 const PathDefaultValueSymbol = Symbol('PathDefaultValue')
-export type PathsDefaultValue = typeof PathDefaultValueSymbol
+/**
+ * This is a symbol that represents whether a value was passed to a generic type or not.
+ */
+type PathsDefaultValue = typeof PathDefaultValueSymbol
 
+/**
+ * This returns all possible nested paths of an object in dot notation.
+ *
+ * @note
+ * This is a recursive type that will stop at {@link MaxIterationLength} levels deep.
+ *
+ * @example
+ * ```ts
+ * type User = {
+ *   name: string
+ *   age: number
+ *   address: {
+ *     street: string
+ *     city: string
+ *     zip: number
+ *   },
+ *   dates: [Date, Date],
+ *   friends: User[]
+ * }
+ * Paths<User> // "name" | "age" | "address" | "dates" | "friends" | "address.street" | ... | "dates.0" | "dates.1" | "friends.${number}" | ...
+ * ```
+ */
 export type Paths<T = PathsDefaultValue, DepthCheck extends unknown[] = []> =
   | (DepthCheck['length'] extends 0 ? '' : never)
   | (DepthCheck['length'] extends MaxIterationLength
@@ -42,6 +67,15 @@ export type Paths<T = PathsDefaultValue, DepthCheck extends unknown[] = []> =
                 ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
                 : never)
 
+/**
+ * Returns the parent path of a nested path.
+ *
+ * @example
+ * ```ts
+ * const path = 'address.street.number'
+ * ParentPath<typeof user, path> // "address.street"
+ * ```
+ */
 export type ParentPath<
   T,
   Acc extends string = '',
@@ -51,6 +85,15 @@ export type ParentPath<
     ? Acc
     : ''
 
+/**
+ * Returns the last path of a nested path.
+ *
+ * @example
+ * ```ts
+ * const path = 'address.street.number'
+ * LastPath<typeof user, path> // "number"
+ * ```
+ */
 export type LastPath<T> = T extends `${infer _}.${infer NextBranch}`
   ? LastPath<NextBranch>
   : T extends `${infer Extracted}`
@@ -59,11 +102,37 @@ export type LastPath<T> = T extends `${infer _}.${infer NextBranch}`
       : Extracted
     : ''
 
+/**
+ * Connects two paths with a dot.
+ *
+ * @example
+ * ```ts
+ * ConnectPath<'address', 'street'> // "address.street"
+ * ConnectPath<'', 'street'> // "street"
+ * ```
+ */
 export type ConnectPath<
   FirstPart extends string,
   SecondPart extends string,
 > = FirstPart extends '' ? SecondPart : `${FirstPart}.${SecondPart}`
 
+/**
+ * Returns the value of a nested path.
+ *
+ * @example
+ * ```ts
+ * type User = {
+ *  name: string
+ *  address: {
+ *  street: string
+ *  number: number
+ *  }
+ * }
+ *
+ * type Name = ValueAtPath<User, 'name'> // string
+ * type Street = ValueAtPath<User, 'address.street'> // string
+ * ```
+ */
 export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
   ? TProp extends `${infer TBranch}.${infer TDeepProp}`
     ? ValueAtPath<T[TBranch], TDeepProp>
@@ -72,6 +141,23 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
       : T[TProp & string]
   : never
 
+/**
+ * Checks if a given path is optional on a given object.
+ *
+ * @template TValue - The object type.
+ * @template TKey - The path to check.
+ *
+ * @example
+ * ```ts
+ * type User = {
+ * name: string
+ * age?: number
+ * }
+ *
+ * IsOptional<User, 'age'> // 'age'
+ * IsOptional<User, 'name'> // never
+ * ```
+ */
 export type KeepOptionalKeys<TValue, TKey extends Paths<TValue>> = Pick<
   ValueAtPath<TValue, ParentPath<TKey>>,
   LastPath<TKey>
@@ -98,6 +184,26 @@ type MakeOptionalIfNotExistInCheckTuple<
       : [...Acc, Head | undefined]
     : Acc
 
+/**
+ * Takes in a base object and a check object and makes all the keys optional that are not present in the check object.
+ *
+ * @template BaseObject - The object to make optional.
+ * @template CheckObject - The object to check against.
+ *
+ * @example
+ * ```ts
+ * type User = {
+ *  name: string
+ *  age: number
+ * }
+ *
+ * type Check = {
+ * name: string
+ * }
+ *
+ * MakeOptionalIfNotExistInCheck<User, Check> // { name: string, age?: number }
+ * ```
+ */
 export type MakeOptionalIfNotExistInCheck<
   BaseObject,
   CheckObject,

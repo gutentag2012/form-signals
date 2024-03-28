@@ -1,33 +1,109 @@
 import { type Signal, batch } from '@preact/signals-core'
 
 //region Types
+/**
+ * A synchronous validator function that returns an error message if the value is invalid
+ *
+ * @template TValue The type of the value to validate
+ *
+ * @param value The value to validate
+ *
+ * @returns An error message if the value is invalid, or undefined if the value is valid
+ *
+ * @example
+ * ```ts
+ * const required: ValidatorSync<string> = (value: string) => value && 'This field is required'
+ * ```
+ */
 export type ValidatorSync<TValue> = (value: TValue) => ValidationError
 
+/**
+ * An asynchronous validator function that returns an error message if the value is invalid
+ *
+ * @template TValue The type of the value to validate
+ *
+ * @param value The value to validate
+ * @param abortSignal The signal that is aborted when the validation should be cancelled
+ *
+ * @returns A promise that resolves with an error message if the value is invalid, or undefined if the value is valid
+ *
+ * @example
+ * ```ts
+ * const required: ValidatorAsync<string> = async (value: string) => value && 'This field is required'
+ * ```
+ */
 export type ValidatorAsync<TValue> = (
   value: TValue,
   abortSignal: AbortSignal,
 ) => Promise<ValidationError> | ValidationError
 
+/**
+ * A validator adapter that creates synchronous and asynchronous validators from a given schema
+ *
+ * @template TValue The type of the value to validate
+ *
+ * @alias ValidatorAdapter
+ *
+ * @property sync Creates a synchronous validator from a given schema
+ * @property async Creates an asynchronous validator from a given schema
+ *
+ * @example
+ * ```ts
+ * const adapter: ValidatorAdapter = {
+ *  sync: (schema: number) => (value: number) => value <= schema && "Value should be greater than ${schema}",
+ *  async: (schema: number) => async (value: number) => value <= schema && "Value should be greater than ${schema}",
+ * }
+ * ```
+ */
 export interface ValidatorAdapter {
   sync<TValue>(schema: any): ValidatorSync<TValue>
   async<TValue>(schema: any): ValidatorAsync<TValue>
 }
 
+/**
+ * This is a type used to define a schema for a validator.
+ * It is a workaround to allow for different types of schemas based on an overriding the {@link ValidatorSchemaType} type
+ *
+ * @template TValue The type of the value to validate
+ *
+ * @alias ValidatorSchemaType
+ *
+ * @property () A function which returns the type of the schema
+ *
+ * @example
+ * ```ts
+ * declare module '@signal-forms/core' {
+ *   interface ValidatorSchemaType<TValue> {
+ *     (): number
+ *   }
+ * }
+ * ```
+ */
 // @ts-expect-error The generic type is supposed to be used by the adapter libs
 export interface ValidatorSchemaType<TValue> {
   // biome-ignore lint/style/useShorthandFunctionType: We need this to be an interface to allow for it to be overridden
   (): never
 }
 
-export const ValidatorEventsArray = [
+const ValidatorEventsArray = [
   'onChange',
   'onBlur',
   'onSubmit',
   'onMount',
 ] as const
+
+/**
+ * The events that can trigger a validation
+ */
 export type ValidatorEvents = (typeof ValidatorEventsArray)[number]
 
+/**
+ * A validation error message
+ */
 export type ValidationError = string | undefined | null | false
+/**
+ * A map of validation errors for both sync and async validators
+ */
 export type ValidationErrorMap = {
   sync?: ValidationError
   syncErrorEvent?: ValidatorEvents
@@ -36,6 +112,16 @@ export type ValidationErrorMap = {
 }
 
 // TODO Add mixins to add more values to the validation
+/**
+ * Options used during validation
+ *
+ * @alias ValidatorOptions
+ *
+ * @property disableOnChangeValidation Whether this validator should not run when the value changes
+ * @property disableOnBlurValidation Whether this validator should not run when the input loses focus
+ * @property validateOnMount Whether this validator should run when the form is submitted
+ * @property validateOnChangeIfTouched If this is true, the onChange validation will only run if the field was already touched
+ */
 export interface ValidatorOptions {
   /**
    * Whether this validator should not run when the value changes
@@ -54,6 +140,16 @@ export interface ValidatorOptions {
    */
   validateOnChangeIfTouched?: boolean
 }
+
+/**
+ * Options used during async validation
+ *
+ * @alias ValidatorAsyncOptions
+ *
+ * @extends ValidatorOptions
+ *
+ * @property debounceMs The time in milliseconds to debounce the async validation
+ */
 export interface ValidatorAsyncOptions extends ValidatorOptions {
   debounceMs?: number
 }
@@ -75,7 +171,7 @@ function shouldValidateEvent(
   return true
 }
 
-async function validateWithDebounce<TValue>(
+function validateWithDebounce<TValue>(
   validator: ValidatorAsync<TValue>,
   validatorOptions: ValidatorAsyncOptions,
   value: TValue,
@@ -191,17 +287,21 @@ async function validateAsync<TValue>(
 
 /**
  * Validate a value with the given validators synchronously and/either/or asynchronously
- * @param value The value to validate
- * @param event The event that triggered the validation (used to check if the validation should run)
- * @param validatorSync The synchronous validator
- * @param validatorSyncOptions Options for the synchronous validator
- * @param validatorAsync The asynchronous validator
- * @param validatorAsyncOptions Options for the asynchronous validator
- * @param previousAbortController The previous abort controller to abort the previous async validation
- * @param errorMap The error map to update
- * @param isValidating The state to keep track of the async validation
- * @param accumulateErrors Whether to accumulate errors or not
- * @param isTouched Whether the field is touched or not
+ *
+ * @param value - The value to validate
+ * @param event - The event that triggered the validation (used to check if the validation should run)
+ * @param validatorSync - The synchronous validator
+ * @param validatorSyncOptions - Options for the synchronous validator
+ * @param validatorAsync - The asynchronous validator
+ * @param validatorAsyncOptions - Options for the asynchronous validator
+ * @param previousAbortController - The previous abort controller to abort the previous async validation
+ * @param errorMap - The error map to update
+ * @param isValidating - The state to keep track of the async validation
+ * @param accumulateErrors - Whether to accumulate errors or not
+ * @param isTouched - Whether the field is touched or not
+ *
+ * @note
+ * The result of the validation is written to the {@link errorMap} and {@link isValidating} signals
  */
 export function validateWithValidators<TValue>(
   value: TValue,
@@ -240,9 +340,14 @@ export function validateWithValidators<TValue>(
   )
 }
 
+/**
+ * Clears the errors within a given error map if the error event is 'onSubmit'
+ *
+ * @param errorMap - The error map to clear the errors from
+ */
 export const clearSubmitEventErrors = (
   errorMap: Signal<Partial<ValidationErrorMap>>,
-) => {
+): void => {
   const newValue = { ...errorMap.peek() }
 
   if (
@@ -261,4 +366,38 @@ export const clearSubmitEventErrors = (
   }
 
   errorMap.value = newValue
+}
+
+export function getValidatorFromAdapter<TValue>(
+  adapter?: ValidatorAdapter,
+  schema?: ValidatorSync<TValue> | ReturnType<ValidatorSchemaType<TValue>>,
+  isAsync?: false,
+): ValidatorSync<TValue>
+export function getValidatorFromAdapter<TValue>(
+  adapter?: ValidatorAdapter,
+  schema?: ValidatorAsync<TValue> | ReturnType<ValidatorSchemaType<TValue>>,
+  isAsync?: true,
+): ValidatorAsync<TValue>
+export function getValidatorFromAdapter<TValue>(
+  adapter?: ValidatorAdapter,
+  schema?:
+    | ValidatorAsync<TValue>
+    | ValidatorSync<TValue>
+    | ReturnType<ValidatorSchemaType<TValue>>,
+  isAsync?: boolean,
+): ValidatorSync<TValue> | ValidatorAsync<TValue> {
+  const shouldUseSchema = adapter && schema && typeof schema !== 'function'
+  const validator = shouldUseSchema
+    ? isAsync
+      ? adapter.async(schema)
+      : adapter.sync(schema)
+    : schema
+
+  if (validator && typeof validator !== 'function') {
+    throw new Error(
+      `The ${isAsync ? 'async' : 'sync'} validator must be a function`,
+    )
+  }
+
+  return validator as ValidatorSync<TValue> | ValidatorAsync<TValue>
 }

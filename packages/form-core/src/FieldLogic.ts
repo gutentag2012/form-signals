@@ -26,6 +26,7 @@ import {
   type ValueAtPath,
   clearSubmitEventErrors,
   deepSignalifyValue,
+  getValidatorFromAdapter,
   getValueAtPath,
   isEqualDeep,
   pathToParts,
@@ -36,6 +37,33 @@ import {
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
+/**
+ * Options for the field logic.
+ *
+ * @alias FieldLogicOptions
+ *
+ * @template TData - The type of the form data.
+ * @template TName - The path to the field.
+ * @template TBoundValue - The type of the value that the field is bound to.
+ * @template TAdapter - The type of the validator adapter.
+ *
+ * @property [validatorAdapter] - Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+ * @property [validator] - Synchronous validator for the value of the field.
+ * @property [validatorOptions] - Options for the validator.
+ * @property [validatorAsync] - Async validator for the value of the field, this will be run after the sync validator if both are set.
+ * @property [validatorAsyncOptions] - Options for the async validator.
+ * @property [accumulateErrors] - If true, all errors on validators will be accumulated and validation will not stop on the first error.
+ * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
+ * @property [validateOnNestedChange] - Whether this validator should run when a nested value changes.
+ * @property [defaultValue] - Default value for the field.
+ * @property [defaultState] - Initial state for the field.
+ * @property [preserveValueOnUnmount] - Whether the value should be preserved once the field is unmounted.
+ * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on submit.
+ * @property [resetValueToDefaultOnUnmount] - Whenever a field is unmounted, the value within the form is deleted if the value should not be preserved.
+ * If true, the field value will set to its default value.
+ * @property [transformFromBinding] - This takes the value provided by the binding and transforms it to the value that should be set in the form.
+ * @property [transformToBinding] - This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedData.
+ */
 export type FieldLogicOptions<
   TData,
   TName extends Paths<TData>,
@@ -120,6 +148,15 @@ export type FieldLogicOptions<
 }
 
 // TODO Add async annotations so you only need to await if it is really needed
+/**
+ * Logic for a field in the form.
+ *
+ * @template TData - The type of the form data.
+ * @template TName - The path to the field.
+ * @template TBoundValue - The type of the value that the field is bound to.
+ * @template TAdapter - The type of the validator adapter.
+ * @template TFormAdapter - The type of the forms validator adapter.
+ */
 export class FieldLogic<
   TData,
   TName extends Paths<TData>,
@@ -208,26 +245,74 @@ export class FieldLogic<
   }
 
   //region State Getters
+  /**
+   * The data signal for the field.
+   *
+   * @note
+   * The signal is still owned by the form.
+   * This signal can be used to set the value of the field, however it is recommended to use the {@link FieldLogic#handleChange} method.
+   *
+   * @returns The data signal for the field.
+   */
   public get data(): SignalifiedData<ValueAtPath<TData, TName>> {
     return this._form.getValueForPath(this._name)
   }
 
+  /**
+   * The transformed data signal for the field.
+   *
+   * @note
+   * The underlying signal is still {@link FieldLogic#data} so all changes to the transformed data will be reflected in the data signal.
+   * This signal can be used to set the value of the field, however it is recommended to use the {@link FieldLogic#handleChangeBound} method.
+   *
+   * @returns The transformed data signal for the field.
+   */
   public get transformedData(): Signal<TBoundValue> {
     return this._transformedData as Signal<TBoundValue>
   }
 
+  /**
+   * The form that the field is part of.
+   */
   public get form(): FormLogic<TData, TFormAdapter> {
     return this._form
   }
 
+  /**
+   * The complete name path of the field.
+   *
+   * @example
+   * ```ts
+   * const field = form.getField('user.name')
+   * field.name // "user.name"
+   * ```
+   */
   public get name(): TName {
     return this._name
   }
 
+  /**
+   * The current name part of the field.
+   *
+   * @example
+   * ```ts
+   * const field = form.getField('user.name')
+   * field.currentNamePart // "name"
+   * ```
+   */
   public get currentNamePart(): LastPath<TName> {
     return pathToParts(this._name).pop() as LastPath<TName>
   }
 
+  /**
+   * The parent name part of the field.
+   *
+   * @example
+   * ```ts
+   * const field = form.getField('user.name')
+   * field.parentNamePart // "user"
+   * ```
+   */
   public get getParentNamePart(): ParentPath<TName> {
     return pathToParts(this._name).slice(0, -1).join('.') as ParentPath<TName>
   }
@@ -240,6 +325,9 @@ export class FieldLogic<
     return this._isValidatingReadOnly
   }
 
+  /**
+   * An array of sync and async errors.
+   */
   public get errors(): ReadonlySignal<Array<ValidationError>> {
     return this._errors
   }
@@ -264,6 +352,14 @@ export class FieldLogic<
   //endregion
 
   //region Lifecycle
+  /**
+   * Updates the options for the field.
+   *
+   * @param options - The new options for the field.
+   *
+   * @note
+   * If the default values are updated and the field is not dirty, the value will be updated to the new default value.
+   */
   public updateOptions(
     options?: FieldLogicOptions<
       TData,
@@ -295,6 +391,14 @@ export class FieldLogic<
     }
   }
 
+  /**
+   * Mounts the field.
+   *
+   * @returns A function to unmount the field.
+   *
+   * @note
+   * If the field is not mounted, the value will not be updated by the handlers and the validation will not run.
+   */
   public async mount(): Promise<() => void> {
     this.setupDataSignals()
 
@@ -335,6 +439,12 @@ export class FieldLogic<
     }
   }
 
+  /**
+   * Unmounts the field.
+   *
+   * @note
+   * If not otherwise configured in the options, the value is removed from the form when unmounted.
+   */
   public unmount(): void {
     this._isMounted.value = false
     this._transformedData = undefined
@@ -355,6 +465,17 @@ export class FieldLogic<
   //endregion
 
   //region Handlers
+  /**
+   * Validates the field for a given event.
+   *
+   * @param event - The event to validate for.
+   * @param checkValue - The value to validate. If not provided, the current value of the field will be used.
+   *
+   * @returns A promise that resolves when the validation is done.
+   *
+   * @note
+   * If the field is not mounted, the form is not mounted, or the data is not set, the validation will not run.
+   */
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
@@ -366,28 +487,15 @@ export class FieldLogic<
     const adapter =
       this._options.peek()?.validatorAdapter ??
       this.form.options.peek()?.validatorAdapter
-    const passedSyncValidator = this._options.peek()?.validator
-    const syncValidator =
-      adapter &&
-      passedSyncValidator &&
-      typeof passedSyncValidator !== 'function'
-        ? adapter.sync(passedSyncValidator)
-        : passedSyncValidator
-
-    const passedAsyncValidator = this._options.peek()?.validatorAsync
-    const asyncValidator =
-      adapter &&
-      passedAsyncValidator &&
-      typeof passedAsyncValidator !== 'function'
-        ? adapter.async(passedAsyncValidator)
-        : passedAsyncValidator
-
-    if (syncValidator && typeof syncValidator !== 'function') {
-      throw new Error('The sync validator must be a function')
-    }
-    if (asyncValidator && typeof asyncValidator !== 'function') {
-      throw new Error('The async validator must be a function')
-    }
+    const syncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validator,
+    )
+    const asyncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validatorAsync,
+      true,
+    )
 
     return validateWithValidators(
       value,
@@ -404,6 +512,15 @@ export class FieldLogic<
     )
   }
 
+  /**
+   * Handles a change in the field.
+   *
+   * @param newValue - The new value for the field.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the field is not mounted, the change will not be handled.
+   */
   public handleChange(
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
@@ -412,6 +529,16 @@ export class FieldLogic<
     this._form.handleChange(this._name, newValue, options)
   }
 
+  /**
+   * Handles a change in the field from a binding.
+   *
+   * @param newValue - The new value for the field.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the field is not mounted, the change will not be handled.
+   * If the field does not have a {@link FieldLogicOptions#transformFromBinding} function, the change will not be handled.
+   */
   public handleChangeBound(
     newValue: TBoundValue,
     options?: { shouldTouch?: boolean },
@@ -443,6 +570,16 @@ export class FieldLogic<
   //endregion
 
   //region Object Helpers
+  /**
+   * Sets a value in a dynamic object.
+   *
+   * @param key - The key to set the value at.
+   * @param value - The value to set.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the key already exists, it will be updated and keep the signal reference.
+   */
   public setValueInObject<TKey extends Paths<ValueAtPath<TData, TName>>>(
     key: TKey,
     value: ValueAtPath<TData, ConnectPath<TName, TKey>>,
@@ -451,6 +588,12 @@ export class FieldLogic<
     this._form.setValueInObject(this._name, key, value, options)
   }
 
+  /**
+   * Removes a value in a dynamic object.
+   *
+   * @param key - The key to remove the value at.
+   * @param options - Options for the change.
+   */
   public removeValueInObject<TKey extends Paths<ValueAtPath<TData, TName>>>(
     key: KeepOptionalKeys<ValueAtPath<TData, TName>, TKey>,
     options?: { shouldTouch?: boolean },
@@ -460,6 +603,16 @@ export class FieldLogic<
   //endregion
 
   //region Array Helpers
+  /**
+   * Inserts a value to a given index.
+   *
+   * @param index - The index to insert the value at.
+   * @param value - The value to insert.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If there is already a value at the given index, it will be updated and keep the signal reference.
+   */
   public insertValueInArray<Index extends number>(
     index: Index,
     value: ValueAtPath<TData, TName> extends any[]
@@ -472,6 +625,12 @@ export class FieldLogic<
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
+  /**
+   * Pushes a value to the end of an array.
+   *
+   * @param value - The value to push.
+   * @param options - Options for the change.
+   */
   public pushValueToArray(
     value: ValueAtPath<TData, TName> extends any[]
       ? ValueAtPath<TData, TName>[number]
@@ -481,6 +640,16 @@ export class FieldLogic<
     this._form.pushValueToArray(this._name, value, options)
   }
 
+  /**
+   * Pushes a value to an array at a given index.
+   *
+   * @param index - The index to push the value at.
+   * @param value - The value to push.
+   * @param options - Options for the change.
+   *
+   * @note
+   * Values with an index >= the given index will be moved one index up without losing the signal reference.
+   */
   public pushValueToArrayAtIndex(
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     value: ValueAtPath<TData, TName> extends any[]
@@ -491,6 +660,12 @@ export class FieldLogic<
     this._form.pushValueToArrayAtIndex(this._name, index, value, options)
   }
 
+  /**
+   * Removes a value from an array at a given index.
+   *
+   * @param index - The index to remove the value at.
+   * @param options - Options for the change.
+   */
   public removeValueFromArray(
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
@@ -498,6 +673,11 @@ export class FieldLogic<
     this._form.removeValueFromArray(this._name, index, options)
   }
 
+  /**
+   * Removes the field from the parent array.
+   *
+   * @param options - Options for the change.
+   */
   public removeSelfFromArray(options?: { shouldTouch?: boolean }) {
     this._form.removeValueFromArray(
       this.getParentNamePart,
@@ -506,6 +686,16 @@ export class FieldLogic<
     )
   }
 
+  /**
+   * Swaps two values in an array.
+   *
+   * @param indexA - The index of the first value to swap.
+   * @param indexB - The index of the second value to swap.
+   * @param options - Options for the change.
+   *
+   * @note
+   * The references to the signals will not be lost.
+   */
   public swapValuesInArray<IndexA extends number, IndexB extends number>(
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
@@ -532,6 +722,12 @@ export class FieldLogic<
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
+  /**
+   * Swaps the field with another value in the parent array.
+   *
+   * @param indexB - The index of the value to swap with.
+   * @param options - Options for the change.
+   */
   public swapSelfInArray<IndexB extends number>(
     indexB: ValueAtPath<TData, ParentPath<TName>> extends any[]
       ? number
@@ -553,6 +749,13 @@ export class FieldLogic<
     )
   }
 
+  /**
+   * Moves a value in an array to a new index.
+   *
+   * @param indexA - The index of the value to move.
+   * @param indexB - The index to move the value to.
+   * @param options - Options for the change.
+   */
   public moveValueInArray<IndexA extends number, IndexB extends number>(
     indexA: ValueAtPath<TData, TName> extends any[]
       ? number
@@ -579,6 +782,12 @@ export class FieldLogic<
     this._form.moveValueInArray(this._name, indexA, indexB, options)
   }
 
+  /**
+   * Moves the field in the parent array to a new index.
+   *
+   * @param indexB - The index to move the field to.
+   * @param options - Options for the change.
+   */
   public moveSelfInArray<IndexB extends number>(
     indexB: ValueAtPath<TData, ParentPath<TName>> extends any[]
       ? number
@@ -602,6 +811,12 @@ export class FieldLogic<
   //endregion
 
   //region Resets
+  /**
+   * Resets the state of the field.
+   *
+   * @note
+   * Most of the state is derived, so the only state that is reset is the error map, the touched state, and the validating state.
+   */
   public resetState(): void {
     batch(() => {
       this._errorMap.value = {}
@@ -610,6 +825,12 @@ export class FieldLogic<
     })
   }
 
+  /**
+   * Resets the value of the field to the default value.
+   *
+   * @note
+   * No validation will be run when resetting the value.
+   */
   public resetValue(): void {
     batch(() => {
       this._isMounted.value = false
@@ -618,6 +839,9 @@ export class FieldLogic<
     this._isMounted.value = true
   }
 
+  /**
+   * Resets the field values and state.
+   */
   public reset(): void {
     batch(() => {
       this.resetState()

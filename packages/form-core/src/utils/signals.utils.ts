@@ -5,7 +5,44 @@ import type { Paths, ValueAtPath } from './types'
 // This is a global variable used to assure unique keys for array elements (can be used by react or other libraries to identify elements that do not have a unique key)
 let arrayKey = 0
 
-type SignalArrayEntry<T> = { key: number; data: SignalifiedData<T> }
+/**
+ * A SignalArrayEntry is the signal representation of an array element.
+ * It contains a key that is unique for the array element and the data that is signalified.
+ *
+ * @alias SignalArrayEntry
+ *
+ * @template T - The type of the data that is signalified.
+ *
+ * @property key {string} - A unique key for the array element.
+ * @property data {SignalifiedData<T>} - The signalified data of the array element.
+ */
+type SignalArrayEntry<T> = {
+  /**
+   * A unique key for the array element.
+   */
+  key: number
+  /**
+   * The signalified data of the array element.
+   */
+  data: SignalifiedData<T>
+}
+
+/**
+ * Creates a SignalArrayEntry from a value.
+ * It will assign a unique key to the array element and signalify the value.
+ *
+ * @param value {T} - The value to be signalified.
+ *
+ * @template T - The type of the data that is signalified.
+ *
+ * @returns {SignalArrayEntry<T>} - The array entry as {@link SignalifiedData}.
+ *
+ * @example
+ * ```ts
+ * makeArrayEntry('Hello') // { key: 0, data: signal('Hello') }
+ * makeArrayEntry({ name: 'John' }) // { key: 1, data: signal({ name: signal('John') }) }
+ * ```
+ */
 export function makeArrayEntry<T>(value: T): SignalArrayEntry<T> {
   return {
     key: arrayKey++,
@@ -25,6 +62,21 @@ type SignalifiedTuple<
       >
     : never
 
+/**
+ * A value that has every nested key and array item turned into a signal.
+ *
+ * @alias SignalifiedData
+ *
+ * @template T - The type of the value that is signalified.
+ *
+ * @example
+ * ```ts
+ * SignalifiedData<number> // Signal<number>
+ * SignalifiedData<string> // Signal<string>
+ * SignalifiedData<{ name: string }> // Signal<{ name: Signal<string> }>
+ * SignalifiedData<{ array: number[]] }> // Signal<{ array: Signal<Array<{key: number, data: Signal<number>>> }>
+ * ```
+ */
 export type SignalifiedData<T> = Signal<
   T extends object
     ? T extends Date
@@ -37,6 +89,22 @@ export type SignalifiedData<T> = Signal<
     : T
 >
 
+/**
+ * Turns a given value into a {@link SignalifiedData}.
+ *
+ * @param value - The value to be signalified.
+ *
+ * @template T - The type of the value that is signalified.
+ *
+ * @returns {SignalifiedData<T>} - The signalified value.
+ *
+ * @example
+ * ```ts
+ * deepSignalifyValue('Hello') // signal('Hello')
+ * deepSignalifyValue({ name: 'John' }) // signal({ name: signal('John') })
+ * deepSignalifyValue([1, 2, 3]) // signal([{ key: 0, data: signal(1) }, { key: 1, data: signal(2) }, { key: 2, data: signal(3) }])
+ * ```
+ */
 export function deepSignalifyValue<T>(value: T): SignalifiedData<T> {
   if (
     value instanceof Date ||
@@ -69,6 +137,7 @@ function unSignalifyStep<T>(
     return peekedValue.map((entry) => unSignalify(entry.data)) as T
   }
 
+  // In this case it is already a primitive value and can be returned
   if (
     peekedValue instanceof Date ||
     typeof peekedValue !== 'object' ||
@@ -86,6 +155,26 @@ function unSignalifyStep<T>(
   ) as T
 }
 
+/**
+ * Takes a {@link SignalifiedData} value and returns the value without signals.
+ *
+ * @param value - The signalified value to be un-signalified.
+ *
+ * @template T - The type of the value that is un-signalified.
+ *
+ * @returns {T} - The un-signalified value.
+ *
+ * @note
+ * When used inside {@link '@preact/signals-core'.effect}, the effect will not be re-run when the signal changes.
+ * If you need to subscribe to the signal, use {@link unSignalifyValueSubscribed}.
+ *
+ * @example
+ * ```ts
+ * unSignalifyValue(signal('Hello')) // 'Hello'
+ * unSignalifyValue(signal({ name: signal('John') })) // { name: 'John' }
+ * unSignalifyValue(signal([{ key: 0, data: signal(1) }, { key: 1, data: signal(2) }, { key: 2, data: signal(3) }]) // [1, 2, 3]
+ * ```
+ */
 export function unSignalifyValue<T>(
   value: SignalifiedData<T> | SignalifiedData<T>['value'],
 ): T {
@@ -95,10 +184,49 @@ export function unSignalifyValue<T>(
   return unSignalifyStep(peekedValue, unSignalifyValue)
 }
 
+/**
+ * Takes a {@link SignalifiedData} value and returns the value without signals.
+ *
+ * @param value - The signalified value to be un-signalified.
+ *
+ * @template T - The type of the value that is un-signalified.
+ *
+ * @returns {T} - The un-signalified value.
+ *
+ * @note
+ * When used inside {@link '@preact/signals-core'.effect}, the effect will be re-run when the signal changes in any depth.
+ * If you do not need to subscribe to the signal, use {@link unSignalifyValue}.
+ *
+ * @example
+ * ```ts
+ * unSignalifyValue(signal('Hello')) // 'Hello'
+ * unSignalifyValue(signal({ name: signal('John') })) // { name: 'John' }
+ * unSignalifyValue(signal([{ key: 0, data: signal(1) }, { key: 1, data: signal(2) }, { key: 2, data: signal(3) }]) // [1, 2, 3]
+ * ```
+ */
 export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
   return unSignalifyStep(value.value, unSignalifyValueSubscribed)
 }
 
+/**
+ * Returns the value at a given path in a {@link SignalifiedData} object.
+ *
+ * @param obj - The signalified object to get the value from.
+ * @param path - The path to the value.
+ *
+ * @template TValue - The type of the value that is signalified.
+ * @template TPath - The type of the path to the value.
+ *
+ * @returns {SignalifiedData<ValueAtPath<TValue, TPath>> | undefined} - The signalified value at the path or undefined if the path does not exist.
+ *
+ * @note
+ * When used inside {@link '@preact/signals-core'.effect}, the effect will not be re-run when the parent signals change.
+ *
+ * @example
+ * ```ts
+ * getSignalValueAtPath(signal({ name: signal('John') }), 'name') // signal('John')
+ * ```
+ */
 export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
@@ -132,6 +260,21 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   return value
 }
 
+/**
+ * Removes the value at a given path in a {@link SignalifiedData} object.
+ *
+ * @param obj - The signalified object to remove the value from.
+ * @param path - The path to the value.
+ *
+ * @template TValue - The type of the value that is signalified.
+ * @template TPath - The type of the path to the value.
+ *
+ * @example
+ * ```ts
+ * const obj = signal({ name: signal('John') })
+ * removeSignalValueAtPath(obj, 'name') // obj.value = {}
+ * ```
+ */
 export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
@@ -164,6 +307,25 @@ export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   }
 }
 
+/**
+ * Updates all values in a given {@link SignalifiedData} object with the values from an object.
+ *
+ * @param obj - The signalified object to update the values of.
+ * @param value - The object with the new values.
+ * @param isPartial - Whether the update is partial or not.
+ * If false, all values that are not in the new object will be removed.
+ *
+ * @template TValue - The type of the value that is signalified.
+ * @template IsPartial - Whether the update is partial or not.
+ *
+ * @returns {SignalifiedData<TValue> | Signal<undefined>} - The updated signalified object.
+ *
+ * @example
+ * ```ts
+ * const obj = signal({ name: signal('John') })
+ * setSignalValuesFromObject(obj, { name: 'Jane' }) // obj.value = { name: signal('Jane') }
+ * ```
+ */
 export function setSignalValuesFromObject<
   TValue,
   IsPartial extends boolean = false,
@@ -258,6 +420,24 @@ export function setSignalValuesFromObject<
   })
 }
 
+/**
+ * Sets the value at a given path in a {@link SignalifiedData} object.
+ *
+ * @param obj - The signalified object to set the value in.
+ * @param path - The path to the value.
+ * @param value - The value to set.
+ *
+ * @template TValue - The type of the value that is signalified.
+ * @template TPath - The type of the path to the value.
+ *
+ * @returns {SignalifiedData<ValueAtPath<TValue, TPath>> | undefined} - The signalified value at the path or undefined if the path does not exist.
+ *
+ * @example
+ * ```ts
+ * const obj = signal({ name: signal('John') })
+ * setSignalValueAtPath(obj, 'name', 'Jane') // obj.value = { name: signal('Jane') }
+ * ```
+ */
 export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,

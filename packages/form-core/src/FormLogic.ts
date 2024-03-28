@@ -26,6 +26,7 @@ import {
   deepSignalifyValue,
   getLeftUnequalPaths,
   getSignalValueAtPath,
+  getValidatorFromAdapter,
   getValueAtPath,
   isEqualDeep,
   makeArrayEntry,
@@ -40,6 +41,12 @@ import {
 } from './utils'
 import { Truthy } from './utils/internal.utils'
 
+/**
+ * Options for the form logic.
+ *
+ * @template TData - The type of the data.
+ * @template TAdapter - The type of the validator adapter.
+ */
 export type FormLogicOptions<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
@@ -52,8 +59,8 @@ export type FormLogicOptions<
    * Synchronous validator for the value of the field.
    */
   validator?: TAdapter extends undefined
-    ? ValidatorSync<TData> | 'first'
-    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData>> | 'second'
+    ? ValidatorSync<TData>
+    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData>>
   /**
    * Options for the validator
    */
@@ -86,8 +93,12 @@ export type FormLogicOptions<
   onSubmit?: (data: TData) => void | Promise<void>
 }
 
-// TODO Add helper for dynamic objects
-
+/**
+ * Logic for a form.
+ *
+ * @template TData - The type of the data.
+ * @template TAdapter - The type of the validator adapter.
+ */
 export class FormLogic<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
@@ -236,11 +247,24 @@ export class FormLogic<
   }
 
   //region State Getters
+  /**
+   * The data of the form.
+   *
+   * @note
+   * This is a {@link SignalifiedData} version of the data, meaning that you can subscribe to changes in the data.
+   */
   public get data(): SignalifiedData<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._data
   }
 
+  /**
+   * The data of the form as a JSON object.
+   *
+   * @note
+   * This is a readonly signal, meaning that you can subscribe to changes in the data.
+   * Changes to any nested value will trigger an update to this signal.
+   */
   public get json(): ReadonlySignal<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._jsonData
@@ -254,18 +278,30 @@ export class FormLogic<
     return this._isValidatingFields
   }
 
+  /**
+   * An array of sync and async errors.
+   */
   public get errors(): ReadonlySignal<Array<ValidationError>> {
     return this._errors
   }
 
+  /**
+   * An array of errors for fields that are currently mounted.
+   */
   public get mountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
     return this._mountedFieldErrors
   }
 
+  /**
+   * An array of errors for fields that are currently unmounted.
+   */
   public get unmountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
     return this._unmountedFieldErrors
   }
 
+  /**
+   * All fields that have been registered to the form, both mounted and unmounted (only if they have {@link FieldLogicOptions#preserveValueOnUnmount}).
+   */
   public get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>> {
     return this._fieldsArray
   }
@@ -330,6 +366,14 @@ export class FormLogic<
   //endregion
 
   //region Lifecycle
+  /**
+   * Update the options for the form.
+   *
+   * @param options - The new options for the form.
+   *
+   * @note
+   * When updating the default values, all values that are not dirty will be reset to the new default value.
+   */
   public updateOptions(options?: FormLogicOptions<TData, TAdapter>): void {
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
@@ -346,6 +390,11 @@ export class FormLogic<
     setSignalValuesFromObject(this._data, newDefaultValues, true)
   }
 
+  /**
+   * Mount the form.
+   *
+   * @returns A function to unmount the form.
+   */
   public async mount(): Promise<() => void> {
     // Once mounted, we want to listen to all changes to the form
     this._unsubscribeFromChangeEffect?.()
@@ -360,7 +409,6 @@ export class FormLogic<
         this._currentlyRegisteringFields--
         return
       }
-      // TODO Currently this also runs if a field is registered, since the value is set to undefined, unsure if this is the expected behaviour
       // Clear all onSubmit errors when the value changes
       clearSubmitEventErrors(this._errorMap)
 
@@ -383,6 +431,17 @@ export class FormLogic<
   //endregion
 
   //region Handlers
+  /**
+   * Validate the form for a specific event.
+   *
+   * @param event - The event to validate for.
+   * @param checkValue - The value to check for the event.
+   *
+   * @returns A promise that resolves when the validation is done.
+   *
+   * @note
+   * If the form is not mounted, the validation will only be done for the {@link ValidatorEvents.onSubmit} event.
+   */
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: TData,
@@ -392,28 +451,15 @@ export class FormLogic<
     const value = checkValue ?? unSignalifyValue(this.data)
 
     const adapter = this._options.peek()?.validatorAdapter
-    const passedSyncValidator = this._options.peek()?.validator
-    const syncValidator =
-      adapter &&
-      passedSyncValidator &&
-      typeof passedSyncValidator !== 'function'
-        ? adapter.sync(passedSyncValidator)
-        : passedSyncValidator
-
-    const passedAsyncValidator = this._options.peek()?.validatorAsync
-    const asyncValidator =
-      adapter &&
-      passedAsyncValidator &&
-      typeof passedAsyncValidator !== 'function'
-        ? adapter.async(passedAsyncValidator)
-        : passedAsyncValidator
-
-    if (syncValidator && typeof syncValidator !== 'function') {
-      throw new Error('The sync validator must be a function')
-    }
-    if (asyncValidator && typeof asyncValidator !== 'function') {
-      throw new Error('The async validator must be a function')
-    }
+    const syncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validator,
+    )
+    const asyncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validatorAsync,
+      true,
+    )
 
     return validateWithValidators(
       value,
@@ -430,6 +476,16 @@ export class FormLogic<
     )
   }
 
+  /**
+   * Handle the change to a nested value in the form.
+   *
+   * @param path - The path to the value to change.
+   * @param newValue - The new value to set.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the form is unmounted, the change will not be applied.
+   */
   public handleChange<TPath extends Paths<TData>>(
     path: TPath,
     newValue: ValueAtPath<TData, TPath>,
@@ -502,6 +558,17 @@ export class FormLogic<
   //endregion
 
   //region Field Helpers
+  /**
+   * Get or create a field for the form.
+   *
+   * @param path - The path to the field.
+   * @param fieldOptions - Options for the field.
+   *
+   * @returns The field logic for the path.
+   *
+   * @note
+   * If the field already exists, the options will be updated.
+   */
   public getOrCreateField<
     TPath extends Paths<TData>,
     TBoundValue = never,
@@ -535,6 +602,15 @@ export class FormLogic<
     return field
   }
 
+  /**
+   * Register a field to the form.
+   *
+   * @param path - The path to the field.
+   * @param field - The field to register.
+   * @param defaultValues - Default values for the field.
+   *
+   * @internal Do not call this method on your own since it is called during the construction of {@link FieldLogic}
+   */
   public registerField<
     TPath extends Paths<TData>,
     TBoundValue = never,
@@ -557,7 +633,14 @@ export class FormLogic<
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
 
-  // TODO Add tests
+  /**
+   * Initialize a field signal.
+   *
+   * @param path - The path to the field.
+   * @param defaultValue - The default value for the field.
+   *
+   * @internal Do not call this method on your own since it is called during the construction of {@link FieldLogic}
+   */
   public initFieldSignal<TPath extends Paths<TData>>(
     path: TPath,
     defaultValue?: ValueAtPath<TData, TPath>,
@@ -566,6 +649,17 @@ export class FormLogic<
     setSignalValueAtPath(this._data, path, defaultValue)
   }
 
+  /**
+   * Unregister a field from the form.
+   *
+   * @param path - The path to the field.
+   * @param defaultValue - The default value for the field.
+   * @param preserveValue - If true, the value will be preserved in the form data.
+   * @param resetToDefault - If true, the value will be reset to the default value.
+   *
+   * @note
+   * By default the value of an unregistered Field will be removed from the form data.
+   */
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
     defaultValue?: ValueAtPath<TData, TPath>,
@@ -597,8 +691,6 @@ export class FormLogic<
   public getValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    // TODO Fix tests due to not setting signal to undefined if not exist
-    // TODO Fix typing so that this can be undefined maybe
     return getSignalValueAtPath<TData, TPath>(
       this._data,
       path,
@@ -613,6 +705,17 @@ export class FormLogic<
   //endregion
 
   //region Object Helpers
+  /**
+   * Sets a value in a dynamic object.
+   *
+   * @param path - The path to the object.
+   * @param key - The key to set the value at.
+   * @param value - The value to set.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the key already exists, it will be updated and keep the signal reference.
+   */
   public setValueInObject<
     TPath extends Paths<TData>,
     TKey extends Paths<ValueAtPath<TData, TPath>>,
@@ -641,6 +744,13 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Removes a value in a dynamic object.
+   *
+   * @param path - The path to the object.
+   * @param key - The key to remove the value at.
+   * @param options - Options for the change.
+   */
   public removeValueInObject<
     TPath extends Paths<TData>,
     TKey extends Paths<ValueAtPath<TData, TPath>>,
@@ -668,6 +778,17 @@ export class FormLogic<
   //endregion
 
   //region Array Helpers
+  /**
+   * Inserts a value to a given index.
+   *
+   * @param name - The path to the array.
+   * @param index - The index to insert the value at.
+   * @param value - The value to insert.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If there is already a value at the given index, it will be updated and keep the signal reference.
+   */
   public insertValueInArray<TName extends Paths<TData>, Index extends number>(
     name: TName,
     index: Index,
@@ -695,6 +816,13 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Pushes a value to the end of an array.
+   *
+   * @param name - The path to the array.
+   * @param value - The value to push.
+   * @param options - Options for the change.
+   */
   public pushValueToArray<TName extends Paths<TData>>(
     name: TName,
     value: ValueAtPath<TData, TName> extends any[]
@@ -720,6 +848,17 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Pushes a value to an array at a given index.
+   *
+   * @param name - The path to the array.
+   * @param index - The index to push the value at.
+   * @param value - The value to push.
+   * @param options - Options for the change.
+   *
+   * @note
+   * Values with an index >= the given index will be moved one index up without losing the signal reference.
+   */
   public pushValueToArrayAtIndex<TName extends Paths<TData>>(
     name: TName,
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
@@ -748,6 +887,13 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Removes a value from an array at a given index.
+   *
+   * @param name - The path to the array.
+   * @param index - The index to remove the value at.
+   * @param options - Options for the change.
+   */
   public removeValueFromArray<TName extends Paths<TData>>(
     name: TName,
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
@@ -778,6 +924,17 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Swaps two values in an array.
+   *
+   * @param name - The path to the array.
+   * @param indexA - The index of the first value to swap.
+   * @param indexB - The index of the second value to swap.
+   * @param options - Options for the change.
+   *
+   * @note
+   * The references to the signals will not be lost.
+   */
   public swapValuesInArray<
     TName extends Paths<TData>,
     IndexA extends number,
@@ -837,6 +994,14 @@ export class FormLogic<
     })
   }
 
+  /**
+   * Moves a value in an array to a new index.
+   *
+   * @param name - The path to the array.
+   * @param indexA - The index of the value to move.
+   * @param indexB - The index to move the value to.
+   * @param options - Options for the change.
+   */
   public moveValueInArray<
     TName extends Paths<TData>,
     IndexA extends number,
@@ -897,6 +1062,12 @@ export class FormLogic<
   //endregion
 
   //region Resets
+  /**
+   * Reset the state of the form.
+   *
+   * @note
+   * Most of the state is derived, so the only state that is reset is the submit count, the validation state, the submitting state and the error map.
+   */
   public resetStateForm(): void {
     this._submitCountSuccessful.value = 0
     this._submitCountUnsuccessful.value = 0
@@ -905,24 +1076,41 @@ export class FormLogic<
     this._errorMap.value = {}
   }
 
+  /**
+   * This will reset the state of all fields in the form.
+   */
   public resetStateFields(): void {
     for (const field of this._fieldsArray.peek()) {
       field.resetState()
     }
   }
 
+  /**
+   * This will reset the state of the form and all fields.
+   */
   public resetState(): void {
     this.resetStateForm()
     this.resetStateFields()
   }
 
+  /**
+   * This will reset the values of all fields in the form.
+   *
+   * @note
+   * No validation will be run when resetting the value.
+   */
   public resetValues(): void {
-    this._isMounted.value = false
-    setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
+    batch(() => {
+      this._isMounted.value = false
+      setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
+    })
     this._isMounted.value = true
   }
 
   // TODO Allow similar reset to RHF https://www.react-hook-form.com/api/useform/reset/
+  /**
+   * This will both the state and values of the form and all fields.
+   */
   public reset(): void {
     this.resetState()
     this.resetValues()

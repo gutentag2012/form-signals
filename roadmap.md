@@ -13,12 +13,12 @@ This document outlines the planned features and improvements for the project. It
 - [x] **form-core**: Add support for field value typed transformation
 - [x] **form-core**: Add support for `.moveItemToIndex(index: number, options)` method
 - [x] **form-core**: Add support for `.pushItemToIndex(item: any, index: number, options)` method
-- [ ] **form-core**: Add support for form reset
+- [x] **form-core**: Add support for form reset
 - [x] **form-validation-adapter-zod**: Add Validation adapter for zod
 - [ ] **examples-react**: Add example for complex nested form
 - [ ] **examples-react**: Add example for form validation
 - [ ] **examples-react**: Add example how to use with shadcn/ui form components
-- [ ] **chore**: Extensive jsdoc documentation with examples and links
+- [x] **chore**: Extensive jsdoc documentation with examples and links
 - [ ] **chore**: Add documentation website
 
 ## Version 1.1.0
