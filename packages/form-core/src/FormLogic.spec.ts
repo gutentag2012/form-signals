@@ -1222,7 +1222,6 @@ describe('FormLogic', () => {
         form.data.value.deep.value.item.value = 2
         form.pushValueToArray('array', { value: 2 })
         form.data.value.array.value[0].data.value.value.value = 3
-        // TODO Add helpers for dynamic objects
         form.data.value.deep.value = {
           ...form.data.value.deep.value,
           other: deepSignalifyValue('test'),

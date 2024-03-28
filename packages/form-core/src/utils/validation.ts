@@ -111,7 +111,6 @@ export type ValidationErrorMap = {
   asyncErrorEvent?: ValidatorEvents
 }
 
-// TODO Add mixins to add more values to the validation
 /**
  * Options used during validation
  *

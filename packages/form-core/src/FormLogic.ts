@@ -1107,7 +1107,6 @@ export class FormLogic<
     this._isMounted.value = true
   }
 
-  // TODO Allow similar reset to RHF https://www.react-hook-form.com/api/useform/reset/
   /**
    * This will both the state and values of the form and all fields.
    */
