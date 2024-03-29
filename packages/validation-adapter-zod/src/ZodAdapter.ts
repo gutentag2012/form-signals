@@ -1,6 +1,9 @@
 import type { ValidatorAdapter } from '@signal-forms/form-core'
 import type { z } from 'zod'
 
+/**
+ * A validator adapter for Zod that allows to use Zod schemas as validators in Signal Forms
+ */
 export interface ZodAdapterOptions {
   /**
    * If this is true, only the first error message will be returned, otherwise all error messages will be joined
@@ -23,6 +26,13 @@ function handleZodResult(
   return errorMessages.join(options?.joinErrorsWith ?? ', ')
 }
 
+/**
+ * Creates a validator adapter for Zod with specified options
+ *
+ * @param options Options for the adapter
+ *
+ * @returns A validator adapter that can be used with Signal Forms
+ */
 export function configureZodAdapter(
   options?: ZodAdapterOptions,
 ): ValidatorAdapter {
@@ -44,6 +54,9 @@ export function configureZodAdapter(
   }
 }
 
+/**
+ * The default Zod adapter with the default options
+ */
 export const ZodAdapter: ValidatorAdapter = configureZodAdapter()
 
 declare module '@signal-forms/form-core' {
