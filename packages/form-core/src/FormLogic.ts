@@ -60,7 +60,7 @@ export type FormLogicOptions<
    */
   validator?: TAdapter extends undefined
     ? ValidatorSync<TData>
-    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData, never>>
+    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   /**
    * Options for the validator
    */
@@ -70,7 +70,7 @@ export type FormLogicOptions<
    */
   validatorAsync?: TAdapter extends undefined
     ? ValidatorAsync<TData>
-    : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData, never>>
+    : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   /**
    * Options for the async validator
    */
