@@ -29,7 +29,6 @@
     "@signal-forms/form-core": "workspace:*"
   },
   "peerDependencies": {
-    "@signal-forms/form-core": "^0.0.1",
     "zod": "^3.22.4"
   },
   "keywords": ["signals", "form", "zod", "validation"],
