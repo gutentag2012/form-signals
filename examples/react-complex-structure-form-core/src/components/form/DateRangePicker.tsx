@@ -2,8 +2,8 @@ import { ErrorText } from '@/components/form/ErrorText.tsx'
 import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import type { Product } from '@/types.ts'
-import { useFormContext } from '@signal-forms/form-react'
-import type { ZodAdapter } from '@signal-forms/validation-adapter-zod'
+import { useFormContext } from '@form-signals/form-react'
+import type { ZodAdapter } from '@form-signals/validation-adapter-zod'
 import { z } from 'zod'
 
 export const DateRangePicker = () => {
@@ -26,7 +26,16 @@ export const DateRangePicker = () => {
             </div>
           )}
         </form.FieldProvider>
-        <form.FieldProvider name="validRange.1" validator={z.date()}>
+        <form.FieldProvider
+          name="validRange.1"
+          validator={z
+            .tuple([z.date().optional(), z.date().optional()])
+            .refine(
+              (dates) => (dates[0] && dates[1] ? dates[0] > dates[1] : true),
+              'End date must be after start date',
+            )}
+          validateMixin={['validRange.0']}
+        >
           {(field) => (
             <div className="flex flex-col gap-1 flex-1">
               <Label htmlFor={field.name}>Valid until</Label>
@@ -41,18 +50,6 @@ export const DateRangePicker = () => {
           )}
         </form.FieldProvider>
       </div>
-      <form.FieldProvider
-        name="validRange"
-        validateOnNestedChange
-        validator={z
-          .tuple([z.date().optional(), z.date().optional()])
-          .refine(
-            (dates) => (dates[0] && dates[1] ? dates[0] < dates[1] : true),
-            'Start date must be before end date',
-          )}
-      >
-        <ErrorText />
-      </form.FieldProvider>
     </div>
   )
 }
