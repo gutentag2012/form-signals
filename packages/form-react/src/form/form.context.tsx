@@ -2,7 +2,7 @@ import type {
   FormLogic,
   Paths,
   ValidatorAdapter,
-} from '@signal-forms/form-core'
+} from '@form-signals/form-core'
 import React, { type PropsWithChildren, type ReactNode } from 'react'
 import { type FieldProps, FieldWithForm } from '../field'
 import { FormProvider } from './form.provider'
@@ -17,8 +17,16 @@ export interface FormContextType<
     TName extends Paths<TData>,
     TBoundData,
     TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+    TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
   >(
-    props: FieldProps<TData, TName, TBoundData, TFieldAdapter, TAdapter>,
+    props: FieldProps<
+      TData,
+      TName,
+      TBoundData,
+      TFieldAdapter,
+      TAdapter,
+      TMixin
+    >,
   ) => ReactNode
   handleSubmitOnEnter: ReturnType<typeof handleSubmitOnEnterForForm>
 }

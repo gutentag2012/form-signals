@@ -1,20 +1,20 @@
 {
-  "name": "signal-forms",
+  "name": "form-signals",
   "private": true,
   "repository": "todo",
   "packageManager": "pnpm@8.15.1",
   "type": "module",
-  "namespace": "signal-forms",
+  "namespace": "form-signals",
   "scripts": {
     "style": "pnpm dlx @biomejs/biome check .",
     "style:fix": "pnpm dlx @biomejs/biome check --apply .",
     "style:fix:unsafe": "pnpm dlx @biomejs/biome check --apply-unsafe .",
     "test": "nx run-many --target=test --all",
-    "test:core": "nx test @signal-forms/form-core",
-    "test:react": "nx test @signal-forms/form-react",
-    "test:validator-zod": "nx test @signal-forms/validation-adapter-zod",
+    "test:core": "nx test @form-signals/form-core",
+    "test:react": "nx test @form-signals/form-react",
+    "test:validator-zod": "nx test @form-signals/validation-adapter-zod",
     "build": "nx run-many --target=build --all",
-    "build:core": "nx build @signal-forms/form-core"
+    "build:core": "nx build @form-signals/form-core"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.6.3",

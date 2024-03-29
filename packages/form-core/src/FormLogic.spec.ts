@@ -11,7 +11,10 @@ import {
 import { Truthy } from './utils/internal.utils'
 
 const adapter: ValidatorAdapter = {
-  sync<TValue>(schema: number): ValidatorSync<TValue> {
+  sync<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorSync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
     return (value) => {
       if (typeof value === 'number')
         return value <= schema
@@ -20,7 +23,10 @@ const adapter: ValidatorAdapter = {
       return 'Value must be a number'
     }
   },
-  async<TValue>(schema: number): ValidatorAsync<TValue> {
+  async<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorAsync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
     return async (value) => {
       await new Promise((resolve) => setTimeout(resolve, 100))
       if (typeof value === 'number')

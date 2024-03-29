@@ -144,6 +144,30 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
     : never
 
 /**
+ * Returns a tuple of values for the given tuple of paths.
+ *
+ * @example
+ * ```ts
+ * type User = {
+ * name: string
+ * age: number
+ * }
+ *
+ * type Paths = ['name', 'age']
+ * ValueAtPathForTuple<User, Paths> // [string, number]
+ * ```
+ */
+export type ValueAtPathForTuple<
+  TData,
+  TPaths extends readonly Partial<Paths<TData>>[],
+  Acc extends any[] = [],
+> = TPaths extends [infer TPath, ...infer TRest extends Partial<Paths<TData>>[]]
+  ? ValueAtPathForTuple<TData, TRest, [...Acc, ValueAtPath<TData, TPath>]>
+  : Acc['length'] extends 0
+    ? ValueAtPath<TData, TPaths[number]>[]
+    : Acc
+
+/**
  * Checks if a given path is optional on a given object.
  *
  * @template TValue - The object type.

@@ -3,7 +3,7 @@ import type {
   Paths,
   ValidatorAdapter,
   ValueAtPath,
-} from '@signal-forms/form-core'
+} from '@form-signals/form-core'
 import React, { type ReactNode } from 'react'
 import {
   type FieldChildren,
@@ -18,22 +18,35 @@ export interface FieldContextType<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-> extends FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
+> extends FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
   FieldProvider: (props: {
-    children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>
+    children: FieldChildren<
+      TData,
+      TName,
+      TBoundData,
+      TAdapter,
+      TFormAdapter,
+      TMixin
+    >
   }) => ReactNode
   SubFieldProvider: <
     TChildData extends ValueAtPath<TData, TName>,
     TChildName extends Paths<TChildData>,
     TChildBoundData = never,
     TChildAdapter extends ValidatorAdapter | undefined = undefined,
+    TChildMixin extends readonly Exclude<
+      Paths<TChildData>,
+      TChildName
+    >[] = never[],
   >(
     props: FieldProps<
       TChildData,
       TChildName,
       TChildBoundData,
       TChildAdapter,
-      TFormAdapter
+      TFormAdapter,
+      TChildMixin
     >,
   ) => ReactNode
 }
@@ -44,15 +57,17 @@ export function fieldLogicToFieldContext<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >(
-  logic: FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter>,
-): FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  logic: FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin>,
+): FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
   const castedLogic = logic as FieldContextType<
     TData,
     TName,
     TBoundData,
     TAdapter,
-    TFormAdapter
+    TFormAdapter,
+    TMixin
   >
   castedLogic.FieldProvider = (props) => (
     <FieldProvider field={castedLogic}>{props.children}</FieldProvider>
@@ -72,7 +87,7 @@ export function fieldLogicToFieldContext<
 }
 
 export const FieldContext = React.createContext<
-  FieldContextType<any, any, any, any, any> | undefined
+  FieldContextType<any, any, any, any, any, any> | undefined
 >(undefined)
 
 export function useFieldContext<
@@ -81,7 +96,15 @@ export function useFieldContext<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
->(): FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
+>(): FieldContextType<
+  TData,
+  TName,
+  TBoundData,
+  TAdapter,
+  TFormAdapter,
+  TMixin
+> {
   const field = React.useContext(FieldContext)
 
   if (!field) {
@@ -93,6 +116,7 @@ export function useFieldContext<
     TName,
     TBoundData,
     TAdapter,
-    TFormAdapter
+    TFormAdapter,
+    TMixin
   >
 }

@@ -68,13 +68,13 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.0.4
         version: 1.0.4(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
-      '@signal-forms/form-core':
+      '@form-signals/form-core':
         specifier: workspace:*
         version: link:../../packages/form-core
-      '@signal-forms/form-react':
+      '@form-signals/form-react':
         specifier: workspace:*
         version: link:../../packages/form-react
-      '@signal-forms/validation-adapter-zod':
+      '@form-signals/validation-adapter-zod':
         specifier: workspace:*
         version: link:../../packages/validation-adapter-zod
       class-variance-authority:
@@ -286,7 +286,7 @@ importers:
       '@preact/signals-react':
         specifier: ^2.0.0
         version: 2.0.0(react@18.2.0)
-      '@signal-forms/form-core':
+      '@form-signals/form-core':
         specifier: workspace:*
         version: link:../form-core
       react:
@@ -317,7 +317,7 @@ importers:
 
   packages/validation-adapter-zod:
     dependencies:
-      '@signal-forms/form-core':
+      '@form-signals/form-core':
         specifier: workspace:*
         version: link:../form-core
       zod:

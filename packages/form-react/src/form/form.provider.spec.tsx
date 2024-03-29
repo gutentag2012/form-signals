@@ -1,4 +1,4 @@
-import { FormLogic } from '@signal-forms/form-core'
+import { FormLogic } from '@form-signals/form-core'
 import { render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'

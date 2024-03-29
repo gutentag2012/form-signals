@@ -1,5 +1,5 @@
 {
-  "name": "@signal-forms/validation-adapter-zod",
+  "name": "@form-signals/validation-adapter-zod",
   "version": "0.0.1",
   "description": "Validation adapter for zod enabling the usage of zod schemas with signal forms",
   "author": "joshua.gawenda",
@@ -26,7 +26,7 @@
   "sideEffects": false,
   "files": ["dist", "src"],
   "dependencies": {
-    "@signal-forms/form-core": "workspace:*"
+    "@form-signals/form-core": "workspace:*"
   },
   "peerDependencies": {
     "zod": "^3.22.4"

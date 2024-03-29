@@ -15,7 +15,12 @@ import { type Signal, batch } from '@preact/signals-core'
  * const required: ValidatorSync<string> = (value: string) => value && 'This field is required'
  * ```
  */
-export type ValidatorSync<TValue> = (value: TValue) => ValidationError
+export type ValidatorSync<
+  TValue,
+  TMixins extends readonly any[] = never[],
+> = TMixins extends never[]
+  ? (value: TValue) => ValidationError
+  : (value: [TValue, ...TMixins]) => ValidationError
 
 /**
  * An asynchronous validator function that returns an error message if the value is invalid
@@ -32,10 +37,18 @@ export type ValidatorSync<TValue> = (value: TValue) => ValidationError
  * const required: ValidatorAsync<string> = async (value: string) => value && 'This field is required'
  * ```
  */
-export type ValidatorAsync<TValue> = (
-  value: TValue,
-  abortSignal: AbortSignal,
-) => Promise<ValidationError> | ValidationError
+export type ValidatorAsync<
+  TValue,
+  TMixins extends readonly any[] = never[],
+> = TMixins extends never[]
+  ? (
+      value: TValue,
+      abortSignal: AbortSignal,
+    ) => Promise<ValidationError> | ValidationError
+  : (
+      value: [TValue, ...TMixins],
+      abortSignal: AbortSignal,
+    ) => Promise<ValidationError> | ValidationError
 
 /**
  * A validator adapter that creates synchronous and asynchronous validators from a given schema
@@ -56,8 +69,12 @@ export type ValidatorAsync<TValue> = (
  * ```
  */
 export interface ValidatorAdapter {
-  sync<TValue>(schema: any): ValidatorSync<TValue>
-  async<TValue>(schema: any): ValidatorAsync<TValue>
+  sync<TValue, TMixins extends readonly any[] = never[]>(
+    schema: any,
+  ): ValidatorSync<TValue, TMixins>
+  async<TValue, TMixins extends readonly any[] = never[]>(
+    schema: any,
+  ): ValidatorAsync<TValue, TMixins>
 }
 
 /**
@@ -72,7 +89,7 @@ export interface ValidatorAdapter {
  *
  * @example
  * ```ts
- * declare module '@signal-forms/core' {
+ * declare module '@form-signals/core' {
  *   interface ValidatorSchemaType<TValue> {
  *     (): number
  *   }
@@ -80,7 +97,7 @@ export interface ValidatorAdapter {
  * ```
  */
 // @ts-expect-error The generic type is supposed to be used by the adapter libs
-export interface ValidatorSchemaType<TValue> {
+export interface ValidatorSchemaType<TValue, TMixin> {
   // biome-ignore lint/style/useShorthandFunctionType: We need this to be an interface to allow for it to be overridden
   (): never
 }
@@ -170,10 +187,11 @@ function shouldValidateEvent(
   return true
 }
 
-function validateWithDebounce<TValue>(
-  validator: ValidatorAsync<TValue>,
+function validateWithDebounce<TValue, TMixins extends readonly any[] = never[]>(
+  validator: ValidatorAsync<TValue, TMixins>,
   validatorOptions: ValidatorAsyncOptions,
   value: TValue,
+  mixins: TMixins,
   abortSignal: AbortSignal,
 ) {
   return new Promise<ValidationError>((resolve) => {
@@ -184,16 +202,20 @@ function validateWithDebounce<TValue>(
         return resolve(undefined)
       }
 
-      const error = await validator(value, abortSignal)
+      const error = await validator(
+        !mixins?.length ? value : ([value, ...mixins] as any),
+        abortSignal,
+      )
       resolve(error)
     }, validatorOptions.debounceMs)
   })
 }
 
-function validateSync<TValue>(
+function validateSync<TValue, TMixins extends readonly any[] = never[]>(
   value: TValue,
+  mixins: TMixins,
   event: ValidatorEvents,
-  validatorSync: ValidatorSync<TValue> | undefined,
+  validatorSync: ValidatorSync<TValue, TMixins> | undefined,
   validatorSyncOptions: ValidatorOptions | undefined,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isTouched?: boolean,
@@ -207,7 +229,9 @@ function validateSync<TValue>(
   }
 
   // Get and assign the error / reset previous error
-  const error = validatorSync(value)
+  const error = validatorSync(
+    !mixins?.length ? value : ([value, ...mixins] as any),
+  )
 
   const currentErrorMap = errorMap.peek()
   if (
@@ -226,10 +250,11 @@ function validateSync<TValue>(
   return !!error
 }
 
-async function validateAsync<TValue>(
+async function validateAsync<TValue, TMixins extends readonly any[] = never[]>(
   value: TValue,
+  mixins: TMixins,
   event: ValidatorEvents,
-  validatorAsync: ValidatorAsync<TValue> | undefined,
+  validatorAsync: ValidatorAsync<TValue, TMixins> | undefined,
   validatorAsyncOptions: ValidatorAsyncOptions | undefined,
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
@@ -256,9 +281,13 @@ async function validateAsync<TValue>(
         validatorAsync,
         validatorAsyncOptions,
         value,
+        mixins,
         abortController.signal,
       )
-    : validatorAsync(value, abortController.signal))
+    : validatorAsync(
+        !mixins?.length ? value : ([value, ...mixins] as any),
+        abortController.signal,
+      ))
 
   // If the validation was aborted during the async validation, we just ignore the result
   // NOTE: We do not need to set the isValidating to false, since there is a newer validation round that will take care of that
@@ -288,6 +317,7 @@ async function validateAsync<TValue>(
  * Validate a value with the given validators synchronously and/either/or asynchronously
  *
  * @param value - The value to validate
+ * @param mixins - The mixins to pass to the validators
  * @param event - The event that triggered the validation (used to check if the validation should run)
  * @param validatorSync - The synchronous validator
  * @param validatorSyncOptions - Options for the synchronous validator
@@ -302,12 +332,16 @@ async function validateAsync<TValue>(
  * @note
  * The result of the validation is written to the {@link errorMap} and {@link isValidating} signals
  */
-export function validateWithValidators<TValue>(
+export function validateWithValidators<
+  TValue,
+  TMixins extends readonly any[] = never[],
+>(
   value: TValue,
+  mixins: TMixins,
   event: ValidatorEvents,
-  validatorSync: ValidatorSync<TValue> | undefined,
+  validatorSync: ValidatorSync<TValue, TMixins> | undefined,
   validatorSyncOptions: ValidatorOptions | undefined,
-  validatorAsync: ValidatorAsync<TValue> | undefined,
+  validatorAsync: ValidatorAsync<TValue, TMixins> | undefined,
   validatorAsyncOptions: ValidatorAsyncOptions | undefined,
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
@@ -317,6 +351,7 @@ export function validateWithValidators<TValue>(
 ) {
   const failedSyncValidation = validateSync(
     value,
+    mixins,
     event,
     validatorSync,
     validatorSyncOptions,
@@ -329,6 +364,7 @@ export function validateWithValidators<TValue>(
 
   return validateAsync(
     value,
+    mixins,
     event,
     validatorAsync,
     validatorAsyncOptions,
@@ -367,24 +403,37 @@ export const clearSubmitEventErrors = (
   errorMap.value = newValue
 }
 
-export function getValidatorFromAdapter<TValue>(
-  adapter?: ValidatorAdapter,
-  schema?: ValidatorSync<TValue> | ReturnType<ValidatorSchemaType<TValue>>,
-  isAsync?: false,
-): ValidatorSync<TValue>
-export function getValidatorFromAdapter<TValue>(
-  adapter?: ValidatorAdapter,
-  schema?: ValidatorAsync<TValue> | ReturnType<ValidatorSchemaType<TValue>>,
-  isAsync?: true,
-): ValidatorAsync<TValue>
-export function getValidatorFromAdapter<TValue>(
+export function getValidatorFromAdapter<
+  TValue,
+  TMixins extends readonly any[] = never[],
+>(
   adapter?: ValidatorAdapter,
   schema?:
-    | ValidatorAsync<TValue>
-    | ValidatorSync<TValue>
-    | ReturnType<ValidatorSchemaType<TValue>>,
+    | ValidatorSync<TValue, TMixins>
+    | ReturnType<ValidatorSchemaType<TValue, TMixins>>,
+  isAsync?: false,
+): ValidatorSync<TValue, TMixins>
+export function getValidatorFromAdapter<
+  TValue,
+  TMixins extends readonly any[] = never[],
+>(
+  adapter?: ValidatorAdapter,
+  schema?:
+    | ValidatorAsync<TValue, TMixins>
+    | ReturnType<ValidatorSchemaType<TValue, TMixins>>,
+  isAsync?: true,
+): ValidatorAsync<TValue, TMixins>
+export function getValidatorFromAdapter<
+  TValue,
+  TMixins extends readonly any[] = never[],
+>(
+  adapter?: ValidatorAdapter,
+  schema?:
+    | ValidatorAsync<TValue, TMixins>
+    | ValidatorSync<TValue, TMixins>
+    | ReturnType<ValidatorSchemaType<TValue, TMixins>>,
   isAsync?: boolean,
-): ValidatorSync<TValue> | ValidatorAsync<TValue> {
+): ValidatorSync<TValue, TMixins> | ValidatorAsync<TValue, TMixins> {
   const shouldUseSchema = adapter && schema && typeof schema !== 'function'
   const validator = shouldUseSchema
     ? isAsync
@@ -398,5 +447,7 @@ export function getValidatorFromAdapter<TValue>(
     )
   }
 
-  return validator as ValidatorSync<TValue> | ValidatorAsync<TValue>
+  return validator as
+    | ValidatorSync<TValue, TMixins>
+    | ValidatorAsync<TValue, TMixins>
 }

@@ -4,7 +4,7 @@ import type {
   Paths,
   ValidatorAdapter,
   ValueAtPath,
-} from '@signal-forms/form-core'
+} from '@form-signals/form-core'
 // biome-ignore lint/style/useImportType: This is the React import
 import React from 'react'
 import { type FormContextType, useFormContext } from '../form'
@@ -17,9 +17,17 @@ export type FieldChildren<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > =
   | ((
-      field: FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+      field: FieldLogic<
+        TData,
+        TName,
+        TBoundData,
+        TAdapter,
+        TFormAdapter,
+        TMixin
+      >,
     ) => React.ReactNode)
   | React.ReactNode
 
@@ -29,9 +37,24 @@ function useUnwrappedChildren<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >(
-  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>,
-  field: FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+  children: FieldChildren<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >,
+  field: FieldContextType<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >,
 ): React.ReactNode {
   if (typeof children === 'function') {
     return children(field)
@@ -46,9 +69,24 @@ export interface FieldProviderProps<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > {
-  field: FieldContextType<TData, TName, TBoundData, TAdapter, TFormAdapter>
-  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>
+  field: FieldContextType<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >
+  children: FieldChildren<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >
 }
 
 export function FieldProvider<
@@ -57,8 +95,16 @@ export function FieldProvider<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >(
-  props: FieldProviderProps<TData, TName, TBoundData, TAdapter, TFormAdapter>,
+  props: FieldProviderProps<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >,
 ): React.ReactElement {
   return (
     <FieldContext.Provider value={props.field}>
@@ -73,7 +119,8 @@ export interface FieldWithFormProps<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
+> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
   form: FormContextType<TData, TFormAdapter>
 }
 export function FieldWithForm<
@@ -82,12 +129,20 @@ export function FieldWithForm<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
   form,
   name,
   children,
   ...props
-}: FieldWithFormProps<TData, TName, TBoundData, TAdapter, TFormAdapter>) {
+}: FieldWithFormProps<
+  TData,
+  TName,
+  TBoundData,
+  TAdapter,
+  TFormAdapter,
+  TMixin
+>) {
   const field = useField(form, name, props)
   return <FieldProvider field={field}>{children}</FieldProvider>
 }
@@ -98,13 +153,22 @@ export interface FieldProps<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > extends FieldLogicOptions<
     TData,
     TName,
     TBoundData,
-    TAdapter extends undefined ? TFormAdapter : TAdapter
+    TAdapter extends undefined ? TFormAdapter : TAdapter,
+    TMixin
   > {
-  children: FieldChildren<TData, TName, TBoundData, TAdapter, TFormAdapter>
+  children: FieldChildren<
+    TData,
+    TName,
+    TBoundData,
+    TAdapter,
+    TFormAdapter,
+    TMixin
+  >
   name: TName
 }
 export function Field<
@@ -113,6 +177,7 @@ export function Field<
   TBoundData = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
   name,
   children,
@@ -122,7 +187,8 @@ export function Field<
   TName,
   TBoundData,
   TAdapter,
-  TFormAdapter
+  TFormAdapter,
+  TMixin
 >): React.ReactElement {
   const form = useFormContext<TData, TFormAdapter>()
   return (
@@ -143,13 +209,19 @@ export interface SubFieldProps<
   TParentFormAdapter extends ValidatorAdapter | undefined = undefined,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter> {
+  TParentMixin extends readonly Exclude<
+    Paths<TParentData>,
+    TParentName
+  >[] = never[],
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
+> extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
   parentField: FieldContextType<
     TParentData,
     TParentName,
     TParentBoundData,
     TParentAdapter,
-    TParentFormAdapter
+    TParentFormAdapter,
+    TParentMixin
   >
 }
 export function SubField<
@@ -163,6 +235,11 @@ export function SubField<
   TParentFormAdapter extends ValidatorAdapter | undefined = undefined,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TParentMixin extends readonly Exclude<
+    Paths<TParentData>,
+    TParentName
+  >[] = never[],
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
   parentField,
   name,
@@ -178,7 +255,9 @@ export function SubField<
   TParentAdapter,
   TParentFormAdapter,
   TAdapter,
-  TFormAdapter
+  TFormAdapter,
+  TParentMixin,
+  TMixin
 >) {
   const field = useField(
     parentField.form as unknown as FormContextType<TData, TFormAdapter>,

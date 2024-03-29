@@ -1,5 +1,5 @@
 {
-  "name": "@signal-forms/form-core",
+  "name": "@form-signals/form-core",
   "version": "0.0.1",
   "description": "Core package for Signal Form including the form state and validation logic as well as the api",
   "author": "joshua.gawenda",

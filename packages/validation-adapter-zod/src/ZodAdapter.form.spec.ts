@@ -1,4 +1,4 @@
-import { FormLogic } from '@signal-forms/form-core'
+import { FormLogic } from '@form-signals/form-core'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { ZodAdapter, configureZodAdapter } from './ZodAdapter'

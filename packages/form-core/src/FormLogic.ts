@@ -60,7 +60,7 @@ export type FormLogicOptions<
    */
   validator?: TAdapter extends undefined
     ? ValidatorSync<TData>
-    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData>>
+    : ValidatorSync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   /**
    * Options for the validator
    */
@@ -70,7 +70,7 @@ export type FormLogicOptions<
    */
   validatorAsync?: TAdapter extends undefined
     ? ValidatorAsync<TData>
-    : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData>>
+    : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   /**
    * Options for the async validator
    */
@@ -256,6 +256,15 @@ export class FormLogic<
   public get data(): SignalifiedData<TData> {
     // This is not really always the full data, but this way you get type safety
     return this._data
+  }
+
+  public getValueForPath<TPath extends Paths<TData>>(
+    path: TPath,
+  ): SignalifiedData<ValueAtPath<TData, TPath>> {
+    return getSignalValueAtPath<TData, TPath>(
+      this._data,
+      path,
+    ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
 
   /**
@@ -451,11 +460,11 @@ export class FormLogic<
     const value = checkValue ?? unSignalifyValue(this.data)
 
     const adapter = this._options.peek()?.validatorAdapter
-    const syncValidator = getValidatorFromAdapter(
+    const syncValidator = getValidatorFromAdapter<TData>(
       adapter,
       this._options.peek()?.validator,
     )
-    const asyncValidator = getValidatorFromAdapter(
+    const asyncValidator = getValidatorFromAdapter<TData>(
       adapter,
       this._options.peek()?.validatorAsync,
       true,
@@ -463,6 +472,7 @@ export class FormLogic<
 
     return validateWithValidators(
       value,
+      [],
       event,
       syncValidator,
       this._options.peek()?.validatorOptions,
@@ -573,17 +583,19 @@ export class FormLogic<
     TPath extends Paths<TData>,
     TBoundValue = never,
     TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+    TMixin extends readonly Exclude<Paths<TData>, TPath>[] = never[],
   >(
     path: TPath,
     fieldOptions?: FieldLogicOptions<
       TData,
       TPath,
       TBoundValue,
-      TFieldAdapter extends undefined ? TAdapter : TFieldAdapter
+      TFieldAdapter extends undefined ? TAdapter : TFieldAdapter,
+      TMixin
     >,
-  ): FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter> {
+  ): FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter, TMixin> {
     const existingField = this._fields.peek().get(path) as
-      | FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter>
+      | FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter, TMixin>
       | undefined
 
     if (existingField) {
@@ -593,7 +605,8 @@ export class FormLogic<
         TPath,
         TBoundValue,
         TFieldAdapter,
-        TAdapter
+        TAdapter,
+        TMixin
       >
     }
 
@@ -615,9 +628,17 @@ export class FormLogic<
     TPath extends Paths<TData>,
     TBoundValue = never,
     TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+    TMixin extends readonly Exclude<Paths<TData>, TPath>[] = [],
   >(
     path: TPath,
-    field: FieldLogic<TData, TPath, TBoundValue, TFieldAdapter, TAdapter>,
+    field: FieldLogic<
+      TData,
+      TPath,
+      TBoundValue,
+      TFieldAdapter,
+      TAdapter,
+      TMixin
+    >,
     defaultValues?: ValueAtPath<TData, TPath>,
   ): void {
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
@@ -686,15 +707,6 @@ export class FormLogic<
       this._options.peek()?.defaultValues,
       path,
     )
-  }
-
-  public getValueForPath<TPath extends Paths<TData>>(
-    path: TPath,
-  ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    return getSignalValueAtPath<TData, TPath>(
-      this._data,
-      path,
-    ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
 
   public getFieldForPath<TPath extends Paths<TData>, TBoundData>(

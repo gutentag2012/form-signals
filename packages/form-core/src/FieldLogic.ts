@@ -24,6 +24,7 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
+  type ValueAtPathForTuple,
   clearSubmitEventErrors,
   deepSignalifyValue,
   getValidatorFromAdapter,
@@ -52,6 +53,7 @@ export type FieldLogicOptions<
   TName extends Paths<TData>,
   TBoundValue = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > = {
   /**
    * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
@@ -61,10 +63,21 @@ export type FieldLogicOptions<
    * Synchronous validator for the value of the field.
    */
   validator?: TAdapter extends undefined
-    ? ValidatorSync<ValueAtPath<TData, TName>>
+    ? ValidatorSync<
+        ValueAtPath<TData, TName>,
+        ValueAtPathForTuple<TData, TMixin>
+      >
     :
-        | ValidatorSync<ValueAtPath<TData, TName>>
-        | ReturnType<ValidatorSchemaType<ValueAtPath<TData, TName>>>
+        | ValidatorSync<
+            ValueAtPath<TData, TName>,
+            ValueAtPathForTuple<TData, TMixin>
+          >
+        | ReturnType<
+            ValidatorSchemaType<
+              ValueAtPath<TData, TName>,
+              ValueAtPathForTuple<TData, TMixin>
+            >
+          >
   /**
    * Options for the validator
    */
@@ -73,10 +86,21 @@ export type FieldLogicOptions<
    * Async validator for the value of the field, this will be run after the sync validator if both are set.
    */
   validatorAsync?: TAdapter extends undefined
-    ? ValidatorAsync<ValueAtPath<TData, TName>>
+    ? ValidatorAsync<
+        ValueAtPath<TData, TName>,
+        TMixin extends never ? never : ValueAtPathForTuple<TData, TMixin>
+      >
     :
-        | ValidatorAsync<ValueAtPath<TData, TName>>
-        | ReturnType<ValidatorSchemaType<ValueAtPath<TData, TName>>>
+        | ValidatorAsync<
+            ValueAtPath<TData, TName>,
+            TMixin extends never ? never : ValueAtPathForTuple<TData, TMixin>
+          >
+        | ReturnType<
+            ValidatorSchemaType<
+              ValueAtPath<TData, TName>,
+              ValueAtPathForTuple<TData, TMixin>
+            >
+          >
   /**
    * Options for the async validator
    */
@@ -90,6 +114,11 @@ export type FieldLogicOptions<
    * Whether this validator should run when a nested value changes
    */
   validateOnNestedChange?: boolean
+  /**
+   * Add other values within the form that should trigger this fields validation when they change.
+   * These values will also be passed to the validator as following arguments.
+   */
+  validateMixin?: TMixin
 
   /**
    * Default value for the field
@@ -146,6 +175,7 @@ export class FieldLogic<
   TBoundValue = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > {
   //region Utility State
   private _transformedData?: Signal<TBoundValue | undefined> & {
@@ -157,7 +187,8 @@ export class FieldLogic<
         TData,
         TName,
         TBoundValue,
-        TAdapter extends undefined ? TFormAdapter : TAdapter
+        TAdapter extends undefined ? TFormAdapter : TAdapter,
+        TMixin
       >
     | undefined
   >
@@ -217,7 +248,8 @@ export class FieldLogic<
       TData,
       TName,
       TBoundValue,
-      TAdapter extends undefined ? TFormAdapter : TAdapter
+      TAdapter extends undefined ? TFormAdapter : TAdapter,
+      TMixin
     >,
   ) {
     this._options = signal(options)
@@ -348,7 +380,8 @@ export class FieldLogic<
       TData,
       TName,
       TBoundValue,
-      TAdapter extends undefined ? TFormAdapter : TAdapter
+      TAdapter extends undefined ? TFormAdapter : TAdapter,
+      TMixin
     >,
   ): void {
     const isDirty = this._isDirty.peek()
@@ -389,6 +422,7 @@ export class FieldLogic<
     this._unsubscribeFromChangeEffect?.()
     const runOnChangeValidation = async (
       currentValue: ValueAtPath<TData, TName>,
+      mixins: ValueAtPathForTuple<TData, TMixin>,
     ) => {
       // Clear all onSubmit errors when the value changes
       clearSubmitEventErrors(this._errorMap)
@@ -398,19 +432,37 @@ export class FieldLogic<
       }
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEvent('onChange', currentValue)
+      await this.validateForEvent('onChange', currentValue, mixins)
     }
     if (this._options.peek()?.validateOnNestedChange) {
       this._unsubscribeFromChangeEffect = effect(async () => {
         const currentValue = unSignalifyValueSubscribed(this.data)
-        await runOnChangeValidation(currentValue)
+        const mixinValues =
+          this._options
+            .peek()
+            ?.validateMixin?.map((mixin) =>
+              unSignalifyValueSubscribed(this._form.getValueForPath(mixin)),
+            ) ?? []
+        await runOnChangeValidation(
+          currentValue,
+          mixinValues as ValueAtPathForTuple<TData, TMixin>,
+        )
       })
     } else {
       this._unsubscribeFromChangeEffect = effect(async () => {
         const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(
           this.data.value,
         )
-        await runOnChangeValidation(currentValue)
+        const mixinValues =
+          this._options
+            .peek()
+            ?.validateMixin?.map((mixin) =>
+              unSignalifyValue(this._form.getValueForPath(mixin).value),
+            ) ?? []
+        await runOnChangeValidation(
+          currentValue,
+          mixinValues as ValueAtPathForTuple<TData, TMixin>,
+        )
       })
     }
     this._isMounted.value = true
@@ -449,10 +501,28 @@ export class FieldLogic<
 
   //region Handlers
   /**
+   * Handles a change in the field.
+   *
+   * @param newValue - The new value for the field.
+   * @param options - Options for the change.
+   *
+   * @note
+   * If the field is not mounted, the change will not be handled.
+   */
+  public handleChange(
+    newValue: ValueAtPath<TData, TName>,
+    options?: { shouldTouch?: boolean },
+  ): void {
+    if (!this._isMounted.peek()) return
+    this._form.handleChange(this._name, newValue, options)
+  }
+
+  /**
    * Validates the field for a given event.
    *
    * @param event - The event to validate for.
    * @param checkValue - The value to validate. If not provided, the current value of the field will be used.
+   * @param mixins - Other values to validate with the field.
    *
    * @returns A promise that resolves when the validation is done.
    *
@@ -462,9 +532,18 @@ export class FieldLogic<
   public validateForEvent(
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
+    mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
     if (!this._isMounted.peek() || !this.data) return
     const value = checkValue ?? unSignalifyValue(this.data)
+    const mixinValues =
+      mixins ??
+      this._options
+        .peek()
+        ?.validateMixin?.map((mixin) =>
+          unSignalifyValueSubscribed(this._form.getValueForPath(mixin)),
+        ) ??
+      []
 
     const adapter =
       this._options.peek()?.validatorAdapter ??
@@ -481,6 +560,7 @@ export class FieldLogic<
 
     return validateWithValidators(
       value,
+      mixinValues as any,
       event,
       syncValidator,
       this._options.peek()?.validatorOptions,
@@ -492,23 +572,6 @@ export class FieldLogic<
       this._options.peek()?.accumulateErrors,
       this._isTouched.peek(),
     )
-  }
-
-  /**
-   * Handles a change in the field.
-   *
-   * @param newValue - The new value for the field.
-   * @param options - Options for the change.
-   *
-   * @note
-   * If the field is not mounted, the change will not be handled.
-   */
-  public handleChange(
-    newValue: ValueAtPath<TData, TName>,
-    options?: { shouldTouch?: boolean },
-  ): void {
-    if (!this._isMounted.peek()) return
-    this._form.handleChange(this._name, newValue, options)
   }
 
   /**

@@ -7,6 +7,7 @@ import type {
   ParentPath,
   Paths,
   ValueAtPath,
+  ValueAtPathForTuple,
 } from './types'
 
 describe('types', () => {
@@ -190,6 +191,25 @@ describe('types', () => {
     expectTypeOf<ValueAtPath<boolean, ''>>().toEqualTypeOf<boolean>()
     expectTypeOf<ValueAtPath<Date, ''>>().toEqualTypeOf<Date>()
   })
+  //endregion
+  it('should return an array of values for given paths', () => {
+    type Obj = {
+      name: string
+      age: number
+      nested: [{ name: string; age: number }]
+    }
+    expectTypeOf<
+      ValueAtPathForTuple<Obj, ['name', 'age', 'nested.0.age']>
+    >().toEqualTypeOf<[string, number, number]>()
+  })
+  it('should infer loosely if no const array was passed', () => {
+    type Obj = { name: string; age: number }
+    const paths = ['name' as const, 'age' as const]
+    expectTypeOf<ValueAtPathForTuple<Obj, typeof paths>>().toEqualTypeOf<
+      (string | number)[]
+    >()
+  })
+  //region ValueAtPathForTuple
   //endregion
   //region MakeOptionalIfNotExistInCheck
   it('should keep base values if the exist in the check object', () => {
