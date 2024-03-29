@@ -227,6 +227,14 @@ export function unSignalifyValueSubscribed<T>(value: SignalifiedData<T>): T {
  * getSignalValueAtPath(signal({ name: signal('John') }), 'name') // signal('John')
  * ```
  */
+export function getSignalValueAtPath(
+  obj: Signal<undefined>,
+  path: string,
+): undefined
+export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
+  obj: SignalifiedData<TValue>,
+  path: TPath,
+): SignalifiedData<ValueAtPath<TValue, TPath>>
 export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
