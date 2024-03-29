@@ -2,8 +2,16 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import type { Signal } from '@preact/signals-react'
 
 const Tabs = TabsPrimitive.Root
+
+interface TabsSignalProps extends React.ComponentPropsWithoutRef<typeof Tabs> {
+  value: Signal<string>
+}
+const TabsSignal = ({ value, ...props }: TabsSignalProps) => {
+  return <Tabs value={value.value} {...props} />
+}
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -50,4 +58,4 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+export { Tabs, TabsSignal, TabsList, TabsTrigger, TabsContent }
