@@ -19,6 +19,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -44,6 +45,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -67,6 +69,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         event,
         validate,
         {},
@@ -93,6 +96,7 @@ describe('validation', () => {
 
       await validateWithValidators(
         value,
+        [],
         event,
         validatorSync,
         undefined,
@@ -119,6 +123,7 @@ describe('validation', () => {
 
       await validateWithValidators(
         value,
+        [],
         event,
         validatorSync,
         undefined,
@@ -156,6 +161,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -169,6 +175,7 @@ describe('validation', () => {
       await vi.advanceTimersByTimeAsync(50)
       const promise2 = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -203,6 +210,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -218,6 +226,7 @@ describe('validation', () => {
       await vi.advanceTimersByTimeAsync(50)
       const promise2 = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -254,6 +263,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -291,6 +301,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -328,6 +339,7 @@ describe('validation', () => {
 
         validateWithValidators(
           value,
+          [],
           event as ValidatorEvents,
           validator,
           {
@@ -356,6 +368,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onMount',
         validator,
         {
@@ -390,6 +403,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -422,6 +436,7 @@ describe('validation', () => {
 
       const promise = validateWithValidators(
         value,
+        [],
         event,
         undefined,
         undefined,
@@ -449,6 +464,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onMount',
         validator,
         undefined,
@@ -482,6 +498,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onChange',
         validator,
         undefined,
@@ -501,6 +518,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onSubmit',
         validator,
         undefined,
@@ -537,6 +555,7 @@ describe('validation', () => {
 
       await validateWithValidators(
         value,
+        [],
         'onChange',
         undefined,
         undefined,
@@ -556,6 +575,7 @@ describe('validation', () => {
 
       await validateWithValidators(
         value,
+        [],
         'onSubmit',
         undefined,
         undefined,
@@ -584,6 +604,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onChange',
         validator,
         {
@@ -603,6 +624,7 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+        [],
         'onChange',
         validator,
         {
@@ -634,6 +656,8 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+
+        [],
         'onChange',
         validator,
         {
@@ -654,6 +678,8 @@ describe('validation', () => {
 
       validateWithValidators(
         value,
+
+        [],
         'onChange',
         validator,
         {
@@ -671,6 +697,33 @@ describe('validation', () => {
 
       expect(validate).not.toHaveBeenCalled()
       expect(errorMap.value).toEqual({})
+    })
+    it("should validate with value mixins", () => {
+      const value = 'test'
+      const validate = vi.fn(() => 'error')
+      const validator = validate
+      const asyncValidatorState = signal(undefined)
+      const errorMap = signal<Partial<ValidationErrorMap>>({})
+      const isValidating = signal(false)
+      const accumulateErrors = false
+      const valueMixins = [1, 2, 3]
+
+      validateWithValidators(
+        value,
+        valueMixins,
+        'onChange',
+        validator,
+        undefined,
+        undefined,
+        undefined,
+        asyncValidatorState,
+        errorMap,
+        isValidating,
+        accumulateErrors,
+        false,
+      )
+
+      expect(validate).toHaveBeenCalledWith([value, ...valueMixins])
     })
   })
 
