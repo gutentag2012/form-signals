@@ -5,7 +5,10 @@ import { FormLogic } from './FormLogic'
 import type { ValidatorAdapter, ValidatorAsync, ValidatorSync } from './utils'
 
 const adapter: ValidatorAdapter = {
-  sync<TValue>(schema: number): ValidatorSync<TValue> {
+sync<TValue, TMixins extends readonly any[] = never[]>(
+  schema: number,
+): ValidatorSync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
     return (value) => {
       if (typeof value === 'number')
         return value <= schema
@@ -14,13 +17,46 @@ const adapter: ValidatorAdapter = {
       return 'Value must be a number'
     }
   },
-  async<TValue>(schema: number): ValidatorAsync<TValue> {
+  async<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorAsync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
     return async (value) => {
       await new Promise((resolve) => setTimeout(resolve, 100))
       if (typeof value === 'number')
         return value <= schema
           ? undefined
           : `Value must be less than or equal to ${schema}`
+      return 'Value must be a number'
+    }
+  },
+}
+
+const mixinAdapter: ValidatorAdapter = {
+  sync<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorSync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
+    return ([value, ...mixins]: [TValue, ...TMixins]) => {
+      const sum = mixins.reduce((acc, mixin) => acc + mixin, schema)
+      if (typeof value === 'number')
+        return value <= sum
+          ? undefined
+          : `Value must be less than or equal to ${sum}`
+      return 'Value must be a number'
+    }
+  },
+  async<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorAsync<TValue, TMixins> {
+    // @ts-expect-error This is just for testing, so we dont need to handle mixins
+    return async ([value, ...mixins]: [TValue, ...TMixins]) => {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      const sum = mixins.reduce((acc, mixin) => acc + mixin, schema)
+      if (typeof value === 'number')
+        return value <= sum
+          ? undefined
+          : `Value must be less than or equal to ${sum}`
       return 'Value must be a number'
     }
   },
@@ -1013,6 +1049,123 @@ describe('FieldLogic', () => {
       await expect(field.mount()).rejects.toThrowError(
         'The async validator must be a function',
       )
+    })
+    it('should allow for validation mixins', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          age: 10,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: ([value, age]) =>
+          age > 50 && !value.startsWith('Mr.') ? 'error' : undefined,
+        validateMixin: ['age'],
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([])
+      form.data.value.age.value = 51
+      expect(field.errors.value).toEqual(['error'])
+      form.data.value.name.value = 'Mr. Default'
+      expect(field.errors.value).toEqual([])
+    })
+    it('should allow for validation mixins with async validators', async () => {
+      vi.useFakeTimers()
+
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          age: 10,
+        },
+      })
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validatorAsync: async ([value, age]) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return age > 50 && !value.startsWith('Mr.') ? 'error' : undefined
+        },
+        validateMixin: ['age'],
+      })
+      await field.mount()
+
+      expect(field.errors.value).toEqual([])
+      form.data.value.age.value = 51
+      await vi.advanceTimersByTimeAsync(100)
+      expect(field.errors.value).toEqual(['error'])
+      form.data.value.name.value = 'Mr. Default'
+      await vi.advanceTimersByTimeAsync(100)
+      expect(field.errors.value).toEqual([])
+
+      vi.useRealTimers()
+    })
+    it('should allow for validation mixins when listening to nested updates', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: {
+            first: 'default',
+            last: 'default',
+          },
+          ages: [10, 20],
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name.first', {
+        validator: ([value, age]) =>
+          age[0] > 50 && !value.startsWith('Mr.') ? 'error' : undefined,
+        validateMixin: ['ages'],
+        validateOnNestedChange: true,
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([])
+      form.data.value.ages.value[0].data.value = 51
+      expect(field.errors.value).toEqual(['error'])
+      form.data.value.name.value.first.value = 'Mr. Default'
+      expect(field.errors.value).toEqual([])
+    })
+    it('should allow for validation with mixins when running the onMount validation', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          age: 51,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: ([value, age]) =>
+          age > 50 && !value.startsWith('Mr.') ? 'error' : undefined,
+        validateMixin: ['age'],
+        validatorOptions: {
+          validateOnMount: true,
+        },
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual(['error'])
+    })
+    it('should allow for validation mixins with adapter', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          test: 10,
+          additional: 2,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'test', {
+        validatorAdapter: mixinAdapter,
+        validator: 5 as never,
+        validatorOptions: {
+          validateOnMount: true,
+        },
+        validateMixin: ['additional'],
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([
+        'Value must be less than or equal to 7',
+      ])
     })
   })
   describe('state', () => {
