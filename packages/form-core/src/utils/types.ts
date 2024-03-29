@@ -139,7 +139,9 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
     : TProp extends ''
       ? T
       : T[TProp & string]
-  : never
+  : TProp extends ''
+    ? T
+    : never
 
 /**
  * Checks if a given path is optional on a given object.
@@ -160,7 +162,9 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
  */
 export type KeepOptionalKeys<TValue, TKey extends Paths<TValue>> = Pick<
   ValueAtPath<TValue, ParentPath<TKey>>,
+  // @ts-expect-error Typescript does not realize that the lastPath will be a key of the value at the parent path
   LastPath<TKey>
+  // @ts-expect-error Typescript does not realize that the lastPath will be a key of the value at the parent path
 > extends Required<Pick<ValueAtPath<TValue, ParentPath<TKey>>, LastPath<TKey>>>
   ? never
   : TKey

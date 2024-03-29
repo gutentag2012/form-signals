@@ -184,6 +184,12 @@ describe('types', () => {
     type Obj = typeof obj
     expectTypeOf<ValueAtPath<Obj, ''>>().toEqualTypeOf<Obj>()
   })
+  it("should return the base type if an empty string is provided as the key and it's a primitive", () => {
+    expectTypeOf<ValueAtPath<number, ''>>().toEqualTypeOf<number>()
+    expectTypeOf<ValueAtPath<string, ''>>().toEqualTypeOf<string>()
+    expectTypeOf<ValueAtPath<boolean, ''>>().toEqualTypeOf<boolean>()
+    expectTypeOf<ValueAtPath<Date, ''>>().toEqualTypeOf<Date>()
+  })
   //endregion
   //region MakeOptionalIfNotExistInCheck
   it('should keep base values if the exist in the check object', () => {
