@@ -134,7 +134,7 @@ export function setValueAtPath<TValue, TPath extends Paths<TValue>>(
     const nextPart = parts[i + 1]
 
     // If the current part is already included in the current value, we can continue with that value
-    if (!!current && part in current && nextPart !== undefined) {
+    if (!!current && current[part] !== undefined && nextPart !== undefined) {
       current = current[part]
       continue
     }

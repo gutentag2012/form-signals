@@ -76,6 +76,11 @@ describe('access.utils', () => {
       expect(setValueAtPath(obj, 'a.b.c.0.1.d' as never, 1 as never)).toEqual(1)
       expect(obj).toEqual({ a: { b: { c: [[undefined, { d: 1 }]] } } })
     })
+    it('should be able to set a value even if the parent is undefined', () => {
+      const obj = { a: { b: undefined } }
+      expect(setValueAtPath(obj, 'a.b.c' as never, 1 as never)).toEqual(1)
+      expect(obj).toEqual({ a: { b: { c: 1 } } })
+    })
   })
 
   describe('removeValueAtPath', () => {
