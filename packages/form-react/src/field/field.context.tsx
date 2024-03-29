@@ -62,6 +62,12 @@ export function fieldLogicToFieldContext<
       {children}
     </SubField>
   )
+
+  castedLogic.handleBlur = castedLogic.handleBlur.bind(castedLogic)
+  castedLogic.handleChange = castedLogic.handleChange.bind(castedLogic)
+  castedLogic.handleTouched = castedLogic.handleTouched.bind(castedLogic)
+  castedLogic.handleSubmit = castedLogic.handleSubmit.bind(castedLogic)
+
   return castedLogic
 }
 

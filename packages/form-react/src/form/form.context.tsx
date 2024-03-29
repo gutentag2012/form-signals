@@ -36,7 +36,12 @@ export function formLogicToFormContext<
       {children}
     </FieldWithForm>
   )
+
   castedLogic.handleSubmitOnEnter = handleSubmitOnEnterForForm(castedLogic)
+
+  castedLogic.handleBlur = castedLogic.handleBlur.bind(castedLogic)
+  castedLogic.handleChange = castedLogic.handleChange.bind(castedLogic)
+
   return castedLogic
 }
 

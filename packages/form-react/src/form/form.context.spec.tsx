@@ -8,7 +8,7 @@ import { formLogicToFormContext, useFormContext } from './form.context'
 describe('Form Context', () => {
   describe('formLogicToFormContext', () => {
     it('should add FormProvider, FieldProvider and handleSubmitOnEnter to the logic', () => {
-      const formLogic = {} as FormLogic<never>
+      const formLogic = new FormLogic()
       const formContext = formLogicToFormContext(formLogic)
 
       expect(formContext.FormProvider).toBeDefined()

@@ -8,7 +8,8 @@ import { fieldLogicToFieldContext, useFieldContext } from './field.context'
 describe('Field Context', () => {
   describe('fieldLogicToFieldContext', () => {
     it('should add FieldProvider and SubFieldProvider to the logic', () => {
-      const fieldLogic = {} as FieldLogic<never, never, unknown>
+      const form = new FormLogic<{ name: string }>()
+      const fieldLogic = new FieldLogic(form, 'name')
       const fieldContext = fieldLogicToFieldContext(fieldLogic)
 
       expect(fieldContext.FieldProvider).toBeDefined()
@@ -16,7 +17,7 @@ describe('Field Context', () => {
     })
     it('should provide the logic with the FieldProvider and SubFieldProvider with the FieldProvider', () => {
       function ContextConsumer() {
-        const context = useFieldContext()
+        const context = useFieldContext<string, ''>()
         return (
           <div>
             <p>Has Provider: {JSON.stringify(!!context.FieldProvider)}</p>
@@ -49,7 +50,7 @@ describe('Field Context', () => {
     })
     it('should create a SubField based on the parent field when using the SubFieldProvider', () => {
       function ContextConsumer() {
-        const context = useFieldContext()
+        const context = useFieldContext<string, ''>()
         return (
           <div>
             <p>Value: {context.data.value}</p>
@@ -78,6 +79,52 @@ describe('Field Context', () => {
 
       cleanup()
     })
+    it('should be possible to pass the handleBlur function directly to the inputs onBlur', () => {
+      function ContextConsumer() {
+        const context = useFieldContext<string, ''>()
+        return (
+          <div>
+            <input type="text" onBlur={context.handleBlur} />
+            <p data-testid="error">{context.errors.value.join(', ')}</p>
+          </div>
+        )
+      }
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: () => 'error',
+        validatorOptions: { disableOnChangeValidation: true },
+      })
+      field.mount()
+      const fieldContext = fieldLogicToFieldContext(field)
+
+      const screen = render(
+        <fieldContext.FieldProvider>
+          <ContextConsumer />
+        </fieldContext.FieldProvider>,
+      )
+
+      expect(screen.getByTestId('error').textContent).toBe('')
+
+      const input = screen.getByRole('textbox') as HTMLInputElement
+
+      input.focus()
+      input.blur()
+
+      screen.rerender(
+        <fieldContext.FieldProvider>
+          <ContextConsumer />
+        </fieldContext.FieldProvider>,
+      )
+
+      expect(screen.getByTestId('error').textContent).toBe('error')
+
+      cleanup()
+    })
   })
   describe('useFieldContext', () => {
     it('should throw an error if used outside of a FieldProvider', () => {
@@ -98,9 +145,9 @@ describe('Field Context', () => {
           </div>
         )
       }
-      const fieldContext = fieldLogicToFieldContext(
-        {} as FieldLogic<never, never>,
-      )
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name')
+      const fieldContext = fieldLogicToFieldContext(field)
 
       const screen = render(
         <fieldContext.FieldProvider>
