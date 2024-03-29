@@ -1,4 +1,8 @@
-import type { ValidatorAdapter } from '@signal-forms/form-core'
+import type {
+  ValidatorAdapter,
+  ValidatorAsync,
+  ValidatorSync,
+} from '@form-signals/form-core'
 import type { z } from 'zod'
 
 /**
@@ -37,19 +41,25 @@ export function configureZodAdapter(
   options?: ZodAdapterOptions,
 ): ValidatorAdapter {
   return {
-    sync<TValue>(validator: z.ZodType<TValue>) {
-      return (value: TValue) => {
+    sync<TValue, TMixins extends readonly any[] = never[]>(
+      validator: z.ZodType<TValue>,
+    ): ValidatorSync<TValue, TMixins> {
+      const res = (value: TValue) => {
         const result = validator.safeParse(value)
         return handleZodResult(result, options)
       }
+      return res as ValidatorSync<TValue, TMixins>
     },
-    async<TValue>(validator: z.ZodType<TValue>) {
-      return async (value: TValue, abortSignal: AbortSignal) => {
+    async<TValue, TMixins extends readonly any[] = never[]>(
+      validator: z.ZodType<TValue>,
+    ): ValidatorAsync<TValue, TMixins> {
+      const res = async (value: TValue, abortSignal: AbortSignal) => {
         if (abortSignal.aborted) return undefined
         const result = await validator.safeParseAsync(value)
         if (abortSignal.aborted) return undefined
         return handleZodResult(result, options)
       }
+      return res as ValidatorAsync<TValue, TMixins>
     },
   }
 }
@@ -59,9 +69,17 @@ export function configureZodAdapter(
  */
 export const ZodAdapter: ValidatorAdapter = configureZodAdapter()
 
-declare module '@signal-forms/form-core' {
-  export interface ValidatorSchemaType<TValue> {
+declare module '@form-signals/form-core' {
+  export interface ValidatorSchemaType<TValue, TMixin = never[]> {
     // biome-ignore lint/style/useShorthandFunctionType: We need this to be an interface to allow for it to be overridden
-    (): z.ZodType<TValue>
+    (): z.ZodType<
+      TMixin extends never[]
+        ? TValue
+        : TMixin extends any[]
+          ? [TValue, ...TMixin]
+          : TMixin extends readonly any[]
+            ? [TValue, ...TMixin]
+            : TValue
+    >
   }
 }
