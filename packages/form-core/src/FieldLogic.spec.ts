@@ -864,23 +864,6 @@ describe('FieldLogic', () => {
 
       expect(validate).toHaveBeenCalledTimes(0)
     })
-    it('should not valid  te if the form is unmounted', () => {
-      const form = new FormLogic<{ name: string }>()
-      const validate = vi.fn(() => undefined)
-      const field = new FieldLogic(form, 'name', {
-        validator: validate,
-        validatorOptions: {
-          validateOnMount: true,
-        },
-      })
-      field.mount()
-
-      field.handleBlur()
-      field.handleChange('test')
-      form.handleSubmit()
-
-      expect(validate).toHaveBeenCalledTimes(0)
-    })
     it('should validate deep changes if configured', () => {
       const form = new FormLogic<{ name: { deep: string } }>()
       form.mount()

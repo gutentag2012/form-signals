@@ -46,23 +46,6 @@ import { Truthy } from './utils/internal.utils'
  * @template TName - The path to the field.
  * @template TBoundValue - The type of the value that the field is bound to.
  * @template TAdapter - The type of the validator adapter.
- *
- * @property [validatorAdapter] - Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
- * @property [validator] - Synchronous validator for the value of the field.
- * @property [validatorOptions] - Options for the validator.
- * @property [validatorAsync] - Async validator for the value of the field, this will be run after the sync validator if both are set.
- * @property [validatorAsyncOptions] - Options for the async validator.
- * @property [accumulateErrors] - If true, all errors on validators will be accumulated and validation will not stop on the first error.
- * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
- * @property [validateOnNestedChange] - Whether this validator should run when a nested value changes.
- * @property [defaultValue] - Default value for the field.
- * @property [defaultState] - Initial state for the field.
- * @property [preserveValueOnUnmount] - Whether the value should be preserved once the field is unmounted.
- * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on submit.
- * @property [resetValueToDefaultOnUnmount] - Whenever a field is unmounted, the value within the form is deleted if the value should not be preserved.
- * If true, the field value will set to its default value.
- * @property [transformFromBinding] - This takes the value provided by the binding and transforms it to the value that should be set in the form.
- * @property [transformToBinding] - This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedData.
  */
 export type FieldLogicOptions<
   TData,
@@ -480,8 +463,7 @@ export class FieldLogic<
     event: ValidatorEvents,
     checkValue?: ValueAtPath<TData, TName>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this._form.isMounted.peek() || !this.data)
-      return
+    if (!this._isMounted.peek() || !this.data) return
     const value = checkValue ?? unSignalifyValue(this.data)
 
     const adapter =
