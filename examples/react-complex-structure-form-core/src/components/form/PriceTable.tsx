@@ -20,13 +20,13 @@ import {
   TableRow,
 } from '@/components/ui/table.tsx'
 import type { Product } from '@/types.ts'
-import { useComputed, useSignal } from '@preact/signals-react'
 import {
   useFieldContext,
   useForm,
   useFormContext,
-} from '@signal-forms/form-react'
-import { ZodAdapter } from '@signal-forms/validation-adapter-zod'
+} from '@form-signals/form-react'
+import { ZodAdapter } from '@form-signals/validation-adapter-zod'
+import { useComputed, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 
 const NumberToString = (value: number | null) =>

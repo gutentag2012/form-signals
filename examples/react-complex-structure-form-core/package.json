@@ -8,9 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@signal-forms/form-core": "workspace:*",
-    "@signal-forms/form-react": "workspace:*",
-    "@signal-forms/validation-adapter-zod": "workspace:*",
+    "@form-signals/form-core": "workspace:*",
+    "@form-signals/form-react": "workspace:*",
+    "@form-signals/validation-adapter-zod": "workspace:*",
     "@preact/signals-react": "^2.0.0",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-collapsible": "^1.0.3",

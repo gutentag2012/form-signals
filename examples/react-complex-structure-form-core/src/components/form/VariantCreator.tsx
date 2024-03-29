@@ -9,13 +9,13 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.tsx'
 import type { Product } from '@/types.ts'
-import {type Signal, useSignal} from '@preact/signals-react'
 import {
   useField,
   useFieldContext,
   useFormContext,
-} from '@signal-forms/form-react'
-import type { ZodAdapter } from '@signal-forms/validation-adapter-zod'
+} from '@form-signals/form-react'
+import type { ZodAdapter } from '@form-signals/validation-adapter-zod'
+import { type Signal, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 
 export const VariantCreator = () => {
@@ -23,11 +23,20 @@ export const VariantCreator = () => {
   const field = useField(form, 'variants', {
     defaultValue: [],
     validateOnNestedChange: true,
-    validator: (value) =>
-      value.some(
-        (variant, index, array) =>
-          index !== array.findIndex((v) => v.name === variant.name),
-      ) && 'Variants must be unique.',
+    validator: ([value, name]) => {
+      if (
+        value.some(
+          (variant, index, array) =>
+            index !== array.findIndex((v) => v.name === variant.name),
+        )
+      ) {
+        return 'Variants must be unique.'
+      }
+      if (name.includes('base') && value.length < 1) {
+        return 'Base variant must have at least one variant.'
+      }
+    },
+    validateMixin: ['name'],
   })
 
   const selectedVariant = useSignal('0')

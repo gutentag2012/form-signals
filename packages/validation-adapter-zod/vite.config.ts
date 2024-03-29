@@ -23,7 +23,7 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
-      external: ['@signal-forms/form-core', 'zod'],
+      external: ['@form-signals/form-core', 'zod'],
       output: {
         preserveModules: true,
       },
