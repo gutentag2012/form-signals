@@ -4,7 +4,7 @@ import type {
   FormLogic,
   Paths,
   ValidatorAdapter,
-} from '@signal-forms/form-core'
+} from '@form-signals/form-core'
 import React from 'react'
 import type { FormContextType } from '../form'
 import { useIsomorphicLayoutEffect } from '../utils'
@@ -19,6 +19,7 @@ export function useField<
   TBoundValue = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >(
   form: FormContextType<TData, TFormAdapter> | FormLogic<TData, TFormAdapter>,
   name: TName,
@@ -26,9 +27,10 @@ export function useField<
     TData,
     TName,
     TBoundValue,
-    TAdapter extends undefined ? TFormAdapter : TAdapter
+    TAdapter extends undefined ? TFormAdapter : TAdapter,
+    TMixin
   >,
-): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter> {
+): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter, TMixin> {
   const field = form.getOrCreateField(name, options)
   const finalField = React.useMemo(
     () => fieldLogicToFieldContext(field),
@@ -51,8 +53,9 @@ export function useFieldWithComponents<
   TBoundValue = never,
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
+  TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >(
-  field: FieldLogic<TData, TName, TBoundValue, TAdapter, TFormAdapter>,
-): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter> {
+  field: FieldLogic<TData, TName, TBoundValue, TAdapter, TFormAdapter, TMixin>,
+): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter, TMixin> {
   return React.useMemo(() => fieldLogicToFieldContext(field), [field])
 }

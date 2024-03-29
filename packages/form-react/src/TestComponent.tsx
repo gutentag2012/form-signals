@@ -1,5 +1,5 @@
+import { unSignalifyValue } from '@form-signals/form-core'
 import { type Signal, useComputed } from '@preact/signals-react'
-import { unSignalifyValue } from '@signal-forms/form-core'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 import { createRoot } from 'react-dom/client'

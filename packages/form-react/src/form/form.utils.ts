@@ -1,4 +1,4 @@
-import type { FormLogic, ValidatorAdapter } from '@signal-forms/form-core'
+import type { FormLogic, ValidatorAdapter } from '@form-signals/form-core'
 import type React from 'react'
 
 const RestrictedInputTypes = [
