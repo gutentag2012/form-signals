@@ -26,9 +26,7 @@
   "sideEffects": false,
   "files": ["dist", "src"],
   "peerDependencies": {
-    "@preact/signals-core": "^1.5.1",
     "@preact/signals-react": "^2.0.0",
-    "@signal-forms/form-core": "^0.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -39,6 +37,9 @@
     "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19"
+  },
+  "dependencies": {
+    "@signal-forms/form-core": "workspace:*"
   },
   "keywords": ["signals", "form", "react"],
   "scripts": {
