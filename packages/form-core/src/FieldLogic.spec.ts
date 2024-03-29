@@ -5,9 +5,9 @@ import { FormLogic } from './FormLogic'
 import type { ValidatorAdapter, ValidatorAsync, ValidatorSync } from './utils'
 
 const adapter: ValidatorAdapter = {
-sync<TValue, TMixins extends readonly any[] = never[]>(
-  schema: number,
-): ValidatorSync<TValue, TMixins> {
+  sync<TValue, TMixins extends readonly any[] = never[]>(
+    schema: number,
+  ): ValidatorSync<TValue, TMixins> {
     // @ts-expect-error This is just for testing, so we dont need to handle mixins
     return (value) => {
       if (typeof value === 'number')

@@ -698,7 +698,7 @@ describe('validation', () => {
       expect(validate).not.toHaveBeenCalled()
       expect(errorMap.value).toEqual({})
     })
-    it("should validate with value mixins", () => {
+    it('should validate with value mixins', () => {
       const value = 'test'
       const validate = vi.fn(() => 'error')
       const validator = validate
