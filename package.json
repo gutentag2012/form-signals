@@ -11,6 +11,8 @@
     "style:fix:unsafe": "pnpm dlx @biomejs/biome check --apply-unsafe .",
     "test": "nx run-many --target=test --all",
     "test:core": "nx test @signal-forms/form-core",
+    "test:react": "nx test @signal-forms/form-react",
+    "test:validator-zod": "nx test @signal-forms/validation-adapter-zod",
     "build": "nx run-many --target=build --all",
     "build:core": "nx build @signal-forms/form-core"
   },
