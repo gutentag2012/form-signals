@@ -1,4 +1,4 @@
-![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/chore/clean-for-deploy/assets/banner.svg)
+![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/main/assets/banner.svg)
 
 [![form-core-version](https://img.shields.io/npm/v/%40formsignals%2Fform-core?style=for-the-badge&logo=npm&label=form-core)](https://www.npmjs.com/package/@formsignals/form-core)
 ![form-core-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fform-core?style=for-the-badge&label=form-core-size)

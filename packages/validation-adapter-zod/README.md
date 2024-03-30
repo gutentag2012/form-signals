@@ -1,4 +1,4 @@
-![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/chore/clean-for-deploy/assets/banner.svg)
+![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/main/assets/banner.svg)
 
 [![validation-adapter-zod-version](https://img.shields.io/npm/v/%40formsignals%2Fvalidation-adapter-zod?style=for-the-badge&logo=npm&label=validation-adapter-zod)](https://www.npmjs.com/package/@formsignals/validation-adapter-zod) <br/>
 ![validation-adapter-zod-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fvalidation-adapter-zod?style=for-the-badge&label=validation-adapter-zod-size) <br/>
