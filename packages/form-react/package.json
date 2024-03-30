@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "description": "React bindings package for Signal Form",
   "author": "joshua.gawenda",
-  "license": "todo",
-  "repository": "todo",
-  "homepage": "todo",
+  "license": "MIT",
+  "repository": "gutentag2012/form-signals",
+  "homepage": "https://github.com/gutentag2012/form-signals/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/gutentag2012/form-signals/issues"
+  },
   "type": "module",
   "types": "dist/esm/index.d.ts",
   "main": "dist/cjs/index.cjs",
