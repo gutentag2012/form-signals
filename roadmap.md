@@ -55,3 +55,4 @@ This document outlines the planned features and improvements for the project. It
 - [ ] **form-core**: Add support for bracket syntax for field names
 - [ ] **form-core**: Add type support for partial default values
 - [ ] **form-core**: Add support for typed default values
+- [ ] **form-core**: Add support for wildcards in validation mixins

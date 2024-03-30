@@ -53,9 +53,7 @@ export const VariantCreator = () => {
         <VariantTabsTrigger selectedVariant={selectedVariant} />
         {field.data.value?.map((variant, index) => (
           <TabsContent key={variant.key} value={`${index}`}>
-            <field.SubFieldProvider name={`${index}`} preserveValueOnUnmount>
-              <VariantTab />
-            </field.SubFieldProvider>
+            <VariantTab index={index} />
           </TabsContent>
         ))}
       </field.FieldProvider>
@@ -63,10 +61,10 @@ export const VariantCreator = () => {
   )
 }
 
-const VariantTab = () => {
+const VariantTab = ({ index }: { index: number }) => {
   const field = useFieldContext<
     Product,
-    `variants.${number}`,
+    `variants`,
     never,
     never,
     typeof ZodAdapter
@@ -78,7 +76,7 @@ const VariantTab = () => {
   return (
     <>
       <field.SubFieldProvider
-        name="name"
+        name={`${index}.name`}
         preserveValueOnUnmount
         validator={z.string().min(1, 'Name is required')}
         validatorOptions={{
@@ -97,7 +95,7 @@ const VariantTab = () => {
               <Button
                 type="button"
                 variant="destructive"
-                onClick={() => field.removeSelfFromArray()}
+                onClick={() => field.removeValueFromArray(index)}
               >
                 Remove
               </Button>
@@ -111,7 +109,7 @@ const VariantTab = () => {
         <Label>Options</Label>
         <div className="flex flex-col gap-1">
           <field.SubFieldProvider
-            name="options"
+            name={`${index}.options`}
             preserveValueOnUnmount
             validator={z
               .array(z.string())

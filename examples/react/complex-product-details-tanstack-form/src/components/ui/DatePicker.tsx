@@ -8,11 +8,10 @@ import {
 import { cn } from '@/lib/utils.ts'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { useState } from 'react'
 
 interface DatePickerProps extends Omit<ButtonProps, 'value' | 'onChange'> {
-  value?: Date
-  onChange?: (date: Date | undefined) => void
+  value: Date | undefined
+  onChange: (value: Date | undefined) => void
 }
 
 export const DatePicker = ({
@@ -21,29 +20,26 @@ export const DatePicker = ({
   onChange,
   ...props
 }: DatePickerProps) => {
-  const [date, setDate] = useState<Date | undefined>(value)
-  const realValue = value ?? date
-
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           className={cn(
             'justify-start text-left font-normal',
-            !realValue && 'text-muted-foreground',
+            !value && 'text-muted-foreground',
             className,
           )}
           {...props}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {realValue ? format(realValue, 'PPP') : <span>Pick a date</span>}
+          {value ? format(value, 'PPP') : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
           mode="single"
-          selected={realValue}
-          onSelect={onChange ?? setDate}
+          selected={value}
+          onSelect={onChange}
           initialFocus
         />
       </PopoverContent>
