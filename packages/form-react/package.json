@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/form-react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "React bindings package for Signal Form",
   "author": "joshua.gawenda",
   "license": "MIT",

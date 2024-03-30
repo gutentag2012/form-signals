@@ -1,19 +1,26 @@
-# SignalForms
+![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/chore/clean-for-deploy/assets/banner.svg)
 
-## Philosophy
+[//]: # (TODO Add badges)
+[![form-core-version](https://img.shields.io/npm/v/%40formsignals%2Fform-core?style=for-the-badge&logo=npm&label=form-core)](https://www.npmjs.com/package/@formsignals/form-core)
+[![form-react-version](https://img.shields.io/npm/v/%40formsignals%2Fform-react?style=for-the-badge&logo=npm&label=form-react)](https://www.npmjs.com/package/@formsignals/form-react)
+[![validation-adapter-zod-version](https://img.shields.io/npm/v/%40formsignals%2Fvalidation-adapter-zod?style=for-the-badge&logo=npm&label=validation-adapter-zod)](https://www.npmjs.com/package/@formsignals/validation-adapter-zod) <br/>
+![form-core-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fform-core?style=for-the-badge&label=form-core-size)
+![form-react-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fform-react?style=for-the-badge&label=form-react-size)
+![validation-adapter-zod-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fvalidation-adapter-zod?style=for-the-badge&label=validation-adapter-zod-size) <br/>
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/gutentag2012/form-signals?style=for-the-badge&label=Open%20Issues)
+![GitHub License](https://img.shields.io/github/license/gutentag2012/form-signals?style=for-the-badge)
 
-### What is a form?
+Powerful form management library build on top of [Preact Signals](https://github.com/preactjs/signals).
 
-A form is encapsulating a state of values and orchestrates the change of this state.
-To do so, it can use a set of fields, which are responsible for the validation and transformation of the values.
-A form can be seen as a state machine,
-which is transitioning between different states, depending on the input of the user.
+## Features
 
-Without fields, a form can only view its values as a whole.
+- **TypeScript** - Written in TypeScript with full type support.
+- **Reactivity** - Reactivity without abstractions due to Preact Signals.
+- **Validation** - Built-in validation support, including adapters for validation schema libraries.
+- **React** - React bindings for easy integration with React.
 
-### What is a field?
+## Packages
 
-A field is always a part of a form and responsible for keeping additional state for the single value stored in the form.
-It can validate and transform the value, and it can be used to render the value in a specific way.
-It does not own the value, rather only a reference to it.
-Any errors or validation is not specific to a form value, but rather to a specific field.
+- **[@formsignals/form-core](./packages/form-core/README.md)** - Core form management library.
+- **[@formsignals/form-react](./packages/form-react/README.md)** - React bindings for form management.
+- **[@formsignals/validation-adapter-zod](./packages/validation-adapter-zod/README.md)** - Zod validation adapter.
