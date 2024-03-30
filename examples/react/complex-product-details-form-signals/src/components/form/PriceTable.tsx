@@ -24,8 +24,8 @@ import {
   useFieldContext,
   useForm,
   useFormContext,
-} from '@form-signals/form-react'
-import { ZodAdapter } from '@form-signals/validation-adapter-zod'
+} from '@formsignals/form-react'
+import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { useComputed, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 

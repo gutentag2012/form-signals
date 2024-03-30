@@ -1,8 +1,4 @@
-import type {
-  FormLogic,
-  Paths,
-  ValidatorAdapter,
-} from '@form-signals/form-core'
+import type { FormLogic, Paths, ValidatorAdapter } from '@formsignals/form-core'
 import React, { type PropsWithChildren, type ReactNode } from 'react'
 import { type FieldProps, FieldWithForm } from '../field'
 import { FormProvider } from './form.provider'

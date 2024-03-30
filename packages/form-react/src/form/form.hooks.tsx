@@ -2,7 +2,7 @@ import {
   FormLogic,
   type FormLogicOptions,
   type ValidatorAdapter,
-} from '@form-signals/form-core'
+} from '@formsignals/form-core'
 import React from 'react'
 import { useIsomorphicLayoutEffect } from '../utils'
 import { type FormContextType, formLogicToFormContext } from './form.context'

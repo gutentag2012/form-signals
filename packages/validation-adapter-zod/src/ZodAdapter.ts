@@ -2,7 +2,7 @@ import type {
   ValidatorAdapter,
   ValidatorAsync,
   ValidatorSync,
-} from '@form-signals/form-core'
+} from '@formsignals/form-core'
 import type { z } from 'zod'
 
 /**
@@ -69,7 +69,7 @@ export function configureZodAdapter(
  */
 export const ZodAdapter: ValidatorAdapter = configureZodAdapter()
 
-declare module '@form-signals/form-core' {
+declare module '@formsignals/form-core' {
   export interface ValidatorSchemaType<TValue, TMixin = never[]> {
     // biome-ignore lint/style/useShorthandFunctionType: We need this to be an interface to allow for it to be overridden
     (): z.ZodType<

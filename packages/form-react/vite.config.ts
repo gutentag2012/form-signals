@@ -32,7 +32,7 @@ export default defineConfig({
       external: [
         '@preact/signals-core',
         '@preact/signals-react',
-        '@form-signals/form-core',
+        '@formsignals/form-core',
         'react',
         'react/jsx-runtime',
       ],
@@ -60,6 +60,7 @@ export default defineConfig({
       exclude: [
         '**/*.spec.ts',
         '**/*.spec-d.ts',
+        '**/*.bench.ts',
         'vite.config.ts',
         'src/TestComponent.tsx',
       ],

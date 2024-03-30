@@ -40,7 +40,12 @@ export default defineConfig({
   },
   plugins: [
     dts({
-      exclude: ['**/*.spec.ts', '**/*.spec-d.ts', 'vite.config.ts'],
+      exclude: [
+        '**/*.spec.ts',
+        '**/*.spec-d.ts',
+        '**/*.bench.ts',
+        'vite.config.ts',
+      ],
       insertTypesEntry: true,
     }),
   ],

@@ -13,8 +13,8 @@ import {
   useField,
   useFieldContext,
   useFormContext,
-} from '@form-signals/form-react'
-import type { ZodAdapter } from '@form-signals/validation-adapter-zod'
+} from '@formsignals/form-react'
+import type { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { type Signal, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 

@@ -4,7 +4,7 @@ import type {
   Paths,
   ValidatorAdapter,
   ValueAtPath,
-} from '@form-signals/form-core'
+} from '@formsignals/form-core'
 // biome-ignore lint/style/useImportType: This is the React import
 import React from 'react'
 import { type FormContextType, useFormContext } from '../form'

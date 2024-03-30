@@ -5,11 +5,11 @@ import { VariantCreator } from '@/components/form/VariantCreator.tsx'
 import { Label } from '@/components/ui/label'
 import { TextareaSignal } from '@/components/ui/textarea'
 import type { Product } from '@/types.ts'
-import { useForm, useFormContext } from '@form-signals/form-react'
+import { useForm, useFormContext } from '@formsignals/form-react'
 import {
   type ZodAdapter,
   configureZodAdapter,
-} from '@form-signals/validation-adapter-zod'
+} from '@formsignals/validation-adapter-zod'
 import { createRoot } from 'react-dom/client'
 import { z } from 'zod'
 import { Button } from './components/ui/button'

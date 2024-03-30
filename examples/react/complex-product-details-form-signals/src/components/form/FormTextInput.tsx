@@ -1,7 +1,7 @@
 import { InputSignal } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import { cn } from '@/lib/utils.ts'
-import { useFieldContext } from '@form-signals/form-react'
+import { useFieldContext } from '@formsignals/form-react'
 import { type Signal, useComputed } from '@preact/signals-react'
 
 export const FormTextInput = ({

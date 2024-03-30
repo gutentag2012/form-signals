@@ -1,5 +1,5 @@
 {
-  "name": "@form-signals/form-react",
+  "name": "@formsignals/form-react",
   "version": "0.0.1",
   "description": "React bindings package for Signal Form",
   "author": "joshua.gawenda",
@@ -27,7 +27,7 @@
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": ["dist", "src"],
+  "files": ["dist", "src", "README.md"],
   "peerDependencies": {
     "@preact/signals-react": "^2.0.0",
     "react": "^18.2.0",
@@ -42,7 +42,7 @@
     "@types/react-dom": "^18.2.19"
   },
   "dependencies": {
-    "@form-signals/form-core": "workspace:*"
+    "@formsignals/form-core": "workspace:*"
   },
   "keywords": ["signals", "form", "react"],
   "scripts": {

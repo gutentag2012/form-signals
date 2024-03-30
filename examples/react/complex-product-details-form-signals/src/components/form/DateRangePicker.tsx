@@ -2,8 +2,8 @@ import { ErrorText } from '@/components/form/ErrorText.tsx'
 import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import type { Product } from '@/types.ts'
-import { useFormContext } from '@form-signals/form-react'
-import type { ZodAdapter } from '@form-signals/validation-adapter-zod'
+import { useFormContext } from '@formsignals/form-react'
+import type { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { z } from 'zod'
 
 export const DateRangePicker = () => {
