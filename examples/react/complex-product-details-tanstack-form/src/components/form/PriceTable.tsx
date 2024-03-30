@@ -54,7 +54,8 @@ export const PriceTable = ({
     defaultMeta: { isTouched: true },
     validators: {
       onChange: ({ value }) =>
-        value && Object.values(value).some((prices) => prices.length === 0) &&
+        value &&
+        Object.values(value).some((prices) => prices.length === 0) &&
         'At least one price for one currency is required',
     },
   })

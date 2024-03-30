@@ -1,33 +1,33 @@
 import { Input } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import { cn } from '@/lib/utils.ts'
-import type { FieldApi } from '@tanstack/react-form'
+import { useFormContext } from 'react-hook-form'
 
 export const FormTextInput = ({
   label,
+  name,
   maxLength,
-  field,
 }: {
   label: string
+  name: string
   maxLength?: number
-  field: FieldApi<any, any, any, any, any>
 }) => {
-  const currentCount = field.state.value?.length ?? 0
-  const errorText = field.state.meta.errors.join(', ')
-  const errorClassName = errorText?.length ? 'text-destructive' : ''
+  const form = useFormContext()
+  const field = form.register(name)
+  const currentCount = form.watch(name)?.length ?? 0
+
+  const errorText = form.formState.errors[name]?.message as string
+  const errorClassName = errorText ? 'text-destructive' : ''
 
   return (
     <div>
       <Label htmlFor={field.name}>{label}</Label>
       <Input
         id={field.name}
-        name={field.name}
         type="text"
         placeholder={label}
-        onBlur={field.handleBlur}
-        value={field.state.value}
-        onChange={(e) => field.handleChange(e.target.value)}
         maxLength={maxLength}
+        {...field}
       />
       <div
         className={cn(

@@ -99,7 +99,7 @@ const SubmitButton = ({ form }: { form: FormApi<any, any> }) => {
             isTouched: form.state.isTouched,
             errors: form.state.errors,
             errorMap: form.state.errorMap,
-            fieldErrorMaps: form.state.fieldMeta
+            fieldErrorMaps: form.state.fieldMeta,
           },
           null,
           2,

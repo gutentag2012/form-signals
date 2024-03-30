@@ -6,7 +6,10 @@ import { Label } from '@/components/ui/label'
 import { TextareaSignal } from '@/components/ui/textarea'
 import type { Product } from '@/types.ts'
 import { useForm, useFormContext } from '@form-signals/form-react'
-import { ZodAdapter } from '@form-signals/validation-adapter-zod'
+import {
+  type ZodAdapter,
+  configureZodAdapter,
+} from '@form-signals/validation-adapter-zod'
 import { createRoot } from 'react-dom/client'
 import { z } from 'zod'
 import { Button } from './components/ui/button'
@@ -14,7 +17,7 @@ import './index.css'
 
 export const Index = () => {
   const form = useForm<Product, typeof ZodAdapter>({
-    validatorAdapter: ZodAdapter,
+    validatorAdapter: configureZodAdapter({ takeFirstError: true }),
     onSubmit: (values) => {
       window.alert(
         `Form submitted with values\n${JSON.stringify(values, null, 2)}`,
