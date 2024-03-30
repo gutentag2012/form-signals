@@ -1,5 +1,6 @@
 import { ErrorText } from '@/components/form/ErrorText.tsx'
 import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import {
   Select,
@@ -19,11 +20,16 @@ import {
   TableRow,
 } from '@/components/ui/table.tsx'
 import type { Product } from '@/types.ts'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useFormContext,
+} from 'react-hook-form'
 import { z } from 'zod'
-import {Controller, FormProvider, useFieldArray, useForm, useFormContext} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {useState} from "react";
-import {Input} from "@/components/ui/input.tsx";
 
 const NumberToString = (value: number | null) =>
   value === null ? '' : `${value}`
@@ -45,29 +51,28 @@ const subFormSchema = z.object({
 })
 
 export const PriceTable = () => {
-  const [selectedCurrency, setSelectedCurrency] = useState<string>(`EUR`)
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('EUR')
 
   const form = useFormContext<Product>()
   const pricesField = useFieldArray({
     name: `prices.${selectedCurrency}`,
   })
 
-  const subForm = useForm<Product['prices'][string][number]>(
-    {
-      resolver: zodResolver(subFormSchema),
-      defaultValues: {
-        count: null as never,
-        price: null as never,
-        taxRate: 19,
-      },
+  const subForm = useForm<Product['prices'][string][number]>({
+    resolver: zodResolver(subFormSchema),
+    defaultValues: {
+      count: null as never,
+      price: null as never,
+      taxRate: 19,
     },
-  )
+  })
 
   const currentPrices = form.watch('prices')
-  const currencyCountValue = currentPrices ? Object.values(currentPrices).filter(
-    (prices) => !!prices?.length,
-  ).length : 0
-  const currencyCount = currencyCountValue === 1 ? '1 currency' : `${currencyCountValue} currencies`
+  const currencyCountValue = currentPrices
+    ? Object.values(currentPrices).filter((prices) => !!prices?.length).length
+    : 0
+  const currencyCount =
+    currencyCountValue === 1 ? '1 currency' : `${currencyCountValue} currencies`
 
   return (
     <div>
@@ -94,71 +99,92 @@ export const PriceTable = () => {
         </TableHeader>
         <TableBody>
           <PriceTableBody selectedCurrency={selectedCurrency} />
-          <PriceTableErrorText message={form.formState.errors.prices?.message as unknown as string} />
+          <PriceTableErrorText
+            message={form.formState.errors.prices?.message as unknown as string}
+          />
         </TableBody>
         <TableFooter>
           <FormProvider {...subForm}>
             <TableRow disableHoverStyle>
-              <Controller name="count" render={field => (
-                <TableCell className="align-top">
-                  <Label htmlFor={field.field.name}>Min Count</Label>
-                  <Input
-                    value={NumberToString(field.field.value)}
-                    onChange={e => field.field.onChange(StringToNumber(e.target.value))}
-                    id={field.field.name}
-                    name={field.field.name}
-                    type="number"
-                    placeholder="Min Count"
-                  />
-                  <ErrorText message={field.fieldState.error?.message}/>
-                </TableCell>
-              )} />
-              <Controller name="price" render={field => (
-                <TableCell className="align-top">
-                  <Label htmlFor={field.field.name}>New price</Label>
-                  <Input
-                    value={NumberToString(field.field.value)}
-                    onChange={e => field.field.onChange(StringToNumber(e.target.value))}
-                    id={field.field.name}
-                    name={field.field.name}
-                    type="number"
-                    placeholder="New price"
-                  />
-                  <ErrorText message={field.fieldState.error?.message}/>
-                </TableCell>
-              )} />
-              <Controller name="taxRate" render={field => (
-                <TableCell className="align-top">
-                  <Label htmlFor={field.field.name}>Tax Rate</Label>
-                  <Select
-                    name={field.field.name}
-                    value={NumberToString(field.field.value)}
-                    onValueChange={(value) => field.field.onChange(StringToNumber(value))}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="19">19%</SelectItem>
-                      <SelectItem value="7">7%</SelectItem>
-                      <SelectItem value="0">0%</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorText message={field.fieldState.error?.message}/>
-                </TableCell>
-              )} />
+              <Controller
+                name="count"
+                render={(field) => (
+                  <TableCell className="align-top">
+                    <Label htmlFor={field.field.name}>Min Count</Label>
+                    <Input
+                      value={NumberToString(field.field.value)}
+                      onChange={(e) =>
+                        field.field.onChange(StringToNumber(e.target.value))
+                      }
+                      id={field.field.name}
+                      name={field.field.name}
+                      type="number"
+                      placeholder="Min Count"
+                    />
+                    <ErrorText message={field.fieldState.error?.message} />
+                  </TableCell>
+                )}
+              />
+              <Controller
+                name="price"
+                render={(field) => (
+                  <TableCell className="align-top">
+                    <Label htmlFor={field.field.name}>New price</Label>
+                    <Input
+                      value={NumberToString(field.field.value)}
+                      onChange={(e) =>
+                        field.field.onChange(StringToNumber(e.target.value))
+                      }
+                      id={field.field.name}
+                      name={field.field.name}
+                      type="number"
+                      placeholder="New price"
+                    />
+                    <ErrorText message={field.fieldState.error?.message} />
+                  </TableCell>
+                )}
+              />
+              <Controller
+                name="taxRate"
+                render={(field) => (
+                  <TableCell className="align-top">
+                    <Label htmlFor={field.field.name}>Tax Rate</Label>
+                    <Select
+                      name={field.field.name}
+                      value={NumberToString(field.field.value)}
+                      onValueChange={(value) =>
+                        field.field.onChange(StringToNumber(value))
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="19">19%</SelectItem>
+                        <SelectItem value="7">7%</SelectItem>
+                        <SelectItem value="0">0%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <ErrorText message={field.fieldState.error?.message} />
+                  </TableCell>
+                )}
+              />
 
               <TableCell align="right" className="align-top">
                 <Button
                   className="mt-5"
                   type="button"
                   variant="outline"
-                  disabled={(subForm.formState.submitCount > 1 && !subForm.formState.isValid) || subForm.formState.isSubmitting}
+                  disabled={
+                    (subForm.formState.submitCount > 1 &&
+                      !subForm.formState.isValid) ||
+                    subForm.formState.isSubmitting
+                  }
                   onClick={subForm.handleSubmit(async (values) => {
                     pricesField.append(values)
-                    await form.trigger("prices")
+                    await form.trigger('prices')
                     subForm.reset(undefined, {
-                      keepSubmitCount: false
+                      keepSubmitCount: false,
                     })
                   })}
                 >
@@ -174,7 +200,7 @@ export const PriceTable = () => {
   )
 }
 
-const PriceTableBody = ({selectedCurrency}: {selectedCurrency: string}) => {
+const PriceTableBody = ({ selectedCurrency }: { selectedCurrency: string }) => {
   const form = useFormContext<Product>()
 
   const selectedPrices = useFieldArray({
@@ -194,7 +220,7 @@ const PriceTableBody = ({selectedCurrency}: {selectedCurrency: string}) => {
           variant="destructive"
           onClick={() => {
             selectedPrices.remove(index)
-            form.trigger("prices")
+            form.trigger('prices')
           }}
         >
           Delete
@@ -204,7 +230,7 @@ const PriceTableBody = ({selectedCurrency}: {selectedCurrency: string}) => {
   ))
 }
 
-const PriceTableErrorText = ({message}: {message?: string}) => {
+const PriceTableErrorText = ({ message }: { message?: string }) => {
   if (!message) return null
   return (
     <TableRow disableHoverStyle>

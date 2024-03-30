@@ -3,14 +3,21 @@ import { Button } from '@/components/ui/button.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import {
+  Tabs,
   TabsContent,
   TabsList,
-  Tabs,
   TabsTrigger,
 } from '@/components/ui/tabs.tsx'
 import type { Product } from '@/types.ts'
-import {Controller, useFieldArray, useFormContext} from "react-hook-form";
-import {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
+import {
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 
 export const VariantCreator = () => {
   const form = useFormContext<Product>()
@@ -41,10 +48,10 @@ const VariantTab = ({ index }: { index: number }) => {
   const justAddedOption = useRef(false)
 
   const variantsField = useFieldArray({
-    name: "variants"
+    name: 'variants',
   })
   const optionsField = useFieldArray({
-    name: `variants.${index}.options`
+    name: `variants.${index}.options`,
   })
 
   return (
@@ -62,7 +69,7 @@ const VariantTab = ({ index }: { index: number }) => {
             variant="destructive"
             onClick={async () => {
               variantsField.remove(index)
-              await form.trigger("variants")
+              await form.trigger('variants')
             }}
           >
             Remove
@@ -74,7 +81,7 @@ const VariantTab = ({ index }: { index: number }) => {
       <div className="mt-2">
         <Label>Options</Label>
         <div className="flex flex-col gap-1">
-          <VariantOptionsList justAddedOption={justAddedOption} index={index}/>
+          <VariantOptionsList justAddedOption={justAddedOption} index={index} />
           <Input
             type="text"
             placeholder="Option"
@@ -85,7 +92,11 @@ const VariantTab = ({ index }: { index: number }) => {
               e.target.value = ''
             }}
           />
-          <ErrorText message={form.getFieldState(`variants.${index}.options`).error?.message} />
+          <ErrorText
+            message={
+              form.getFieldState(`variants.${index}.options`).error?.message
+            }
+          />
         </div>
       </div>
     </>
@@ -94,39 +105,43 @@ const VariantTab = ({ index }: { index: number }) => {
 
 const VariantOptionsList = ({
   justAddedOption,
-  index
-}: { justAddedOption: RefObject<boolean>, index: number }) => {
+  index,
+}: { justAddedOption: RefObject<boolean>; index: number }) => {
   const form = useFormContext<Product>()
   const options = form.watch(`variants.${index}.options`)
   const optionsField = useFieldArray({
-    name: `variants.${index}.options`
+    name: `variants.${index}.options`,
   })
 
   const variantName = form.watch(`variants.${index}.name`)
   useEffect(() => {
-    form.trigger("variants")
-  }, [variantName, form.trigger]);
+    if (!variantName) return
+    form.trigger('variants')
+  }, [variantName, form.trigger])
 
   return options.map((_, optionIndex) => (
-    <Controller key={optionIndex} name={`variants.${index}.options.${optionIndex}`} render={field => (
-      <Input
-        type="text"
-        placeholder="Option"
-        value={field.field.value}
-        onBlur={field.field.onBlur}
-        onChange={(e) => {
-          if (!e.target.value) {
-            optionsField.remove(optionIndex)
-            return
+    <Controller
+      key={optionIndex}
+      name={`variants.${index}.options.${optionIndex}`}
+      render={(field) => (
+        <Input
+          type="text"
+          placeholder="Option"
+          value={field.field.value}
+          onBlur={field.field.onBlur}
+          onChange={(e) => {
+            if (!e.target.value) {
+              optionsField.remove(optionIndex)
+              return
+            }
+            field.field.onChange(e.target.value)
+          }}
+          autoFocus={
+            !!justAddedOption.current && optionIndex === options.length - 1
           }
-          field.field.onChange(e.target.value)
-        }}
-        autoFocus={
-          !!justAddedOption.current &&
-          optionIndex === options.length - 1
-        }
-      />
-    )} />
+        />
+      )}
+    />
   ))
 }
 
@@ -137,10 +152,11 @@ const VariantTabsTrigger = ({
   const variants = form.watch('variants')
 
   const variantsField = useFieldArray({
-    name: "variants"
+    name: 'variants',
   })
 
-  return (<>
+  return (
+    <>
       <TabsList>
         {variants?.map((variant, index) => (
           <TabsTrigger key={index} value={`${index}`}>
@@ -154,13 +170,14 @@ const VariantTabsTrigger = ({
               name: '',
               options: [],
             })
-            await form.trigger("variants")
+            await form.trigger('variants')
             setSelectedVariant(`${variants.length}`)
           }}
         >
           +
         </TabsTrigger>
       </TabsList>
-      <ErrorText message={form.formState.errors.variants?.message}/>
-  </>)
+      <ErrorText message={form.formState.errors.variants?.message} />
+    </>
+  )
 }

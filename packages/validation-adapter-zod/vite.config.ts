@@ -23,7 +23,7 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
-      external: ['@form-signals/form-core', 'zod'],
+      external: ['@formsignals/form-core', 'zod'],
       output: {
         preserveModules: true,
       },
@@ -40,7 +40,12 @@ export default defineConfig({
   },
   plugins: [
     dts({
-      exclude: ['**/*.spec.ts', '**/*.spec-d.ts', 'vite.config.ts'],
+      exclude: [
+        '**/*.spec.ts',
+        '**/*.spec-d.ts',
+        '**/*.bench.ts',
+        'vite.config.ts',
+      ],
       insertTypesEntry: true,
     }),
   ],

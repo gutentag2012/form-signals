@@ -1,11 +1,14 @@
 {
-  "name": "@form-signals/form-core",
-  "version": "0.0.1",
+  "name": "@formsignals/form-core",
+  "version": "0.0.2",
   "description": "Core package for Signal Form including the form state and validation logic as well as the api",
   "author": "joshua.gawenda",
-  "license": "todo",
-  "repository": "todo",
-  "homepage": "todo",
+  "license": "MIT",
+  "repository": "gutentag2012/form-signals",
+  "homepage": "https://github.com/gutentag2012/form-signals/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/gutentag2012/form-signals/issues"
+  },
   "type": "module",
   "types": "dist/esm/index.d.ts",
   "main": "dist/cjs/index.cjs",
@@ -24,7 +27,7 @@
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": ["dist", "src"],
+  "files": ["dist", "src", "README.md"],
   "peerDependencies": {
     "@preact/signals-core": "^1.5.1"
   },

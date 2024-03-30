@@ -1,4 +1,4 @@
-import { FieldLogic, FormLogic } from '@form-signals/form-core'
+import { FieldLogic, FormLogic } from '@formsignals/form-core'
 import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'

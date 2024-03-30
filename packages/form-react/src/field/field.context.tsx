@@ -3,7 +3,7 @@ import type {
   Paths,
   ValidatorAdapter,
   ValueAtPath,
-} from '@form-signals/form-core'
+} from '@formsignals/form-core'
 import React, { type ReactNode } from 'react'
 import {
   type FieldChildren,

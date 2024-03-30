@@ -1,4 +1,4 @@
-import { unSignalifyValue } from '@form-signals/form-core'
+import { unSignalifyValue } from '@formsignals/form-core'
 import { type Signal, useComputed } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'

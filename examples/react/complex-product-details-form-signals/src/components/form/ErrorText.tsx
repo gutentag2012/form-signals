@@ -1,4 +1,4 @@
-import { useFieldContext } from '@form-signals/form-react'
+import { useFieldContext } from '@formsignals/form-react'
 
 /**
  * @useSignals
