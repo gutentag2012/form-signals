@@ -41,13 +41,13 @@ importers:
 
   examples/react/complex-product-details-form-signals:
     dependencies:
-      '@form-signals/form-core':
+      '@formsignals/form-core':
         specifier: workspace:*
         version: link:../../../packages/form-core
-      '@form-signals/form-react':
+      '@formsignals/form-react':
         specifier: workspace:*
         version: link:../../../packages/form-react
-      '@form-signals/validation-adapter-zod':
+      '@formsignals/validation-adapter-zod':
         specifier: workspace:*
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
@@ -377,7 +377,7 @@ importers:
 
   packages/form-react:
     dependencies:
-      '@form-signals/form-core':
+      '@formsignals/form-core':
         specifier: workspace:*
         version: link:../form-core
       '@preact/signals-react':
@@ -411,7 +411,7 @@ importers:
 
   packages/validation-adapter-zod:
     dependencies:
-      '@form-signals/form-core':
+      '@formsignals/form-core':
         specifier: workspace:*
         version: link:../form-core
       zod:
