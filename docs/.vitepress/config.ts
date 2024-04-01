@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import {tabsMarkdownPlugin} from "vitepress-plugin-tabs";
+import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
   head: [['link', { rel: 'icon', href: '/logo-bg.ico' }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/logo-bg.svg',
+    logo: '/logo-no-bg.svg',
 
     nav: [
       { text: 'Home', link: '/' },
@@ -18,7 +18,7 @@ export default defineConfig({
     ],
 
     sidebar: {
-      "/guide/": [
+      '/guide/': [
         {
           text: 'Introduction',
           collapsed: false,
@@ -27,22 +27,20 @@ export default defineConfig({
             {
               text: 'Quickstart',
               link: '/guide/quickstart',
-              items: [
-                { text: 'React', link: '/guide/quickstart-react' },
-              ]
+              items: [{ text: 'React', link: '/guide/quickstart-react' }],
             },
             { text: 'Concepts', link: '/guide/concepts' },
           ],
         },
         {
-          text: "Guides",
+          text: 'Guides',
           collapsed: false,
           items: [
             { text: 'Validation', link: '/guide/validation' },
             { text: 'Transformation', link: '/guide/transformation' },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     },
 
     socialLinks: [
@@ -51,11 +49,11 @@ export default defineConfig({
   },
   markdown: {
     theme: {
-      light: 'material-theme-lighter',
+      light: 'github-light',
       dark: 'one-dark-pro',
     },
     config(md) {
       md.use(tabsMarkdownPlugin)
-    }
+    },
   },
 })

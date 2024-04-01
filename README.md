@@ -1,5 +1,4 @@
-<img src="https://github.com/gutentag2012/form-signals/raw/main/assets/repo-banner.svg" alt="Signal Form Banner" width="100%">
-
+<img src="https://github.com/gutentag2012/form-signals/raw/main/assets/repo-banner-light.svg" alt="Signal Form Banner" width="100%">
 
 [![form-core-version](https://img.shields.io/npm/v/%40formsignals%2Fform-core?style=for-the-badge&logo=npm&label=form-core)](https://www.npmjs.com/package/@formsignals/form-core)
 [![form-react-version](https://img.shields.io/npm/v/%40formsignals%2Fform-react?style=for-the-badge&logo=npm&label=form-react)](https://www.npmjs.com/package/@formsignals/form-react)
