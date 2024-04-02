@@ -4,6 +4,7 @@ import DefaultTheme from 'vitepress/theme'
 // https://vitepress.dev/guide/custom-theme
 import { h } from 'vue'
 import './style.css'
+import LibraryChip from '../components/library-chip.vue'
 
 export default {
   extends: DefaultTheme,
@@ -14,5 +15,6 @@ export default {
   },
   enhanceApp({ app, router, siteData }) {
     enhanceAppWithTabs(app)
+    app.component("LibraryChip", LibraryChip)
   },
 } satisfies Theme
