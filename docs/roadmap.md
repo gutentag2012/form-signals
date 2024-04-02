@@ -1,3 +1,7 @@
+---
+sidebar: false
+---
+
 # Roadmap
 
 Do not take this roadmap as a commitment.

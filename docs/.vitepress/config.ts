@@ -17,36 +17,56 @@ export default defineConfig({
       { text: 'Roadmap', link: '/roadmap' },
     ],
 
-    sidebar: {
-      '/guide/': [
-        {
-          text: 'Introduction',
-          collapsed: false,
-          items: [
-            { text: 'What are Signals?', link: '/guide/what-are-signals' },
-            {
-              text: 'Quickstart',
-              link: '/guide/quickstart',
-              items: [{ text: 'React', link: '/guide/quickstart-react' }],
-            },
-            { text: 'Concepts', link: '/guide/concepts' },
-          ],
-        },
-        {
-          text: 'Guides',
-          collapsed: false,
-          items: [
-            {
-              text: 'Basic Usage',
-              link: '/guide/basic-usage',
-              items: [{ text: 'React', link: '/guide/basic-usage-react' }],
-            },
-            { text: 'Validation', link: '/guide/validation' },
-            { text: 'Transformation', link: '/guide/transformation' },
-          ],
-        },
-      ],
-    },
+    sidebar: [
+      {
+        text: 'Introduction',
+        collapsed: false,
+        items: [
+          { text: 'What are Signals?', link: '/guide/what-are-signals' },
+          {
+            text: 'Quickstart',
+            link: '/guide/quickstart',
+            items: [{ text: 'React', link: '/guide/quickstart-react' }],
+          },
+          { text: 'Concepts', link: '/guide/concepts' },
+        ],
+      },
+      {
+        text: 'Guides',
+        collapsed: false,
+        items: [
+          {
+            text: 'Basic Usage',
+            link: '/guide/basic-usage',
+            items: [{ text: 'React', link: '/guide/basic-usage-react' }],
+          },
+          { text: 'Validation', link: '/guide/validation' },
+          { text: 'Transformation', link: '/guide/transformation' },
+        ],
+      },
+      {
+        text: 'Reference',
+        collapsed: true,
+        items: [
+          {
+            text: 'Core',
+            collapsed: true,
+            items: [
+              { text: 'FormLogic', link: '/reference/core/FormLogic' },
+              { text: 'FieldLogic', link: '/reference/core/FieldLogic' },
+            ],
+          },
+          {
+            text: 'React',
+            collapsed: true,
+            items: [
+              { text: 'useForm', link: '/reference/react/useForm' },
+              { text: 'useField', link: '/reference/react/useField' },
+            ],
+          },
+        ],
+      },
+    ],
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/gutentag2012/form-signals' },
