@@ -36,6 +36,11 @@ export default defineConfig({
           text: 'Guides',
           collapsed: false,
           items: [
+            {
+              text: 'Basic Usage',
+              link: '/guide/basic-usage',
+              items: [{ text: 'React', link: '/guide/basic-usage-react' }],
+            },
             { text: 'Validation', link: '/guide/validation' },
             { text: 'Transformation', link: '/guide/transformation' },
           ],
