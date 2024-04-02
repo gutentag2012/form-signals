@@ -47,3 +47,10 @@ console.log(doubleCounter.value); // 2
 
 Now every time the `counterSignal` changes, the `doubleCounter` signal will be re-calculated.
 If there are no listeners to the `doubleCounter` signal, the value will never be re-calculated, since it is lazy.
+
+## Signals Reactivity
+
+Signals are reactive by default, so every time a signals value is accessed with the `.value` property the value of the signal is retrieved reactively.
+That means, that if this done from within a component, or a `computed` or an `effect`, every change in the value will case an update.
+
+In many cases where you do not want to explicitly subscribe to the changes (for example in click handlers), you can use the `.peek()` method to get the current value without subscribing to the signal.
