@@ -1,9 +1,3 @@
----
-prev:
-  text: Quickstart
-  link: /guide/quickstart
----
-
 # Concepts
 
 Before we dive into the details of how to use the library,

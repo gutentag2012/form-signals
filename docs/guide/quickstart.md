@@ -1,9 +1,3 @@
----
-next:
-  text: Concepts
-  link: /guide/concepts
----
-
 # Quickstart
 
 This is a quickstart guide to get you started with the Form Signals core library.
