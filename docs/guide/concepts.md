@@ -16,6 +16,29 @@ and can handle validation on the complete form data.
 With these functionalities the form is able to work without the need for any fields.
 All the core functionalities can be accessed through the form instance.
 
+Nested data will be stored as nested signals,
+that way the form can guarantee that each change to a value will only affect subscribers to the child value.
+You would access nested data like this:
+
+```ts
+import {FormLogic} from "./FormLogic";
+
+const form = new FormLogic({
+  defaultValues: {
+    nested: {
+      thing: 1
+    }
+  }
+})
+
+// Access a nested value
+const nestedValue = form.data.value.nested.thing.value
+```
+
+::: tip
+Only use the `.value` prop if you want to subscribe to changes of that value, otherwise use the `.peek()` method.
+:::
+
 ## Field
 
 A field is a wrapper around a single piece of data within the form.
