@@ -3,7 +3,7 @@
 This is a quickstart guide to get you started with the Form Signals core library.
 If you want to use a UI library, check out the other quickstart guides.
 
-- [React](/guide/quickstart-react)
+- [React](/guide/react/quickstart)
 
 ## Installation
 
@@ -38,7 +38,7 @@ This is how you would create a simple registration form with a name and email fi
 This example also includes validation using the Zod library.
 
 In a real world project, you would then probably connect the state of the form to a UI, this is not covered in this example.
-Check out the [React quickstart guide](/guide/quickstart-react#creating-your-first-form) for an example with the React bindings.
+Check out the [React quickstart guide](/guide/react/quickstart#creating-your-first-form) for an example with the React bindings.
 
 ::: code-group
 ```ts [login_form.ts]
