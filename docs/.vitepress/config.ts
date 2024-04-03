@@ -3,6 +3,7 @@ import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: "/form-signals/",
   title: 'Form Signals',
   description:
     'Reactive and fully type-safe form state management/validation library',
