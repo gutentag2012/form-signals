@@ -241,6 +241,16 @@ export class FieldLogic<
   )
   //endregion
 
+  /**
+   * Creates a new field logic.
+   *
+   * @param _form - The form that the field is part of.
+   * @param _name - The name of the field and the path to its value in the form.
+   * @param options - Options for the field.
+   *
+   * @note
+   * It is recommended to use the {@link FormLogic#getOrCreateField} method to create a new field.
+   */
   constructor(
     private readonly _form: FormLogic<TData, TFormAdapter>,
     private readonly _name: TName,
