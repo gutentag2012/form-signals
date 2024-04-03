@@ -48,6 +48,7 @@ Any points marked down here are added to arbitrary versions and might get moved 
 - <LibraryChip library="form-react" /> Add example for async form setup
 - <LibraryChip library="form-react" /> Add example for table sorting
 - <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
+- <LibraryChip library="form-react" /> Allow usage of form outside of react components + example
 - <LibraryChip library="form-react-native" /> Add example for react-native
 
 ## Version 0.3.0
