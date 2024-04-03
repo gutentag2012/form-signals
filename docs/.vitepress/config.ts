@@ -27,7 +27,7 @@ export default defineConfig({
           {
             text: 'Quickstart',
             link: '/guide/quickstart',
-            items: [{ text: 'React', link: '/guide/quickstart-react' }],
+            items: [{ text: 'React', link: '/guide/react/quickstart' }],
           },
           { text: 'Concepts', link: '/guide/concepts' },
         ],
@@ -39,10 +39,25 @@ export default defineConfig({
           {
             text: 'Basic Usage',
             link: '/guide/basic-usage',
-            items: [{ text: 'React', link: '/guide/basic-usage-react' }],
+            items: [{ text: 'React', link: '/guide/react/basic-usage' }],
           },
+          // TODO Add async usage implementation, examples and docs
+          // {
+          //   text: 'Async Usage',
+          //   link: '/guide/async-usage',
+          //   items: [{ text: 'React', link: '/guide/react/async-usage' }],
+          // },
           { text: 'Validation', link: '/guide/validation' },
-          { text: 'Transformation', link: '/guide/transformation' },
+          {
+            text: 'Array Fields',
+            link: '/guide/array-fields',
+            items: [{ text: 'React', link: '/guide/react/array-fields' }],
+          },
+          {
+            text: 'Examples',
+            link: '/guide/examples',
+            items: [{ text: 'React', link: '/guide/react/examples' }],
+          },
         ],
       },
       {
