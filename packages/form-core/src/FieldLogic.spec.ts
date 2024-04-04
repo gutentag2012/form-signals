@@ -920,6 +920,50 @@ describe('FieldLogic', () => {
       form.data.value.name.value.deep.value = 'test'
       expect(field.errors.value).toEqual([])
     })
+    it('should validate deep changes for newly added array items', () => {
+      const form = new FormLogic<{ names: string[] }>()
+      form.mount()
+      const field = new FieldLogic(form, 'names', {
+        validateOnNestedChange: true,
+        defaultValue: ['test'],
+        validator: (value) =>
+          value.some((v) => !v.length) ? 'error' : undefined,
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([])
+      field.data.value[0].data.value = ''
+      expect(field.errors.value).toEqual(['error'])
+      field.data.value[0].data.value = 'valid'
+      expect(field.errors.value).toEqual([])
+      field.pushValueToArray('')
+      expect(field.errors.value).toEqual(['error'])
+      field.data.value[1].data.value = 'valid'
+      expect(field.errors.value).toEqual([])
+    })
+    it('should validate deep changes for newly added object keys', () => {
+      const form = new FormLogic<{ names: { [first: string]: string } }>()
+      form.mount()
+      const field = new FieldLogic(form, 'names', {
+        validateOnNestedChange: true,
+        defaultValue: {
+          John: 'Test',
+        },
+        validator: (value) =>
+          Object.values(value).some((v) => !v.length) ? 'error' : undefined,
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([])
+      field.data.value.John.value = ''
+      expect(field.errors.value).toEqual(['error'])
+      field.data.value.John.value = 'valid'
+      expect(field.errors.value).toEqual([])
+      field.setValueInObject('Jane', '')
+      expect(field.errors.value).toEqual(['error'])
+      field.data.value.Jane.value = 'valid'
+      expect(field.errors.value).toEqual([])
+    })
     it('should not validate deep changes if not configured', () => {
       const form = new FormLogic<{ name: { deep: string } }>()
       form.mount()
