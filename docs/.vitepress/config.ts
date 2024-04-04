@@ -51,18 +51,16 @@ export default defineConfig({
           {
             text: 'Array Fields',
             link: '/guide/array-fields',
-            items: [{ text: 'React', link: '/guide/react/array-fields' }],
           },
           {
-            text: 'Examples',
-            link: '/guide/examples',
-            items: [{ text: 'React', link: '/guide/react/examples' }],
+            text: 'Dynamic Objects',
+            link: '/guide/dynamic-objects',
           },
         ],
       },
       {
         text: 'Reference',
-        collapsed: true,
+        collapsed: false,
         items: [
           {
             text: 'Core',
@@ -70,6 +68,9 @@ export default defineConfig({
             items: [
               { text: 'FormLogic', link: '/reference/core/FormLogic' },
               { text: 'FieldLogic', link: '/reference/core/FieldLogic' },
+              { text: 'Validation', link: '/reference/core/Validation' },
+              { text: 'Access', link: '/reference/core/Access' },
+              { text: 'Signals', link: '/reference/core/Signals' },
             ],
           },
           {
