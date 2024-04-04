@@ -643,7 +643,9 @@ export class FormLogic<
    * @param resetToDefault - If true, the value will be reset to the default value.
    *
    * @note
-   * By default the value of an unregistered Field will be removed from the form data.
+   * By default, the value of an unregistered Field will be removed from the form data.
+   *
+   * @internal Do not call this method on your own since it is called during the unmounting of {@link FieldLogic}
    */
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
