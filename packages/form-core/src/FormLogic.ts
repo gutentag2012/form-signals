@@ -416,7 +416,7 @@ export class FormLogic<
       // Clear all onSubmit errors when the value changes
       clearSubmitEventErrors(this._errorMap)
 
-      await this.validateForEvent('onChange', currentJson as TData)
+      await this.validateForEventInternal('onChange', currentJson as TData)
     })
 
     this._isMounted.value = true
