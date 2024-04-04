@@ -526,8 +526,6 @@ export class FieldLogic<
    * Validates the field for a given event.
    *
    * @param event - The event to validate for.
-   * @param checkValue - The value to validate. If not provided, the current value of the field will be used.
-   * @param mixins - Other values to validate with the field.
    *
    * @returns A promise that resolves when the validation is done.
    *
