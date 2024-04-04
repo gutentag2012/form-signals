@@ -286,7 +286,7 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
 export function removeSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
-) {
+): void {
   if (!path || !obj.peek()) {
     return
   }
