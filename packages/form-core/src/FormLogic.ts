@@ -675,10 +675,22 @@ export class FormLogic<
     )
   }
 
-  public getFieldForPath<TPath extends Paths<TData>, TBoundData>(
+  public getFieldForPath<
+    TPath extends Paths<TData>,
+    TBoundData = never,
+    TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+    TMixin extends readonly Exclude<Paths<TData>, TPath>[] = never[],
+  >(
     path: TPath,
-  ): FieldLogic<TData, TPath, TBoundData> {
-    return this._fields.peek().get(path) as FieldLogic<TData, TPath, TBoundData>
+  ): FieldLogic<TData, TPath, TBoundData, TFieldAdapter, TAdapter, TMixin> {
+    return this._fields.peek().get(path) as FieldLogic<
+      TData,
+      TPath,
+      TBoundData,
+      TFieldAdapter,
+      TAdapter,
+      TMixin
+    >
   }
   //endregion
 
