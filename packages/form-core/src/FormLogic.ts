@@ -446,38 +446,8 @@ export class FormLogic<
    * @note
    * If the form is not mounted, the validation will only be done for the {@link ValidatorEvents.onSubmit} event.
    */
-  public validateForEvent(
-    event: ValidatorEvents,
-    checkValue?: TData,
-  ): void | Promise<void> {
-    if (!this._isMounted.peek() && event !== 'onSubmit') return
-
-    const value = checkValue ?? unSignalifyValue(this.data)
-
-    const adapter = this._options.peek()?.validatorAdapter
-    const syncValidator = getValidatorFromAdapter<TData>(
-      adapter,
-      this._options.peek()?.validator,
-    )
-    const asyncValidator = getValidatorFromAdapter<TData>(
-      adapter,
-      this._options.peek()?.validatorAsync,
-      true,
-    )
-
-    return validateWithValidators(
-      value,
-      [],
-      event,
-      syncValidator,
-      this._options.peek()?.validatorOptions,
-      asyncValidator,
-      this._options.peek()?.validatorAsyncOptions,
-      this._previousAbortController,
-      this._errorMap,
-      this._isValidatingForm,
-      this._isTouched.peek(),
-    )
+  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
+    return this.validateForEventInternal(event)
   }
 
   /**
@@ -1119,6 +1089,42 @@ export class FormLogic<
   public reset(): void {
     this.resetValues()
     this.resetState()
+  }
+  //endregion
+
+  //region Internal
+  private validateForEventInternal(
+    event: ValidatorEvents,
+    checkValue?: TData,
+  ): void | Promise<void> {
+    if (!this._isMounted.peek() && event !== 'onSubmit') return
+
+    const value = checkValue ?? unSignalifyValue(this.data)
+
+    const adapter = this._options.peek()?.validatorAdapter
+    const syncValidator = getValidatorFromAdapter<TData>(
+      adapter,
+      this._options.peek()?.validator,
+    )
+    const asyncValidator = getValidatorFromAdapter<TData>(
+      adapter,
+      this._options.peek()?.validatorAsync,
+      true,
+    )
+
+    return validateWithValidators(
+      value,
+      [],
+      event,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
+      this._previousAbortController,
+      this._errorMap,
+      this._isValidatingForm,
+      this._isTouched.peek(),
+    )
   }
   //endregion
 }
