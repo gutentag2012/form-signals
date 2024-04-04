@@ -11,17 +11,23 @@ To install the package, run:
 
 :::tabs key:pgk
 == npm
+
 ```bash
 npm install @formsignals/form-core @preact/signals-core
 ```
+
 == yarn
+
 ```bash
 yarn add @formsignals/form-core @preact/signals-core
 ```
+
 == pnpm
+
 ```bash
 pnpm add @formsignals/form-core @preact/signals-core
 ```
+
 :::
 
 ::: info
@@ -37,14 +43,17 @@ If you want to use a schema validation library you can also install the correspo
 This is how you would create a simple registration form with a name and email field would look like.
 This example also includes validation using the Zod library.
 
-In a real world project, you would then probably connect the state of the form to a UI, this is not covered in this example.
-Check out the [React quickstart guide](/guide/react/quickstart#creating-your-first-form) for an example with the React bindings.
+In a real world project, you would then probably connect the state of the form to a UI, this is not covered in this
+example.
+Check out the [React quickstart guide](/guide/react/quickstart#creating-your-first-form) for an example with the React
+bindings.
 
 ::: code-group
+
 ```ts [login_form.ts]
-import { FormLogic } from '@formsignals/form-core';
-import { ZodAdapter } from "@formsignals/validation-adapter-zod";
-import { z } from "zod";
+import {FormLogic} from '@formsignals/form-core';
+import {ZodAdapter} from "@formsignals/validation-adapter-zod";
+import {z} from "zod";
 
 // Setup the form
 const form = new FormLogic({
@@ -107,6 +116,7 @@ confirmPasswordField.data.value = "password"
 // Submit the form
 form.handleSubmit() // Form submitted with values { username: 'john_doe', email: 'real@email.com', password: 'password', confirmPassword: 'password' }
 ```
+
 :::
 
 [//]: # (TODO Add Stackblitz example)

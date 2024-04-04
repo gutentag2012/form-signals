@@ -25,6 +25,7 @@ const form = new FormLogic({
   name: "John Doe"
 })
 ```
+
 :::
 
 ## Adding Fields
@@ -74,7 +75,8 @@ The values passed to the onSubmit method are the current form values extracted f
 Therefore, they are the same as `form.json.value` at that point in time.
 :::
 
-Now whenever you call the forms `handleSubmit` method, the onSubmit method will be called, **as long as the form is valid**.
+Now whenever you call the forms `handleSubmit` method, the onSubmit method will be called, **as long as the form is
+valid**.
 
 ```ts
 form.handleSubmit()
@@ -88,7 +90,8 @@ Your choice will depend on the use case.
 ### Through Fields
 
 Typically, you will access the form data through the `data` property of a field.
-This will give you access to the signal data object, meaning you can use default signal methods such as `computed` or `effect`.
+This will give you access to the signal data object, meaning you can use default signal methods such as `computed`
+or `effect`.
 
 ```ts
 import {computed, effect} from "@preact/signals-core";
@@ -138,7 +141,8 @@ effect(() => {
 
 ### Through Form JSON
 
-If you are not interested in the signal data and fine-grained reactivity you can simple access the form data through the `json` property.
+If you are not interested in the signal data and fine-grained reactivity you can simple access the form data through
+the `json` property.
 This will always give you the up-to-date form data as a plain object.
 
 ```ts
@@ -240,8 +244,10 @@ The users of the transformed values are called bindings in this context.
 To address this, you can add a transformation function to the field options.
 There are two different transformation functions you can add to a field:
 
-- `transformFromBinding`: This function is used to transform the value from the bound input to the form.
-- `transformToBinding`: This function is used to transform the value from the form to the bound input.
+| Function               | Description                                                                    |
+|------------------------|--------------------------------------------------------------------------------|
+| `transformFromBinding` | This function is used to transform the value from the bound input to the form. |
+| `transformToBinding`   | This function is used to transform the value from the form to the bound input. |
 
 ```ts
 const field = form.getOrCreateField("age", {
@@ -261,7 +267,8 @@ const age = field.transformedData.value
 console.log(typeof age) // string
 ```
 
-If you want to change the value of the field, you can do so through the `transformedData` property as well or use the `handleChangeBound`.
+If you want to change the value of the field, you can do so through the `transformedData` property as well or use
+the `handleChangeBound`.
 These will set the value of the form by running the passed value through the `transformFromBinding` function first.
 
 ```ts
