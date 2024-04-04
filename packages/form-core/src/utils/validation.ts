@@ -89,7 +89,7 @@ export interface ValidatorAdapter {
  *
  * @example
  * ```ts
- * declare module '@formsignals/core' {
+ * declare module '@formsignals/form-core' {
  *   interface ValidatorSchemaType<TValue> {
  *     (): number
  *   }
