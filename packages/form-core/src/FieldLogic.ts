@@ -687,7 +687,7 @@ export class FieldLogic<
    *
    * @param options - Options for the change.
    */
-  public removeSelfFromArray(options?: { shouldTouch?: boolean }) {
+  public removeSelfFromArray(options?: { shouldTouch?: boolean }): void {
     this._form.removeValueFromArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -749,7 +749,7 @@ export class FieldLogic<
           : never
         : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.swapValuesInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
