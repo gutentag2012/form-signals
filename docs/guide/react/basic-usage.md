@@ -67,14 +67,15 @@ If you use the `nameField.data.value` in the main component, it will re-render t
 :::
 
 ::: info
-The use of the `nameField.FieldProvider` is optional in this case since the field context is not consumed by any other component.
+The use of the `nameField.FieldProvider` is optional in this case since the field context is not consumed by any other
+component.
 It is still recommended to use it to keep the code consistent.
 :::
 
 ### Using the `FieldProvider` component
 
 ```tsx {1,8-12}
-import { InputSignal } from "./InputSignal";
+import {InputSignal} from "./InputSignal";
 
 export default function MyForm() {
   const form = useForm<FormValues>();
@@ -83,7 +84,7 @@ export default function MyForm() {
     <form.FormProvider>
       <form.FieldProvider form={form} name="name">
         {(field) => (
-          <InputSignal value={field.data} />
+          <InputSignal value={field.data}/>
         )}
       </form.FieldProvider>
     </form.FormProvider>
@@ -97,7 +98,8 @@ So you will not be able to use `field.data.value` directly in the main component
 but rather have to create a child component that subscribes to the signal.
 :::
 
-If you want to avoid this pitfall, you can use the `FieldProvider` component and consume the fields context in a child component.
+If you want to avoid this pitfall, you can use the `FieldProvider` component and consume the fields context in a child
+component.
 
 ```tsx {1-2,4-9,16-18}
 import {InputSignal} from "./InputSignal";
@@ -157,7 +159,8 @@ export default function MyForm() {
 
 The basic principles of accessing data are the same as in the core library.
 
-Additionally, it is important to note, that you can always use the `useFormContext` and `useFieldContext` hooks to access the form and field data.
+Additionally, it is important to note, that you can always use the `useFormContext` and `useFieldContext` hooks to
+access the form and field data.
 
 ::: info
 You can only use these hooks from children of the `FormProvider` or `FieldProvider` components.
@@ -313,7 +316,7 @@ import {useFieldContext} from "@formsignals/form-react";
 
 export function ErrorText() {
   const field = useFieldContext();
-  if(!field.isValid.value) return null;
+  if (!field.isValid.value) return null;
   return <span>{field.errors.value.join(", ")}</span>
 }
 ```

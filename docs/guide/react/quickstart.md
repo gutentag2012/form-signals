@@ -11,17 +11,23 @@ To install the package, run:
 
 :::tabs key:pgk
 == npm
+
 ```bash
 npm install @formsignals/form-react @preact/signals-react
 ```
+
 == yarn
+
 ```bash
 yarn add @formsignals/form-react @preact/signals-react
 ```
+
 == pnpm
+
 ```bash
 pnpm add @formsignals/form-react @preact/signals-react
 ```
+
 :::
 
 ::: info
@@ -29,7 +35,8 @@ pnpm add @formsignals/form-react @preact/signals-react
 :::
 
 ::: warning
-If you are using Babel or are running into issues with the installation of `@preact/signals-react`, you should check out their installation guide [here](https://github.com/preactjs/signals/blob/main/packages/react/README.md).
+If you are using Babel or are running into issues with the installation of `@preact/signals-react`, you should check out
+their installation guide [here](https://github.com/preactjs/signals/blob/main/packages/react/README.md).
 :::
 
 If you want to use a schema validation library you can also install the corresponding package.
@@ -46,12 +53,13 @@ Just like in this example it is advised to create your own input components, tha
 :::
 
 ::: code-group
+
 ```tsx [login_form.tsx]
 import SignalInput from './SignalInput'
 import FieldErrors from './FieldErrors'
-import { useForm } from '@formsignals/form-react';
-import { ZodAdapter } from "@formsignals/validation-adapter-zod";
-import { z } from "zod";
+import {useForm} from '@formsignals/form-react';
+import {ZodAdapter} from "@formsignals/validation-adapter-zod";
+import {z} from "zod";
 
 export default function App() {
   const form = useForm({
@@ -85,7 +93,7 @@ export default function App() {
                 name={field.name}
                 value={field.data}
               />
-              <FieldErrors />
+              <FieldErrors/>
             </>
           )}
         </form.FieldProvider>
@@ -98,7 +106,7 @@ export default function App() {
                 name={field.name}
                 value={field.data}
               />
-              <FieldErrors />
+              <FieldErrors/>
             </>
           )}
         </form.FieldProvider>
@@ -111,7 +119,7 @@ export default function App() {
                 name={field.name}
                 value={field.data}
               />
-              <FieldErrors />
+              <FieldErrors/>
             </>
           )}
         </form.FieldProvider>
@@ -133,7 +141,7 @@ export default function App() {
                 name={field.name}
                 value={field.data}
               />
-              <FieldErrors />
+              <FieldErrors/>
             </>
           )}
         </form.FieldProvider>
@@ -145,15 +153,15 @@ export default function App() {
 ```
 
 ```tsx [SignalInput.tsx]
-import type { Signal } from '@preact/signals-react'
-import type { InputHTMLAttributes } from 'react'
+import type {Signal} from '@preact/signals-react'
+import type {InputHTMLAttributes} from 'react'
 
 interface SignalInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
   value: Signal<string>
 }
 
-export default function SignalInput({ value, ...props }: SignalInputProps) {
+export default function SignalInput({value, ...props}: SignalInputProps) {
   return (
     <input
       {...props}
@@ -167,7 +175,7 @@ export default function SignalInput({ value, ...props }: SignalInputProps) {
 ```
 
 ```tsx [FieldErrors.tsx]
-import { useFieldContext } from '@formsignals/form-react'
+import {useFieldContext} from '@formsignals/form-react'
 
 export default function FieldErrors() {
   const field = useFieldContext()
@@ -180,6 +188,7 @@ export default function FieldErrors() {
   )
 }
 ```
+
 :::
 
 [//]: # (TODO Add Stackblitz example)
