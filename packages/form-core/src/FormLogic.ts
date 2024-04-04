@@ -8,8 +8,6 @@ import {
 } from '@preact/signals-core'
 import { FieldLogic, type FieldLogicOptions } from './FieldLogic'
 import {
-  type ConnectPath,
-  type KeepOptionalKeys,
   type Paths,
   type SignalifiedData,
   type ValidationError,
@@ -22,11 +20,9 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
-  clearSubmitEventErrors,
   deepSignalifyValue,
   getLeftUnequalPaths,
   getSignalValueAtPath,
-  getValidatorFromAdapter,
   getValueAtPath,
   isEqualDeep,
   makeArrayEntry,
@@ -37,9 +33,14 @@ import {
   setValueAtPath,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  validateWithValidators,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
+import type { ConnectPath, KeepOptionalKeys } from './utils/types'
+import {
+  clearSubmitEventErrors,
+  getValidatorFromAdapter,
+  validateWithValidators,
+} from './utils/validation'
 
 /**
  * Options for the form logic.
@@ -1055,7 +1056,8 @@ export class FormLogic<
    * Reset the state of the form.
    *
    * @note
-   * Most of the state is derived, so the only state that is reset is the submit count, the validation state, the submitting state and the error map.
+   * Most of the state is derived,
+   * so the only state that is reset is the submit-count, the validation state, the submitting state and the error map.
    */
   public resetStateForm(): void {
     this._submitCountSuccessful.value = 0
