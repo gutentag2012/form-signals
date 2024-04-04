@@ -73,7 +73,7 @@ export type FormLogicOptions<
 
 ## Form State
 
-You can access several states of the form, most of them being reactive signals.
+You can access several states of the form, most of them being signals.
 
 ```ts
 interface FormLogic<
@@ -157,7 +157,6 @@ interface FormLogic<
 ## Form Lifecycle Methods
 
 The form has to be mounted and can be unmounted in several cases.
-Adding fields is also counted towards the form lifecycle.
 
 ```ts
 interface FormLogic<
@@ -377,7 +376,7 @@ interface FormLogic<
 
 ## Form Reset
 
-The form can be reset to its default values.
+The form can be reset to its default values and state.
 
 ```ts
 interface FormLogic<
