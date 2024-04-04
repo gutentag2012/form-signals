@@ -216,6 +216,69 @@ export default function MyForm() {
 }
 ```
 
+## Dynamic Fields
+
+Once a field is created, it will be automatically mounted with the provided name and options.
+If the component is unmounted, so will the field.
+By default, this will also remove all the state of this field and remove the value from the form.
+
+If you want to hide the field temporarily and keep its value and state,
+you can use the `preserveValueOnUnmount` option when creating the field.
+
+```tsx {11}
+export default function MyForm() {
+  const form = useForm<FormValues>();
+  const [showAge, setShowAge] = useState(true);
+
+  return (
+    <form.FormProvider>
+      {showAge && (
+        <form.FieldProvider
+          form={form}
+          name="age"
+          preserveValueOnUnmount
+        >
+          {(field) => (
+            <InputSignal value={field.data}/>
+          )}
+        </form.FieldProvider>
+      )}
+    </form.FormProvider>
+  )
+}
+```
+
+You can also create dynamic fields, where the name of the field might change.
+This library handles a change in the field name by unmounting the old field and mounting a new one.
+Changes to the field options will also be applied as soon as the field props update.
+
+```tsx {3,9-10}
+export default function MyForm() {
+  const form = useForm<FormValues>();
+  const [fieldName, setFieldName] = useState("age");
+
+  return (
+    <form.FormProvider>
+      <form.FieldProvider
+        form={form}
+        name={fieldName}
+        preserveValueOnUnmount
+      >
+        {(field) => (
+          <InputSignal value={field.data}/>
+        )}
+      </form.FieldProvider>
+      <button onClick={() => setFieldName("name")}>Change Field</button>
+    </form.FormProvider>
+  )
+}
+```
+
+::: warning
+If you do not use the `preserveValueOnUnmount` option,
+the value of the field will be lost when the field name is changed.
+:::
+
 ## Tips
 
 React is not optimized for signals,
