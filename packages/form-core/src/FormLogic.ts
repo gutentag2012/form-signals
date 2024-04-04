@@ -253,15 +253,6 @@ export class FormLogic<
     return this._data
   }
 
-  public getValueForPath<TPath extends Paths<TData>>(
-    path: TPath,
-  ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    return getSignalValueAtPath<TData, TPath>(
-      this._data,
-      path,
-    ) as SignalifiedData<ValueAtPath<TData, TPath>>
-  }
-
   /**
    * The data of the form as a JSON object.
    *
@@ -276,10 +267,6 @@ export class FormLogic<
 
   public get isMounted(): ReadonlySignal<boolean> {
     return this._isMountedReadOnly
-  }
-
-  public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields
   }
 
   /**
@@ -342,6 +329,10 @@ export class FormLogic<
     return this._submitCount
   }
 
+  public get isValidatingFields(): ReadonlySignal<boolean> {
+    return this._isValidatingFields
+  }
+
   public get isValidatingForm(): ReadonlySignal<boolean> {
     return this._isValidatingFormReadOnly
   }
@@ -366,6 +357,15 @@ export class FormLogic<
     FormLogicOptions<TData, TAdapter> | undefined
   > {
     return this._optionsReadOnly
+  }
+
+  public getValueForPath<TPath extends Paths<TData>>(
+    path: TPath,
+  ): SignalifiedData<ValueAtPath<TData, TPath>> {
+    return getSignalValueAtPath<TData, TPath>(
+      this._data,
+      path,
+    ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
   //endregion
 
@@ -439,7 +439,6 @@ export class FormLogic<
    * Validate the form for a specific event.
    *
    * @param event - The event to validate for.
-   * @param checkValue - The value to check for the event.
    *
    * @returns A promise that resolves when the validation is done.
    *
@@ -475,12 +474,12 @@ export class FormLogic<
     })
   }
 
-  public handleBlur = async (): Promise<void> => {
+  public async handleBlur(): Promise<void> {
     if (!this._isMounted.peek()) return
     await this.validateForEvent('onBlur')
   }
 
-  public handleSubmit = async (): Promise<void> => {
+  public async handleSubmit(): Promise<void> {
     if (!this._isMounted.peek() || !this.canSubmit.peek()) return
 
     // TODO Only await if the the validators are async
