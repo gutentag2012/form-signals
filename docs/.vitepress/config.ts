@@ -7,7 +7,7 @@ export default defineConfig({
   title: 'Form Signals',
   description:
     'Reactive and fully type-safe form state management/validation library',
-  head: [['link', { rel: 'icon', href: '/logo-bg.ico' }]],
+  head: [['link', { rel: 'icon', href: '/form-signals/logo-bg.ico' }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo-no-bg.svg',
