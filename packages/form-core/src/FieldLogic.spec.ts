@@ -858,7 +858,9 @@ describe('FieldLogic', () => {
       const field = new FieldLogic(form, 'name', {
         validatorAsync: () => validateAsync(),
         validator: () => validateSync(),
-        accumulateErrors: true,
+        validatorAsyncOptions: {
+          accumulateErrors: true,
+        },
       })
       await field.mount()
 

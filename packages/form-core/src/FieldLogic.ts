@@ -106,11 +106,6 @@ export type FieldLogicOptions<
    */
   validatorAsyncOptions?: ValidatorAsyncOptions
   /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
-   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
-   */
-  accumulateErrors?: boolean
-  /**
    * Whether this validator should run when a nested value changes
    */
   validateOnNestedChange?: boolean
@@ -579,7 +574,6 @@ export class FieldLogic<
       this._previousAbortController,
       this._errorMap,
       this._isValidating,
-      this._options.peek()?.accumulateErrors,
       this._isTouched.peek(),
     )
   }

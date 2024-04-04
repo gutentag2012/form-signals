@@ -75,11 +75,6 @@ export type FormLogicOptions<
    * Options for the async validator
    */
   validatorAsyncOptions?: ValidatorAsyncOptions
-  /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
-   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
-   */
-  accumulateErrors?: boolean
 
   /**
    * Default values for the form
@@ -481,7 +476,6 @@ export class FormLogic<
       this._previousAbortController,
       this._errorMap,
       this._isValidatingForm,
-      this._options.peek()?.accumulateErrors,
       this._isTouched.peek(),
     )
   }

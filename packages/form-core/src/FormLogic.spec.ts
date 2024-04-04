@@ -839,7 +839,9 @@ describe('FormLogic', () => {
         defaultValues: {
           name: '',
         },
-        accumulateErrors: true,
+        validatorAsyncOptions: {
+          accumulateErrors: true,
+        },
         validatorAsync: async (value) => {
           validateFn(value)
           await new Promise((resolve) => setTimeout(resolve, 100))
