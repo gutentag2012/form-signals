@@ -4,11 +4,29 @@ import { type FieldProps, FieldWithForm } from '../field'
 import { FormProvider } from './form.provider'
 import { handleSubmitOnEnterForForm } from './form.utils'
 
+/**
+ * The context object that is used to provide the form logic to the form components.
+ *
+ * @template TData The type of the form data.
+ * @template TAdapter The type of the validator adapter.
+ *
+ * @property FormProvider The provider component that provides the form logic to the form components.
+ * @property FieldProvider The component that creates a field logic component bound to the form.
+ * @property handleSubmitOnEnter The function that handles the submit-event when the enter key is pressed.
+ */
 export interface FormContextType<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
 > extends FormLogic<TData, TAdapter> {
+  /**
+   * The form logic component that is bound to the form.
+   * @param props - The props of the form logic component.
+   */
   FormProvider: (props: PropsWithChildren) => ReactNode
+  /**
+   * The field logic component that is bound to the form.
+   * @param props - The props of the field logic component.
+   */
   FieldProvider: <
     TName extends Paths<TData>,
     TBoundData,
@@ -24,9 +42,18 @@ export interface FormContextType<
       TMixin
     >,
   ) => ReactNode
+  /**
+   * The function that handles the submit-event when the enter key is pressed.
+   * This can be passed into the `onKeyDown` event of an element.
+   */
   handleSubmitOnEnter: ReturnType<typeof handleSubmitOnEnterForForm>
 }
 
+/**
+ * Converts a form logic object to a form context object.
+ * @param logic - The form logic object.
+ * @returns The form context object.
+ */
 export function formLogicToFormContext<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
@@ -49,10 +76,17 @@ export function formLogicToFormContext<
   return castedLogic
 }
 
+/**
+ * The context object that is used to provide the form logic to the form components.
+ */
 export const FormContext = React.createContext<
   FormContextType<any, any> | undefined
 >(undefined)
 
+/**
+ * The hook that returns the form context object.
+ * @returns The form context object.
+ */
 export function useFormContext<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,

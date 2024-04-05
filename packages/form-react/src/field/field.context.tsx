@@ -12,6 +12,20 @@ import {
   SubField,
 } from './field.provider'
 
+/**
+ * The context object that is used to provide the field logic to the field components.
+ * It extends the field logic object with the provider components.
+ *
+ * @template TData The type of the form data.
+ * @template TName The type of the field name.
+ * @template TBoundData The type of the bound data used by the transformer function {@link FormLogicOptions#transformFromBinding} and {@link FormLogicOptions#transformToBinding}.
+ * @template TAdapter The type of the validator adapter.
+ * @template TFormAdapter The type of the form validator adapter.
+ * @template TMixin The type of the mixin paths.
+ *
+ * @property FieldProvider The provider component that provides the field logic to the field components.
+ * @property SubFieldProvider The component that creates a field that is a subfield of the current field.
+ */
 export interface FieldContextType<
   TData,
   TName extends Paths<TData>,
@@ -20,6 +34,11 @@ export interface FieldContextType<
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > extends FieldLogic<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
+  /**
+   * The provider component that provides the field logic to the field components.
+   *
+   * @param props - The props of the field logic component.
+   */
   FieldProvider: (props: {
     children: FieldChildren<
       TData,
@@ -30,6 +49,11 @@ export interface FieldContextType<
       TMixin
     >
   }) => ReactNode
+  /**
+   * The component that creates a field that is a subfield of the current field.
+   *
+   * @param props - The props of the subfield component.
+   */
   SubFieldProvider: <
     TChildData extends ValueAtPath<TData, TName>,
     TChildName extends Paths<TChildData>,
@@ -51,6 +75,13 @@ export interface FieldContextType<
   ) => ReactNode
 }
 
+/**
+ * Converts a field logic object to a field context object.
+ *
+ * @param logic - The field logic object.
+ *
+ * @returns The field context object.
+ */
 export function fieldLogicToFieldContext<
   TData,
   TName extends Paths<TData>,
@@ -86,10 +117,16 @@ export function fieldLogicToFieldContext<
   return castedLogic
 }
 
+/**
+ * The context object that is used to provide the field logic to the field components.
+ */
 export const FieldContext = React.createContext<
   FieldContextType<any, any, any, any, any, any> | undefined
 >(undefined)
 
+/**
+ * The hook that returns the field context object.
+ */
 export function useFieldContext<
   TData,
   TName extends Paths<TData>,
