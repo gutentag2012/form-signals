@@ -13,5 +13,24 @@
       "cache": true
     }
   },
-  "cacheDirectory": "node_modules/.cache"
+  "cacheDirectory": "node_modules/.cache",
+  "release": {
+    "projects": ["form-core", "form-react", "validation-adapter-zod"],
+    "version": {
+      "generatorOptions": {
+        "currentVersionResolver": "git-tag",
+        "specifierSource": "conventional-commits"
+      }
+    },
+    "git": {
+      "commit": true,
+      "tag": true
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": "github"
+      },
+      "projectChangelogs": true
+    }
+  }
 }
