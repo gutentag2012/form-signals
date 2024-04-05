@@ -28,9 +28,16 @@
     },
     "changelog": {
       "workspaceChangelog": {
-        "createRelease": "github"
+        "createRelease": "github",
+        "renderOptions": {
+          "authors": false
+        }
       },
-      "projectChangelogs": true
+      "projectChangelogs": {
+        "renderOptions": {
+          "authors": false
+        }
+      }
     }
   }
 }
