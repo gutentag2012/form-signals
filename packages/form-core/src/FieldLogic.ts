@@ -159,6 +159,7 @@ export type FieldLogicOptions<
 }
 
 // TODO Add async annotations so you only need to await if it is really needed
+// TODO Add core method to get a subfield
 /**
  * Logic for a field in the form.
  *
@@ -951,4 +952,3 @@ export class FieldLogic<
   }
   //endregion
 }
-// TODO Add core method to get a subfield
