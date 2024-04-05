@@ -33,11 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: |
-          # Use the version form the workflow input if it is set, otherwise use the version from the release
-          VERSION=${{ github.event.inputs.version || github.ref_name }}
-          pnpm nx release version --specifier $VERSION
-          pnpm nx release publish
+      - run: pnpm nx release publish
         name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
