@@ -480,10 +480,10 @@ export class FormLogic<
     await this.validateForEvent('onBlur')
   }
 
+  // TODO Only await if the the validators are async
   public async handleSubmit(): Promise<void> {
     if (!this._isMounted.peek() || !this.canSubmit.peek()) return
 
-    // TODO Only await if the the validators are async
     const onFinished = (successful: boolean) => {
       batch(() => {
         if (successful) {
