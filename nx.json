@@ -17,16 +17,20 @@
   "release": {
     "projects": ["form-core", "form-react", "validation-adapter-zod"],
     "version": {
+      "git": {
+        "commit": true,
+        "tag": true
+      },
       "generatorOptions": {
         "currentVersionResolver": "git-tag",
         "specifierSource": "conventional-commits"
       }
     },
-    "git": {
-      "commit": true,
-      "tag": true
-    },
     "changelog": {
+      "git": {
+        "commit": true,
+        "tag": true
+      },
       "workspaceChangelog": {
         "createRelease": "github",
         "renderOptions": {
