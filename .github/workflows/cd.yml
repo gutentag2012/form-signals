@@ -1,16 +1,17 @@
 name: CD
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # needed for provenance data generation
 
 jobs:
   release:
-    strategy:
-      matrix:
-        package: [form-core, form-react, validation-adapter-zod]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +27,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: npm publish --access public
-        name: Publish ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
+      - run: pnpm nx release publish
+        name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
