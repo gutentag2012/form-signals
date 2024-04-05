@@ -25,7 +25,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm nx release -y --verbose
+      - run: pnpm nx release -y --verbose --skip-publish
         name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git tag -d "v{version}" # Due to a bug in nx release, sometimes this tag gets created.
+      - run: git push --follow-tags
