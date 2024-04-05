@@ -23,15 +23,15 @@ export type FieldChildren<
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > =
   | ((
-  field: FieldLogic<
-    TData,
-    TName,
-    TBoundData,
-    TAdapter,
-    TFormAdapter,
-    TMixin
-  >,
-) => React.ReactNode)
+      field: FieldLogic<
+        TData,
+        TName,
+        TBoundData,
+        TAdapter,
+        TFormAdapter,
+        TMixin
+      >,
+    ) => React.ReactNode)
   | React.ReactNode
 
 function useUnwrappedChildren<
@@ -160,11 +160,11 @@ export function FieldWithForm<
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
-    form,
-    name,
-    children,
-    ...props
-  }: FieldWithFormProps<
+  form,
+  name,
+  children,
+  ...props
+}: FieldWithFormProps<
   TData,
   TName,
   TBoundData,
@@ -188,12 +188,12 @@ export interface FieldProps<
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > extends FieldLogicOptions<
-  TData,
-  TName,
-  TBoundData,
-  TAdapter extends undefined ? TFormAdapter : TAdapter,
-  TMixin
-> {
+    TData,
+    TName,
+    TBoundData,
+    TAdapter extends undefined ? TFormAdapter : TAdapter,
+    TMixin
+  > {
   children: FieldChildren<
     TData,
     TName,
@@ -220,10 +220,10 @@ export function Field<
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
-    name,
-    children,
-    ...props
-  }: FieldProps<
+  name,
+  children,
+  ...props
+}: FieldProps<
   TData,
   TName,
   TBoundData,
@@ -294,11 +294,11 @@ export function SubField<
   >[] = never[],
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 >({
-    parentField,
-    name,
-    children,
-    ...props
-  }: SubFieldProps<
+  parentField,
+  name,
+  children,
+  ...props
+}: SubFieldProps<
   TParentData,
   TParentName,
   TParentBoundData,

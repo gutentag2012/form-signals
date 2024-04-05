@@ -1,5 +1,5 @@
 import type { ValidatorAdapter } from '@formsignals/form-core'
-// biome-ignore lint/correctness/noUnusedImports: This is the React import
+// biome-ignore lint/style/useImportType: This is the React import
 import React from 'react'
 import type { PropsWithChildren } from 'react'
 import { FormContext, type FormContextType } from './form.context'
