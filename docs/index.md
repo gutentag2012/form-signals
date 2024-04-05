@@ -38,11 +38,18 @@ features:
       alt: Reactivity
   - title: Transformations
     details: Transform your form data for different input types and back again.
-    link: /guide/transformation
+    link: /guide/basic-usage#add-transformation
     icon:
       light: /arrow-left-right.svg
       dark: /arrow-left-right-dark.svg
       alt: Transformations
+  - title: Arrays + Dynamic Objects
+    details: Make use of arrays and dynamic objects within your forms.
+    link: /guide/array-fields
+    icon:
+      light: /brackets.svg
+      dark: /brackets-dark.svg
+      alt: Arrays + Objects
   - title: Type-safety
     details: Utilize the best of TypeScript for optimal developer experience.
     icon:
