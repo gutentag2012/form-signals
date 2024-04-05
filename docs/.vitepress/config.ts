@@ -77,7 +77,11 @@ export default defineConfig({
             text: 'React',
             collapsed: true,
             items: [
+              { text: 'FormContext', link: '/reference/react/FormContext' },
+              { text: 'FormProvider', link: '/reference/react/FormProvider' },
               { text: 'useForm', link: '/reference/react/useForm' },
+              { text: 'FieldContext', link: '/reference/react/FieldContext' },
+              { text: 'FieldProvider', link: '/reference/react/FieldProvider' },
               { text: 'useField', link: '/reference/react/useField' },
             ],
           },
