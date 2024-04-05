@@ -25,6 +25,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - run: git config --global user.name "Release Bot"
+      - run: git config --global user.email "release-bot<>"
       - run: pnpm nx release --verbose --skip-publish
         name: Publish
         env:
