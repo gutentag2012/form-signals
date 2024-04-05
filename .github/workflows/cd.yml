@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'packages/**'
   workflow_dispatch:
-
-permissions:
-  contents: read
-  id-token: write # needed for provenance data generation
 
 jobs:
   release:
@@ -27,8 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm nx release publish
+      - run: pnpm nx release -y --verbose
         name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
