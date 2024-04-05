@@ -70,7 +70,7 @@ export function getValueAtPath<TValue, TPath extends Paths<TValue>>(
 export function removeValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: TValue | undefined,
   path: TPath,
-) {
+): TValue | undefined {
   if (!obj) {
     return
   }

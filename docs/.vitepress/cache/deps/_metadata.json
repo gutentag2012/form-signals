@@ -1,0 +1,37 @@
+{
+  "hash": "0cd4aa18",
+  "configHash": "fb2a8d68",
+  "lockfileHash": "6b464c30",
+  "browserHash": "74a99c6e",
+  "optimized": {
+    "vue": {
+      "src": "../../../../node_modules/.pnpm/vue@3.4.21_typescript@5.4.3/node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "0bdcb6ec",
+      "needsInterop": false
+    },
+    "vitepress > @vue/devtools-api": {
+      "src": "../../../../node_modules/.pnpm/@vue+devtools-api@7.0.25_vue@3.4.21/node_modules/@vue/devtools-api/dist/index.js",
+      "file": "vitepress___@vue_devtools-api.js",
+      "fileHash": "8f775941",
+      "needsInterop": false
+    },
+    "vitepress > @vueuse/core": {
+      "src": "../../../../node_modules/.pnpm/@vueuse+core@10.9.0_vue@3.4.21/node_modules/@vueuse/core/index.mjs",
+      "file": "vitepress___@vueuse_core.js",
+      "fileHash": "c2a14c52",
+      "needsInterop": false
+    },
+    "vitepress-plugin-tabs/client": {
+      "src": "../../../../node_modules/.pnpm/vitepress-plugin-tabs@0.5.0_vitepress@1.0.1_vue@3.4.21/node_modules/vitepress-plugin-tabs/src/client/index.ts",
+      "file": "vitepress-plugin-tabs_client.js",
+      "fileHash": "81905986",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-L7IPDLAJ": {
+      "file": "chunk-L7IPDLAJ.js"
+    }
+  }
+}

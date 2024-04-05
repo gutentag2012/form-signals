@@ -89,7 +89,7 @@ export interface ValidatorAdapter {
  *
  * @example
  * ```ts
- * declare module '@formsignals/core' {
+ * declare module '@formsignals/form-core' {
  *   interface ValidatorSchemaType<TValue> {
  *     (): number
  *   }
@@ -167,7 +167,15 @@ export interface ValidatorOptions {
  * @property debounceMs The time in milliseconds to debounce the async validation
  */
 export interface ValidatorAsyncOptions extends ValidatorOptions {
+  /**
+   * The time in milliseconds to debounce the async validation
+   */
   debounceMs?: number
+  /**
+   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
+   * If there is a synchronous error, it will be displayed, no matter if the async validator is still running.
+   */
+  accumulateErrors?: boolean
 }
 //endregion
 
@@ -326,7 +334,6 @@ async function validateAsync<TValue, TMixins extends readonly any[] = never[]>(
  * @param previousAbortController - The previous abort controller to abort the previous async validation
  * @param errorMap - The error map to update
  * @param isValidating - The state to keep track of the async validation
- * @param accumulateErrors - Whether to accumulate errors or not
  * @param isTouched - Whether the field is touched or not
  *
  * @note
@@ -346,7 +353,6 @@ export function validateWithValidators<
   previousAbortController: Signal<AbortController | undefined>,
   errorMap: Signal<Partial<ValidationErrorMap>>,
   isValidating: Signal<boolean>,
-  accumulateErrors?: boolean,
   isTouched?: boolean,
 ) {
   const failedSyncValidation = validateSync(
@@ -358,7 +364,7 @@ export function validateWithValidators<
     errorMap,
     isTouched,
   )
-  if (!accumulateErrors && failedSyncValidation) {
+  if (!validatorAsyncOptions?.accumulateErrors && failedSyncValidation) {
     return
   }
 

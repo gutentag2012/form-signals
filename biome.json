@@ -1,8 +1,15 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["**/node_modules/**", "**/dist/**", "**/coverage/**", "*.d.ts"],
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/cache/**",
+      "**/coverage/**",
+      "*.d.ts"
+    ],
     "include": [
+      "docs",
       "packages",
       "examples",
       "package.json",

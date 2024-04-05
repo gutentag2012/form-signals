@@ -13,6 +13,16 @@ import {
   fieldLogicToFieldContext,
 } from './field.context'
 
+/**
+ * Creates a field logic object and returns the field context object.
+ * Furthermore, it mounts the field logic object and unmounts it when the component is unmounted.
+ *
+ * @param form - The form to create the field for
+ * @param name - The name of the field
+ * @param options - The options to create the field with
+ *
+ * @returns The field context
+ */
 export function useField<
   TData,
   TName extends Paths<TData>,
@@ -47,6 +57,13 @@ export function useField<
   return finalField
 }
 
+/**
+ * Attaches the React components to the field logic object.
+ *
+ * @param field - The field logic object.
+ *
+ * @returns The field context object.
+ */
 export function useFieldWithComponents<
   TData,
   TName extends Paths<TData>,

@@ -11,6 +11,9 @@ import { type FormContextType, useFormContext } from '../form'
 import { FieldContext, type FieldContextType } from './field.context'
 import { useField } from './field.hooks'
 
+/**
+ * The type children of the field component can be.
+ */
 export type FieldChildren<
   TData,
   TName extends Paths<TData>,
@@ -63,6 +66,9 @@ function useUnwrappedChildren<
   return children
 }
 
+/**
+ * The props for the field provider.
+ */
 export interface FieldProviderProps<
   TData,
   TName extends Paths<TData>,
@@ -71,6 +77,9 @@ export interface FieldProviderProps<
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > {
+  /**
+   * The field context to provide.
+   */
   field: FieldContextType<
     TData,
     TName,
@@ -79,6 +88,9 @@ export interface FieldProviderProps<
     TFormAdapter,
     TMixin
   >
+  /**
+   * The children to render.
+   */
   children: FieldChildren<
     TData,
     TName,
@@ -89,6 +101,11 @@ export interface FieldProviderProps<
   >
 }
 
+/**
+ * Provides the field context to the children.
+ *
+ * @param props - The props to pass to the field provider.
+ */
 export function FieldProvider<
   TData,
   TName extends Paths<TData>,
@@ -113,6 +130,9 @@ export function FieldProvider<
   )
 }
 
+/**
+ * The props for the field with an explicit form not taken from context.
+ */
 export interface FieldWithFormProps<
   TData,
   TName extends Paths<TData>,
@@ -123,6 +143,15 @@ export interface FieldWithFormProps<
 > extends FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin> {
   form: FormContextType<TData, TFormAdapter>
 }
+
+/**
+ * Creates the field context with an explicit form.
+ *
+ * @param form - The form context object.
+ * @param name - The name of the field.
+ * @param children - The children to render.
+ * @param props - The props to pass to the field logic.
+ */
 export function FieldWithForm<
   TData,
   TName extends Paths<TData>,
@@ -142,11 +171,15 @@ export function FieldWithForm<
   TAdapter,
   TFormAdapter,
   TMixin
->) {
+>): React.ReactElement {
   const field = useField(form, name, props)
   return <FieldProvider field={field}>{children}</FieldProvider>
 }
 
+/**
+ * The props for the field component.
+ * The form for this component is taken from the context.
+ */
 export interface FieldProps<
   TData,
   TName extends Paths<TData>,
@@ -171,6 +204,14 @@ export interface FieldProps<
   >
   name: TName
 }
+
+/**
+ * The field component.
+ *
+ * @param name - The name of the field.
+ * @param children - The children to render.
+ * @param props - The props to pass to the field logic.
+ */
 export function Field<
   TData,
   TName extends Paths<TData>,
@@ -198,6 +239,9 @@ export function Field<
   )
 }
 
+/**
+ * The props for the subfield component.
+ */
 export interface SubFieldProps<
   TParentData,
   TParentName extends Paths<TParentData>,
@@ -224,6 +268,15 @@ export interface SubFieldProps<
     TParentMixin
   >
 }
+
+/**
+ * The subfield component.
+ *
+ * @param parentField - The parent field context object.
+ * @param name - The name of the field.
+ * @param children - The children to render.
+ * @param props - The props to pass to the field logic.
+ */
 export function SubField<
   TParentData,
   TParentName extends Paths<TParentData>,
@@ -258,7 +311,7 @@ export function SubField<
   TFormAdapter,
   TParentMixin,
   TMixin
->) {
+>): React.ReactElement {
   const field = useField(
     parentField.form as unknown as FormContextType<TData, TFormAdapter>,
     `${parentField.name}.${name}` as unknown as TName,

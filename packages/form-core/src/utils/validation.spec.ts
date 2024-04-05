@@ -15,7 +15,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -28,7 +27,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(errorMap.value).toEqual({})
     })
@@ -41,7 +39,6 @@ describe('validation', () => {
         syncErrorEvent: event,
       })
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -54,7 +51,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(errorMap.value).toEqual({ sync: 'error', syncErrorEvent: event })
     })
@@ -65,7 +61,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -78,7 +73,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(validate).toHaveBeenCalledWith(value)
@@ -92,7 +86,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       await validateWithValidators(
         value,
@@ -105,7 +98,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(validatorSync).toHaveBeenCalledWith(value)
       expect(validatorAsync).not.toHaveBeenCalled()
@@ -128,11 +120,10 @@ describe('validation', () => {
         validatorSync,
         undefined,
         validatorAsync,
-        undefined,
+        { accumulateErrors },
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(validatorSync).toHaveBeenCalledWith(value)
       expect(validatorAsync).toHaveBeenCalledWith(value, expect.anything())
@@ -157,7 +148,6 @@ describe('validation', () => {
         return 'error'
       }
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -170,7 +160,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       await vi.advanceTimersByTimeAsync(50)
       const promise2 = validateWithValidators(
@@ -184,7 +173,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       await vi.advanceTimersByTimeAsync(100)
       await Promise.all([promise, promise2])
@@ -206,7 +194,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -221,7 +208,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       await vi.advanceTimersByTimeAsync(50)
       const promise2 = validateWithValidators(
@@ -237,7 +223,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       await vi.advanceTimersByTimeAsync(200)
       await Promise.all([promise, promise2])
@@ -259,7 +244,6 @@ describe('validation', () => {
       const asyncValidatorState = signal<AbortController | undefined>(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -274,7 +258,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       asyncValidatorState.value?.abort()
       await vi.advanceTimersByTimeAsync(200)
@@ -297,7 +280,6 @@ describe('validation', () => {
       const asyncValidatorState = signal<AbortController | undefined>(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -312,7 +294,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       await vi.advanceTimersByTimeAsync(100)
       asyncValidatorState.value?.abort()
@@ -335,7 +316,6 @@ describe('validation', () => {
         const asyncValidatorState = signal(undefined)
         const errorMap = signal<Partial<ValidationErrorMap>>({})
         const isValidating = signal(false)
-        const accumulateErrors = false
 
         validateWithValidators(
           value,
@@ -350,7 +330,6 @@ describe('validation', () => {
           asyncValidatorState,
           errorMap,
           isValidating,
-          accumulateErrors,
         )
 
         expect(validate).not.toHaveBeenCalled()
@@ -364,7 +343,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -379,7 +357,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(validate).toHaveBeenCalled()
@@ -399,7 +376,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -412,7 +388,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(isValidating.value).toBe(true)
       await vi.advanceTimersByTimeAsync(100)
@@ -432,7 +407,6 @@ describe('validation', () => {
       const asyncValidatorState = signal<AbortController | undefined>(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const promise = validateWithValidators(
         value,
@@ -445,7 +419,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
       expect(isValidating.value).toBe(true)
       asyncValidatorState.value?.abort()
@@ -460,7 +433,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -473,7 +445,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(validator).not.toHaveBeenCalled()
@@ -488,7 +459,6 @@ describe('validation', () => {
         syncErrorEvent: 'onChange',
       })
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const changedFn = vi.fn()
       effect(() => {
@@ -507,7 +477,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(errorMap.value).toEqual({
@@ -527,7 +496,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(errorMap.value).toEqual({
@@ -545,7 +513,6 @@ describe('validation', () => {
         asyncErrorEvent: 'onChange',
       })
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       const changedFn = vi.fn()
       effect(() => {
@@ -564,7 +531,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(errorMap.value).toEqual({
@@ -584,7 +550,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
       )
 
       expect(errorMap.value).toEqual({
@@ -600,7 +565,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -615,7 +579,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
         false,
       )
 
@@ -635,7 +598,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
         true,
       )
 
@@ -652,7 +614,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
 
       validateWithValidators(
         value,
@@ -669,7 +630,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
         false,
       )
 
@@ -691,7 +651,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
         true,
       )
 
@@ -705,7 +664,6 @@ describe('validation', () => {
       const asyncValidatorState = signal(undefined)
       const errorMap = signal<Partial<ValidationErrorMap>>({})
       const isValidating = signal(false)
-      const accumulateErrors = false
       const valueMixins = [1, 2, 3]
 
       validateWithValidators(
@@ -719,7 +677,6 @@ describe('validation', () => {
         asyncValidatorState,
         errorMap,
         isValidating,
-        accumulateErrors,
         false,
       )
 

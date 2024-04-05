@@ -8,8 +8,6 @@ import {
 } from '@preact/signals-core'
 import { FieldLogic, type FieldLogicOptions } from './FieldLogic'
 import {
-  type ConnectPath,
-  type KeepOptionalKeys,
   type Paths,
   type SignalifiedData,
   type ValidationError,
@@ -22,11 +20,9 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
-  clearSubmitEventErrors,
   deepSignalifyValue,
   getLeftUnequalPaths,
   getSignalValueAtPath,
-  getValidatorFromAdapter,
   getValueAtPath,
   isEqualDeep,
   makeArrayEntry,
@@ -37,9 +33,14 @@ import {
   setValueAtPath,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  validateWithValidators,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
+import type { ConnectPath, KeepOptionalKeys } from './utils/types'
+import {
+  clearSubmitEventErrors,
+  getValidatorFromAdapter,
+  validateWithValidators,
+} from './utils/validation'
 
 /**
  * Options for the form logic.
@@ -75,11 +76,6 @@ export type FormLogicOptions<
    * Options for the async validator
    */
   validatorAsyncOptions?: ValidatorAsyncOptions
-  /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
-   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
-   */
-  accumulateErrors?: boolean
 
   /**
    * Default values for the form
@@ -258,15 +254,6 @@ export class FormLogic<
     return this._data
   }
 
-  public getValueForPath<TPath extends Paths<TData>>(
-    path: TPath,
-  ): SignalifiedData<ValueAtPath<TData, TPath>> {
-    return getSignalValueAtPath<TData, TPath>(
-      this._data,
-      path,
-    ) as SignalifiedData<ValueAtPath<TData, TPath>>
-  }
-
   /**
    * The data of the form as a JSON object.
    *
@@ -281,10 +268,6 @@ export class FormLogic<
 
   public get isMounted(): ReadonlySignal<boolean> {
     return this._isMountedReadOnly
-  }
-
-  public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields
   }
 
   /**
@@ -347,6 +330,10 @@ export class FormLogic<
     return this._submitCount
   }
 
+  public get isValidatingFields(): ReadonlySignal<boolean> {
+    return this._isValidatingFields
+  }
+
   public get isValidatingForm(): ReadonlySignal<boolean> {
     return this._isValidatingFormReadOnly
   }
@@ -371,6 +358,15 @@ export class FormLogic<
     FormLogicOptions<TData, TAdapter> | undefined
   > {
     return this._optionsReadOnly
+  }
+
+  public getValueForPath<TPath extends Paths<TData>>(
+    path: TPath,
+  ): SignalifiedData<ValueAtPath<TData, TPath>> {
+    return getSignalValueAtPath<TData, TPath>(
+      this._data,
+      path,
+    ) as SignalifiedData<ValueAtPath<TData, TPath>>
   }
   //endregion
 
@@ -421,7 +417,7 @@ export class FormLogic<
       // Clear all onSubmit errors when the value changes
       clearSubmitEventErrors(this._errorMap)
 
-      await this.validateForEvent('onChange', currentJson as TData)
+      await this.validateForEventInternal('onChange', currentJson as TData)
     })
 
     this._isMounted.value = true
@@ -444,46 +440,14 @@ export class FormLogic<
    * Validate the form for a specific event.
    *
    * @param event - The event to validate for.
-   * @param checkValue - The value to check for the event.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
    * If the form is not mounted, the validation will only be done for the {@link ValidatorEvents.onSubmit} event.
    */
-  public validateForEvent(
-    event: ValidatorEvents,
-    checkValue?: TData,
-  ): void | Promise<void> {
-    if (!this._isMounted.peek() && event !== 'onSubmit') return
-
-    const value = checkValue ?? unSignalifyValue(this.data)
-
-    const adapter = this._options.peek()?.validatorAdapter
-    const syncValidator = getValidatorFromAdapter<TData>(
-      adapter,
-      this._options.peek()?.validator,
-    )
-    const asyncValidator = getValidatorFromAdapter<TData>(
-      adapter,
-      this._options.peek()?.validatorAsync,
-      true,
-    )
-
-    return validateWithValidators(
-      value,
-      [],
-      event,
-      syncValidator,
-      this._options.peek()?.validatorOptions,
-      asyncValidator,
-      this._options.peek()?.validatorAsyncOptions,
-      this._previousAbortController,
-      this._errorMap,
-      this._isValidatingForm,
-      this._options.peek()?.accumulateErrors,
-      this._isTouched.peek(),
-    )
+  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
+    return this.validateForEventInternal(event)
   }
 
   /**
@@ -511,12 +475,12 @@ export class FormLogic<
     })
   }
 
-  public handleBlur = async (): Promise<void> => {
+  public async handleBlur(): Promise<void> {
     if (!this._isMounted.peek()) return
     await this.validateForEvent('onBlur')
   }
 
-  public handleSubmit = async (): Promise<void> => {
+  public async handleSubmit(): Promise<void> {
     if (!this._isMounted.peek() || !this.canSubmit.peek()) return
 
     // TODO Only await if the the validators are async
@@ -679,7 +643,9 @@ export class FormLogic<
    * @param resetToDefault - If true, the value will be reset to the default value.
    *
    * @note
-   * By default the value of an unregistered Field will be removed from the form data.
+   * By default, the value of an unregistered Field will be removed from the form data.
+   *
+   * @internal Do not call this method on your own since it is called during the unmounting of {@link FieldLogic}
    */
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
@@ -709,10 +675,22 @@ export class FormLogic<
     )
   }
 
-  public getFieldForPath<TPath extends Paths<TData>, TBoundData>(
+  public getFieldForPath<
+    TPath extends Paths<TData>,
+    TBoundData = never,
+    TFieldAdapter extends ValidatorAdapter | undefined = undefined,
+    TMixin extends readonly Exclude<Paths<TData>, TPath>[] = never[],
+  >(
     path: TPath,
-  ): FieldLogic<TData, TPath, TBoundData> {
-    return this._fields.peek().get(path) as FieldLogic<TData, TPath, TBoundData>
+  ): FieldLogic<TData, TPath, TBoundData, TFieldAdapter, TAdapter, TMixin> {
+    return this._fields.peek().get(path) as FieldLogic<
+      TData,
+      TPath,
+      TBoundData,
+      TFieldAdapter,
+      TAdapter,
+      TMixin
+    >
   }
   //endregion
 
@@ -1078,7 +1056,8 @@ export class FormLogic<
    * Reset the state of the form.
    *
    * @note
-   * Most of the state is derived, so the only state that is reset is the submit count, the validation state, the submitting state and the error map.
+   * Most of the state is derived,
+   * so the only state that is reset is the submit-count, the validation state, the submitting state and the error map.
    */
   public resetStateForm(): void {
     this._submitCountSuccessful.value = 0
@@ -1125,6 +1104,42 @@ export class FormLogic<
   public reset(): void {
     this.resetValues()
     this.resetState()
+  }
+  //endregion
+
+  //region Internal
+  private validateForEventInternal(
+    event: ValidatorEvents,
+    checkValue?: TData,
+  ): void | Promise<void> {
+    if (!this._isMounted.peek() && event !== 'onSubmit') return
+
+    const value = checkValue ?? unSignalifyValue(this.data)
+
+    const adapter = this._options.peek()?.validatorAdapter
+    const syncValidator = getValidatorFromAdapter<TData>(
+      adapter,
+      this._options.peek()?.validator,
+    )
+    const asyncValidator = getValidatorFromAdapter<TData>(
+      adapter,
+      this._options.peek()?.validatorAsync,
+      true,
+    )
+
+    return validateWithValidators(
+      value,
+      [],
+      event,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
+      this._previousAbortController,
+      this._errorMap,
+      this._isValidatingForm,
+      this._isTouched.peek(),
+    )
   }
   //endregion
 }

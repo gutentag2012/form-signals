@@ -8,10 +8,6 @@ import {
 } from '@preact/signals-core'
 import type { FormLogic } from './FormLogic'
 import {
-  type ConnectPath,
-  type KeepOptionalKeys,
-  type LastPath,
-  type ParentPath,
   type Paths,
   type SignalifiedData,
   type ValidationError,
@@ -24,19 +20,27 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
-  type ValueAtPathForTuple,
-  clearSubmitEventErrors,
   deepSignalifyValue,
-  getValidatorFromAdapter,
   getValueAtPath,
   isEqualDeep,
   pathToParts,
   setSignalValuesFromObject,
   unSignalifyValue,
   unSignalifyValueSubscribed,
-  validateWithValidators,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
+import type {
+  ConnectPath,
+  KeepOptionalKeys,
+  LastPath,
+  ParentPath,
+  ValueAtPathForTuple,
+} from './utils/types'
+import {
+  clearSubmitEventErrors,
+  getValidatorFromAdapter,
+  validateWithValidators,
+} from './utils/validation'
 
 /**
  * Options for the field logic.
@@ -106,11 +110,6 @@ export type FieldLogicOptions<
    */
   validatorAsyncOptions?: ValidatorAsyncOptions
   /**
-   * If true, all errors on validators will be accumulated and validation will not stop on the first error.
-   * If there is a synchronous error, it will be displayed, no matter if the asnyc validator is still running.
-   */
-  accumulateErrors?: boolean
-  /**
    * Whether this validator should run when a nested value changes
    */
   validateOnNestedChange?: boolean
@@ -135,7 +134,7 @@ export type FieldLogicOptions<
 
   /**
    * Whether the value should be preserved once the field is unmounted. <br/>
-   * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on submit.
+   * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on the submit-event.
    * @note The signal value will not be locked when unmounted, so if you change the value directly through the signal, it will be updated in the form.
    */
   preserveValueOnUnmount?: boolean
@@ -241,6 +240,16 @@ export class FieldLogic<
   )
   //endregion
 
+  /**
+   * Creates a new field logic.
+   *
+   * @param _form - The form that the field is part of.
+   * @param _name - The name of the field and the path to its value in the form.
+   * @param options - Options for the field.
+   *
+   * @note
+   * It is recommended to use the {@link FormLogic#getOrCreateField} method to create a new field.
+   */
   constructor(
     private readonly _form: FormLogic<TData, TFormAdapter>,
     private readonly _name: TName,
@@ -265,7 +274,8 @@ export class FieldLogic<
    *
    * @note
    * The signal is still owned by the form.
-   * This signal can be used to set the value of the field, however it is recommended to use the {@link FieldLogic#handleChange} method.
+   * This signal can be used to set the value of the field.
+   * However, it is recommended to use the {@link FieldLogic#handleChange} method.
    *
    * @returns The data signal for the field.
    */
@@ -278,7 +288,8 @@ export class FieldLogic<
    *
    * @note
    * The underlying signal is still {@link FieldLogic#data} so all changes to the transformed data will be reflected in the data signal.
-   * This signal can be used to set the value of the field, however it is recommended to use the {@link FieldLogic#handleChangeBound} method.
+   * This signal can be used to set the value of the field.
+   * However, it is recommended to use the {@link FieldLogic#handleChangeBound} method.
    *
    * @returns The transformed data signal for the field.
    */
@@ -390,7 +401,7 @@ export class FieldLogic<
     if (options?.defaultState?.isTouched) {
       this._isTouched.value = true
     }
-    // We should only set the errors, if the are set, the field is not already touched or dirty, and the field is valid
+    // We should only set the errors, if they are set, the field is not yet touched or dirty, and the field is valid
     if (
       options?.defaultState?.errors &&
       !this._isTouched.peek() &&
@@ -432,7 +443,7 @@ export class FieldLogic<
       }
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEvent('onChange', currentValue, mixins)
+      await this.validateForEventInternal('onChange', currentValue, mixins)
     }
     if (this._options.peek()?.validateOnNestedChange) {
       this._unsubscribeFromChangeEffect = effect(async () => {
@@ -521,57 +532,14 @@ export class FieldLogic<
    * Validates the field for a given event.
    *
    * @param event - The event to validate for.
-   * @param checkValue - The value to validate. If not provided, the current value of the field will be used.
-   * @param mixins - Other values to validate with the field.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
    * If the field is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
-  public validateForEvent(
-    event: ValidatorEvents,
-    checkValue?: ValueAtPath<TData, TName>,
-    mixins?: ValueAtPathForTuple<TData, TMixin>,
-  ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this.data) return
-    const value = checkValue ?? unSignalifyValue(this.data)
-    const mixinValues =
-      mixins ??
-      this._options
-        .peek()
-        ?.validateMixin?.map((mixin) =>
-          unSignalifyValueSubscribed(this._form.getValueForPath(mixin)),
-        ) ??
-      []
-
-    const adapter =
-      this._options.peek()?.validatorAdapter ??
-      this.form.options.peek()?.validatorAdapter
-    const syncValidator = getValidatorFromAdapter(
-      adapter,
-      this._options.peek()?.validator,
-    )
-    const asyncValidator = getValidatorFromAdapter(
-      adapter,
-      this._options.peek()?.validatorAsync,
-      true,
-    )
-
-    return validateWithValidators(
-      value,
-      mixinValues as any,
-      event,
-      syncValidator,
-      this._options.peek()?.validatorOptions,
-      asyncValidator,
-      this._options.peek()?.validatorAsyncOptions,
-      this._previousAbortController,
-      this._errorMap,
-      this._isValidating,
-      this._options.peek()?.accumulateErrors,
-      this._isTouched.peek(),
-    )
+  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
+    return this.validateForEventInternal(event)
   }
 
   /**
@@ -723,7 +691,7 @@ export class FieldLogic<
    *
    * @param options - Options for the change.
    */
-  public removeSelfFromArray(options?: { shouldTouch?: boolean }) {
+  public removeSelfFromArray(options?: { shouldTouch?: boolean }): void {
     this._form.removeValueFromArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -785,7 +753,7 @@ export class FieldLogic<
           : never
         : never,
     options?: { shouldTouch?: boolean },
-  ) {
+  ): void {
     this._form.swapValuesInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -934,6 +902,52 @@ export class FieldLogic<
       toString: wrappedSignal.toString.bind(wrappedSignal),
       subscribe: wrappedSignal.subscribe.bind(wrappedSignal),
     }
+  }
+  //endregion
+
+  //region Internals
+  private validateForEventInternal(
+    event: ValidatorEvents,
+    checkValue?: ValueAtPath<TData, TName>,
+    mixins?: ValueAtPathForTuple<TData, TMixin>,
+  ): void | Promise<void> {
+    if (!this._isMounted.peek() || !this.data) return
+    const value = checkValue ?? unSignalifyValue(this.data)
+    const mixinValues =
+      mixins ??
+      this._options
+        .peek()
+        ?.validateMixin?.map((mixin) =>
+          unSignalifyValueSubscribed(this._form.getValueForPath(mixin)),
+        ) ??
+      []
+
+    const adapter =
+      this._options.peek()?.validatorAdapter ??
+      this.form.options.peek()?.validatorAdapter
+    const syncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validator,
+    )
+    const asyncValidator = getValidatorFromAdapter(
+      adapter,
+      this._options.peek()?.validatorAsync,
+      true,
+    )
+
+    return validateWithValidators(
+      value,
+      mixinValues as any,
+      event,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
+      this._previousAbortController,
+      this._errorMap,
+      this._isValidating,
+      this._isTouched.peek(),
+    )
   }
   //endregion
 }
