@@ -28,7 +28,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
 
-    "release": "nx release --skip-publish"
+    "release": "node ./scripts/release.cjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.6.3",
