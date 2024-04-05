@@ -82,7 +82,7 @@ export default function MyForm() {
 
   return (
     <form.FormProvider>
-      <form.FieldProvider form={form} name="name">
+      <form.FieldProvider name="name">
         {(field) => (
           <InputSignal value={field.data}/>
         )}
@@ -117,7 +117,7 @@ export default function MyForm() {
 
   return (
     <form.FormProvider>
-      <form.FieldProvider form={form} name="name">
+      <form.FieldProvider name="name">
         <NameInput/>
       </form.FieldProvider>
     </form.FormProvider>
@@ -145,7 +145,7 @@ export default function MyForm() {
         event.preventDefault();
         form.handleSubmit();
       }}>
-        <form.FieldProvider form={form} name="name">
+        <form.FieldProvider name="name">
           <NameInput/>
         </form.FieldProvider>
         <button type="submit" onClick={handleSubmit}>Submit</button>
@@ -172,14 +172,13 @@ The basic principles of adding validation are the same as in the core library.
 
 So adding validation to a field is as simple as adding the `validator` option to the field.
 
-```tsx {9}
+```tsx {8}
 export default function MyForm() {
   const form = useForm<FormValues>();
 
   return (
     <form.FormProvider>
       <form.FieldProvider
-        form={form}
         name="name"
         validator={(value) => value.length <= 3 && "Name must be at least 3 characters long"}
       >
@@ -198,14 +197,13 @@ So adding transformation to a field is as simple
 as adding the `transformFromBinding` and `transformToBinding` options to the field
 and using the `transformedData` property of the field.
 
-```tsx {9-10,13}
+```tsx {8-9,12}
 export default function MyForm() {
   const form = useForm<FormValues>();
 
   return (
     <form.FormProvider>
       <form.FieldProvider
-        form={form}
         name="age"
         transformFromBinding={(value) => parseInt(value)}
         transformToBinding={(value) => value.toString()}
@@ -228,7 +226,7 @@ By default, this will also remove all the state of this field and remove the val
 If you want to hide the field temporarily and keep its value and state,
 you can use the `preserveValueOnUnmount` option when creating the field.
 
-```tsx {11}
+```tsx {10}
 export default function MyForm() {
   const form = useForm<FormValues>();
   const [showAge, setShowAge] = useState(true);
@@ -237,7 +235,6 @@ export default function MyForm() {
     <form.FormProvider>
       {showAge && (
         <form.FieldProvider
-          form={form}
           name="age"
           preserveValueOnUnmount
         >
@@ -255,7 +252,7 @@ You can also create dynamic fields, where the name of the field might change.
 This library handles a change in the field name by unmounting the old field and mounting a new one.
 Changes to the field options will also be applied as soon as the field props update.
 
-```tsx {3,9-10}
+```tsx {3,8-9}
 export default function MyForm() {
   const form = useForm<FormValues>();
   const [fieldName, setFieldName] = useState("age");
@@ -263,7 +260,6 @@ export default function MyForm() {
   return (
     <form.FormProvider>
       <form.FieldProvider
-        form={form}
         name={fieldName}
         preserveValueOnUnmount
       >
