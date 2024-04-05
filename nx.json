@@ -6,7 +6,8 @@
   },
   "targetDefaults": {
     "build": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["^build"]
     },
     "test": {
       "cache": true
