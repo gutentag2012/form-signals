@@ -1,3 +1,11 @@
+## 0.0.7 (2024-04-05)
+
+
+### 🩹 Fixes
+
+- Remove git option for version step ([f4f49a3](https://github.com/gutentag2012/form-signals/commit/f4f49a3))
+- Remove changelogs of packages ([2a4e125](https://github.com/gutentag2012/form-signals/commit/2a4e125))
+
 ## 0.0.6 (2024-04-05)
 
 This was a version bump only, there were no code changes.
