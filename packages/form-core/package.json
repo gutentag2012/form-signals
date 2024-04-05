@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/form-core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Core package for Signal Form including the form state and validation logic as well as the api",
   "author": "joshua.gawenda",
   "license": "MIT",
@@ -27,11 +27,18 @@
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": ["dist", "src", "README.md"],
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "peerDependencies": {
     "@preact/signals-core": "^1.5.1"
   },
-  "keywords": ["signals", "form"],
+  "keywords": [
+    "signals",
+    "form"
+  ],
   "scripts": {
     "build": "vite build",
     "test": "vitest",
