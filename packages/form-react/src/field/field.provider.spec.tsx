@@ -15,7 +15,7 @@ describe('FieldProvider', () => {
 
       function ContextConsumer() {
         const field = useFieldContext()
-        return field.data.value
+        return field.data.value as any
       }
 
       function TestComponent() {
@@ -39,7 +39,7 @@ describe('FieldProvider', () => {
       function TestComponent() {
         return (
           <FieldProvider field={field as never}>
-            {(field) => field.data.value}
+            {(field) => field.data.value as any}
           </FieldProvider>
         )
       }
@@ -56,7 +56,7 @@ describe('FieldProvider', () => {
 
       function ContextConsumer() {
         const field = useFieldContext()
-        return field.data.value
+        return field.data.value as any
       }
 
       function TestComponent() {
