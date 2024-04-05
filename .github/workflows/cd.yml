@@ -1,15 +1,20 @@
 name: CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/**'
+  # Manually trigger a deployment
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        default: ''
+  release:
+    types:
+      - published
 
 permissions:
-  contents: write
+  contents: read
+  id-token: write
 
 jobs:
   release:
@@ -28,11 +33,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: git config --global user.name "Release Bot"
-      - run: git config --global user.email "release-bot<>"
-      - run: pnpm nx release --verbose --skip-publish
+      - run: |
+          # Use the version form the workflow input if it is set, otherwise use the version from the release
+          VERSION=${{ github.event.inputs.version || github.ref_name }}
+          pnpm nx release version --specifier $VERSION
+          pnpm nx release publish
         name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: git tag -d "v{version}" # Due to a bug in nx release, sometimes this tag gets created.
-      - run: git push --follow-tags
+          NPM_CONFIG_PROVENANCE: true
