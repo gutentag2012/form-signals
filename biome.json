@@ -6,6 +6,7 @@
       "**/dist/**",
       "**/cache/**",
       "**/coverage/**",
+      "**/package.json",
       "*.d.ts"
     ],
     "include": [
