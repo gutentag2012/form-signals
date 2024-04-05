@@ -1,13 +1,17 @@
-![Signal Form Banner](https://github.com/gutentag2012/form-signals/raw/main/assets/banner.svg)
+<img src="https://github.com/gutentag2012/form-signals/raw/main/assets/repo-banner-light.svg" alt="Signal Form Banner" width="100%">
 
 [![form-core-version](https://img.shields.io/npm/v/%40formsignals%2Fform-core?style=for-the-badge&logo=npm&label=form-core)](https://www.npmjs.com/package/@formsignals/form-core)
 ![form-core-bundle](https://img.shields.io/bundlephobia/minzip/%40formsignals%2Fform-core?style=for-the-badge&label=form-core-size)
 
+The core library for managing forms with Preact Signals.
+
 ## Features
 
-- **TypeScript** - Written in TypeScript with full type support.
-- **Reactivity** - Reactivity without abstractions due to Preact Signals.
+- **TypeScript** - Written in TypeScript with full type support for optimal DX.
+- **Reactivity** - Reactivity without abstractions thanks to Preact Signals.
 - **Validation** - Built-in validation support, including adapters for validation schema libraries.
+- **Transformations** - Transform values for the specific needs of your input fields.
+- **Arrays + Dynamic Objects** - Utilize arrays and dynamic objects within your forms.
 
 ## Install
 

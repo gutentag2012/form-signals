@@ -9,12 +9,21 @@
     "style": "pnpm dlx @biomejs/biome check .",
     "style:fix": "pnpm dlx @biomejs/biome check --apply .",
     "style:fix:unsafe": "pnpm dlx @biomejs/biome check --apply-unsafe .",
+
     "test": "nx run-many --target=test --all",
     "test:core": "nx test @formsignals/form-core",
     "test:react": "nx test @formsignals/form-react",
     "test:validator-zod": "nx test @formsignals/validation-adapter-zod",
+
     "build": "nx run-many --target=build --all",
     "build:core": "nx build @formsignals/form-core",
+    "build:react": "nx build @formsignals/form-react",
+    "build:validator-zod": "nx build @formsignals/validation-adapter-zod",
+
+    "example:react:complex:form-signals": "nx dev complex-product-details-form-signals-react",
+    "example:react:complex:react-hook-form": "nx dev complex-product-details-react-hook-form-react",
+    "example:react:complex:tanstack-form": "nx dev complex-product-details-tanstack-form-react",
+
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

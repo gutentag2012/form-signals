@@ -1,11 +1,11 @@
 {
   "name": "@formsignals/form-react",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "React bindings package for Signal Form",
   "author": "joshua.gawenda",
   "license": "MIT",
   "repository": "gutentag2012/form-signals",
-  "homepage": "https://github.com/gutentag2012/form-signals/blob/main/README.md",
+  "homepage": "https://gutentag2012.github.io/form-signals/",
   "bugs": {
     "url": "https://github.com/gutentag2012/form-signals/issues"
   },
