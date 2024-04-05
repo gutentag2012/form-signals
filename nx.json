@@ -17,7 +17,6 @@
   "release": {
     "projects": ["form-core", "form-react", "validation-adapter-zod"],
     "version": {
-      "conventionalCommits": true,
       "generatorOptions": {
         "currentVersionResolver": "git-tag",
         "specifierSource": "conventional-commits"
@@ -30,11 +29,6 @@
     "changelog": {
       "workspaceChangelog": {
         "createRelease": "github",
-        "renderOptions": {
-          "authors": false
-        }
-      },
-      "projectChangelogs": {
         "renderOptions": {
           "authors": false
         }
