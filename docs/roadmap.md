@@ -21,7 +21,7 @@ Any points marked down here are added to arbitrary versions and might get moved 
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for dynamic object helpers
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for form reset
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for validation mixins
-- :x: <LibraryChip library="form-core" /> Add possibility to set errors from onSubmit response
+- :white_check_mark: <LibraryChip library="form-core" /> Add possibility to set errors from onSubmit response
 - :white_check_mark: <LibraryChip library="validation-adapter-zod" /> Add Validation adapter for zod
 - :white_check_mark: <LibraryChip library="form-react" /> Add FormProvider to provide form state to form fields
 - :white_check_mark: <LibraryChip library="form-react" /> Add useField hook to access form field state and validation
