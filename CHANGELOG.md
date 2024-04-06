@@ -1,3 +1,10 @@
+## 0.0.8 (2024-04-06)
+
+
+### 🩹 Fixes
+
+- **form-core:** Change README.md to trigger release ([ae85776](https://github.com/gutentag2012/form-signals/commit/ae85776))
+
 ## 0.0.7 (2024-04-05)
 
 
