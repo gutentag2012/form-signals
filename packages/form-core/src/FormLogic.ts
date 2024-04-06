@@ -86,7 +86,10 @@ export type FormLogicOptions<
    * Callback for when the form is submitted
    * @param data The data at the time of submission
    */
-  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void) => void | Promise<void>
+  onSubmit?: (
+    data: TData,
+    addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void,
+  ) => void | Promise<void>
 }
 
 /**
@@ -534,12 +537,12 @@ export class FormLogic<
       await currentOptions.onSubmit(this._jsonData.peek(), (errors) => {
         for (const [path, error] of Object.entries(errors)) {
           const field = this.getFieldForPath(path as Paths<TData>)
-          if(!field){
-            continue;
+          if (!field) {
+            continue
           }
           field.setErrors({
             async: error,
-            asyncErrorEvent: "server"
+            asyncErrorEvent: 'server',
           })
         }
       })

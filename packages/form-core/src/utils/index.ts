@@ -27,5 +27,5 @@ export {
   type ValidationError,
   type ValidatorEvents,
   type ValidationErrorMap,
-  ErrorTransformers
+  ErrorTransformers,
 } from './validation'

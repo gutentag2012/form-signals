@@ -483,5 +483,5 @@ export const ErrorTransformers = {
       errorMap[path] = issue.message
     }
     return errorMap
-  }
+  },
 }
