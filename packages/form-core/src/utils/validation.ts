@@ -107,6 +107,7 @@ const ValidatorEventsArray = [
   'onBlur',
   'onSubmit',
   'onMount',
+  'server',
 ] as const
 
 /**
@@ -126,6 +127,7 @@ export type ValidationErrorMap = {
   syncErrorEvent?: ValidatorEvents
   async?: ValidationError
   asyncErrorEvent?: ValidatorEvents
+  general?: ValidationError
 }
 
 /**
