@@ -14,7 +14,14 @@ export default defineConfig({
       provider: 'istanbul',
       include: ['src/**/*'],
       exclude: ['**/*.spec.ts', '**/*.spec-d.ts', '**/*.bench.ts'],
-      reporter: ['html', 'lcov', 'text', 'text-summary'],
+      reporter: ['html', 'lcov', 'text', 'text-summary', 'json', 'json-summary', "cobertura"],
+      reportOnFailure: true,
+      thresholds: {
+        statements: 90,
+        branches: 90,
+        functions: 90,
+        lines: 90,
+      }
     },
     typecheck: { enabled: true },
   },
