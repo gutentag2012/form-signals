@@ -14,7 +14,7 @@ const form = new FormLogic<FormValues>()
 
 ::: info
 We are passing a type parameter to `FormLogic` to define the shape of the form values.
-If you would not do this step Typescript would not allow you to add any fields to the form.
+If you would not do this step, Typescript would not allow you to add any fields to the form.
 :::
 
 ::: tip
@@ -82,6 +82,46 @@ valid**.
 form.handleSubmit()
 ```
 
+### Adding Errors during Submission
+
+Sometimes you have validation that runs on the server and is returned when the form is submitted.
+You can add these errors to the form by calling the `addErrors` method from within the onSubmit method.
+
+```ts
+const form = new FormLogic<FormValues>({
+  onSubmit: async (values, addErrors) => {
+    const response = await fetch("https://api.example.com", {
+      method: "POST",
+      body: JSON.stringify(values)
+    })
+    const data = await response.json()
+    if (response.ok) {
+      console.log("Success")
+    } else {
+      addErrors(data)
+    }
+  }
+})
+```
+
+Be aware that the format of the errors must be a map of the field names to the error messages.
+
+```json
+{
+  "name": "Name is required"
+}
+```
+
+::: info
+You can add errors to the form itself by using an empty string `''` as the key.
+:::
+
+::: tip
+If you are using a schema validation library,
+you can use the [`ErrorTransformers`](/reference/core/Validation#errortransformers)
+to convert the error to a valid format.
+:::
+
 ## Accessing Data
 
 There are several different ways to access the form data.
@@ -141,7 +181,7 @@ effect(() => {
 
 ### Through Form JSON
 
-If you are not interested in the signal data and fine-grained reactivity you can simple access the form data through
+If you are not interested in the signal data and fine-grained reactivity, you can access the form data through
 the `json` property.
 This will always give you the up-to-date form data as a plain object.
 
