@@ -1,3 +1,12 @@
+## 0.0.13 (2024-04-06)
+
+
+### 🩹 Fixes
+
+- Fix package.json formats ([e03ae04](https://github.com/gutentag2012/form-signals/commit/e03ae04))
+- Always auth for npm ([b0e7e4c](https://github.com/gutentag2012/form-signals/commit/b0e7e4c))
+- Add additional auth token alias + add registry url ([f4cd4a4](https://github.com/gutentag2012/form-signals/commit/f4cd4a4))
+
 ## 0.0.12 (2024-04-06)
 
 
