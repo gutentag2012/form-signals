@@ -53,7 +53,7 @@ const nameField = form.getOrCreateField('name', {
 Now you can interact with the field:
 
 ```ts
-nameField.handleChange('John Doe');
+nameField.handleChange('John Smith');
 ```
 
 You can also access the underlying signal directly:
