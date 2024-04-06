@@ -1,3 +1,10 @@
+## 0.0.10 (2024-04-06)
+
+
+### 🩹 Fixes
+
+- Fix nx release not parsing output correctly ([63a4262](https://github.com/gutentag2012/form-signals/commit/63a4262))
+
 ## 0.0.9 (2024-04-06)
 
 
