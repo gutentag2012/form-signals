@@ -778,7 +778,7 @@ describe('validation', () => {
         ],
       }
 
-      const transformed = ErrorTransformers.zod(zodError)
+      const transformed = ErrorTransformers.zod(zodError.issues)
 
       expect(transformed).toEqual({
         'names.1': 'Invalid input: expected string, received number',

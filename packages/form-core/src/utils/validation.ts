@@ -465,20 +465,18 @@ export function getValidatorFromAdapter<
     | ValidatorAsync<TValue, TMixins>
 }
 
-type ZodError = {
-  issues: Array<{
-    message: string
-    path: (string | number)[]
-  }>
-}
+type ZodIssues = Array<{
+  message: string
+  path: (string | number)[]
+}>
 
 /**
  * Transforms errors from different schema validation libraries into error that can be consumed by the form
  */
 export const ErrorTransformers = {
-  zod: (zodErrors: ZodError) => {
+  zod: (zodErrors: ZodIssues) => {
     const errorMap: Record<string, string> = {}
-    for (const issue of zodErrors.issues) {
+    for (const issue of zodErrors) {
       const path = issue.path.join('.')
       errorMap[path] = issue.message
     }
