@@ -4,8 +4,6 @@
 ### 🚀 Features
 
 - **form-core:** Add ability to set errors manually ([552c90e](https://github.com/gutentag2012/form-signals/commit/552c90e))
-- **form-core:** Add ability addErrors during submission ([ec8632e](https://github.com/gutentag2012/form-signals/commit/ec8632e))
-- **form-core:** Add ability addErrors during submission ([8764e28](https://github.com/gutentag2012/form-signals/commit/8764e28))
 - **form-core:** Add transformer to convert zod issues to errors consumable by the addError method during submission ([e79c100](https://github.com/gutentag2012/form-signals/commit/e79c100))
 - **form-core:** Add ability addErrors during submission ([ff856ed](https://github.com/gutentag2012/form-signals/commit/ff856ed))
 
