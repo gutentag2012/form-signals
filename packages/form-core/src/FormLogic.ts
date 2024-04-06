@@ -537,7 +537,7 @@ export class FormLogic<
     try {
       await currentOptions.onSubmit(this._jsonData.peek(), (errors) => {
         for (const [path, error] of Object.entries(errors)) {
-          if(!path) {
+          if (!path) {
             this.setErrors({
               async: error,
               asyncErrorEvent: 'server',

@@ -1329,14 +1329,14 @@ describe('FormLogic', () => {
       ])
       vi.useRealTimers()
     })
-    it("should be able to add errors to the form itself during submission", async () => {
+    it('should be able to add errors to the form itself during submission', async () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'test',
         },
         onSubmit: (_, addErrors) => {
           addErrors({
-            "": 'error',
+            '': 'error',
           })
         },
       })
