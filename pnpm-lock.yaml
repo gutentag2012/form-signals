@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@nx/js@18.0.2':
-    hash: jwhl57wxutxder3mbglmnmc73u
+    hash: qgrxgerajamcpgpl6xcr3zovpu
     path: patches/@nx__js@18.0.2.patch
 
 importers:
@@ -18,7 +18,7 @@ importers:
         version: 1.6.3
       '@nx/js':
         specifier: 18.0.2
-        version: 18.0.2(patch_hash=jwhl57wxutxder3mbglmnmc73u)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3)
+        version: 18.0.2(patch_hash=qgrxgerajamcpgpl6xcr3zovpu)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3)
       '@types/node':
         specifier: ^20.11.30
         version: 20.11.30
@@ -2434,7 +2434,7 @@ packages:
   /@nrwl/js@18.0.2(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3):
     resolution: {integrity: sha512-gkvNdgcWct9svO0GG4jmYDvr7To69zibFPar43eIWrTUDB+oooA54+nB8GIqrU4P5caabQY+ePtRj77sC58qhg==}
     dependencies:
-      '@nx/js': 18.0.2(patch_hash=jwhl57wxutxder3mbglmnmc73u)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3)
+      '@nx/js': 18.0.2(patch_hash=qgrxgerajamcpgpl6xcr3zovpu)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -2486,7 +2486,7 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
-  /@nx/js@18.0.2(patch_hash=jwhl57wxutxder3mbglmnmc73u)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3):
+  /@nx/js@18.0.2(patch_hash=qgrxgerajamcpgpl6xcr3zovpu)(@types/node@20.11.30)(nx@18.0.2)(typescript@5.4.3):
     resolution: {integrity: sha512-Znc8ywE871OrAaMeR0OB1TojiY5dtDCme1TciZ2oNvH8Qb3IMd9AxL0XqcL2N6Rc2U6UxPb9CajQ02v8k3sRRQ==}
     peerDependencies:
       verdaccio: ^5.0.4
