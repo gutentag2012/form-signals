@@ -1,3 +1,10 @@
+## 0.0.12 (2024-04-06)
+
+
+### 🩹 Fixes
+
+- Add debug information to nx release ([75444ee](https://github.com/gutentag2012/form-signals/commit/75444ee))
+
 ## 0.0.11 (2024-04-06)
 
 
