@@ -9,6 +9,7 @@ on:
 permissions:
   actions: read
   contents: read
+  pull-requests: write
 
 jobs:
   style:
@@ -44,3 +45,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - name: Coverage Report (form-core)
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: "Form Core Coverage"
+          json-summary-path: "./packages/form-core/coverage/coverage-summary.json"
+          json-final-path: "./packages/form-core/coverage/coverage-final.json"
+      - name: Coverage Report (form-react)
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: "Form React Coverage"
+          json-summary-path: "./packages/form-react/coverage/coverage-summary.json"
+          json-final-path: "./packages/form-react/coverage/coverage-final.json"
+      - name: Coverage Report (validation-adapter-zod)
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: "Validation Adapter Zod Coverage"
+          json-summary-path: "./packages/validation-adapter-zod/coverage/coverage-summary.json"
+          json-final-path: "./packages/validation-adapter-zod/coverage/coverage-final.json"
