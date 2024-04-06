@@ -114,3 +114,17 @@ interface ValidatorAsyncOptions extends ValidatorOptions {
 |--------------------|--------------------------------------------------------------|-------------|
 | `debounceMs`       | The debounce time in milliseconds.                           | `undefined` |
 | `accumulateErrors` | Accumulates the errors instead of stopping at the first one. | `false`     |
+
+## ErrorTransformers
+
+This is a collection of functions, that can be used to transform the error messages form a schema validation library to a format that is used by this library.
+
+```ts
+interface ErrorTransformers {
+  zod: (issues: ZodIssue[]) => Record<string, string>
+}
+```
+
+::: info
+Currently only `zod` is supported.
+:::

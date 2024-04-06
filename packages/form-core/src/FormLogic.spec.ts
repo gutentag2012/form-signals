@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { FieldLogic } from './FieldLogic'
 import { FormLogic } from './FormLogic'
 import {
+  ErrorTransformers,
   type ValidatorAdapter,
   type ValidatorAsync,
   type ValidatorSync,
@@ -1096,7 +1097,10 @@ describe('FormLogic', () => {
       await form.mount()
 
       await form.handleSubmit()
-      expect(handleSubmit).toHaveBeenCalledWith({ name: 'test' })
+      expect(handleSubmit).toHaveBeenCalledWith(
+        { name: 'test' },
+        expect.anything(),
+      )
     })
     it('should only set submitting to false after the async submit function resolved', async () => {
       vi.useFakeTimers()
@@ -1130,8 +1134,9 @@ describe('FormLogic', () => {
       })
       await form.mount()
 
-      await expect(form.handleSubmit()).rejects.toThrow(error)
+      await expect(form.handleSubmit()).resolves.toBeUndefined()
       expect(form.submitCountUnsuccessful.value).toBe(1)
+      expect(form.errors.value).toEqual([error.message])
     })
     it('should mark the submission as unsuccessful if the submit async function throws', async () => {
       vi.useFakeTimers()
@@ -1148,12 +1153,198 @@ describe('FormLogic', () => {
       await form.mount()
 
       // noinspection JSVoidFunctionReturnValueUsed
-      const submitPromise = expect(form.handleSubmit()).rejects.toThrow(error)
+      const submitPromise = expect(form.handleSubmit()).resolves.toBeUndefined()
       expect(form.submitCountUnsuccessful.value).toBe(0)
       await vi.advanceTimersByTimeAsync(100)
       await submitPromise
       expect(form.submitCountUnsuccessful.value).toBe(1)
+      expect(form.errors.value).toEqual([error.message])
       vi.useRealTimers()
+    })
+    it("should put any thrown sync error into the form's errors", async () => {
+      const error = new Error('error')
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: () => {
+          throw error
+        },
+      })
+      await form.mount()
+
+      await expect(form.handleSubmit()).resolves.toBeUndefined()
+      expect(form.errors.value).toEqual([error.message])
+    })
+    it("should put any thrown async error into the form's errors", async () => {
+      vi.useFakeTimers()
+      const error = new Error('error')
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          throw error
+        },
+      })
+      await form.mount()
+
+      // noinspection JSVoidFunctionReturnValueUsed
+      const submitPromise = expect(form.handleSubmit()).resolves.toBeUndefined()
+      await vi.advanceTimersByTimeAsync(100)
+      await submitPromise
+      expect(form.errors.value).toEqual([error.message])
+      vi.useRealTimers()
+    })
+    it('should throw any non-error that is thrown', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: () => {
+          throw 'error'
+        },
+      })
+      await form.mount()
+
+      const promise = expect(form.handleSubmit()).rejects.toEqual('error')
+      expect(form.isSubmitting.value).toBe(true)
+      await promise
+      expect(form.isSubmitting.value).toBe(false)
+      expect(form.errors.value).toEqual([])
+    })
+    it('should add errors to fields they are added during submission', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: (_, addErrors) => {
+          addErrors({
+            name: 'error',
+          })
+        },
+      })
+      await form.mount()
+      const field = form.getOrCreateField('name')
+      await field.mount()
+
+      expect(field.errors.value).toEqual([])
+      await form.handleSubmit()
+      expect(field.errors.value).toEqual(['error'])
+    })
+    it('should reset submission errors after any change', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: () => {
+          throw new Error('error')
+        },
+      })
+      await form.mount()
+
+      await form.handleSubmit()
+      expect(form.errors.value).toEqual(['error'])
+      form.data.value.name.value = 'test1'
+      expect(form.errors.value).toEqual([])
+    })
+    it('should not add errors during submission to non-existing fields', async () => {
+      const form = new FormLogic({
+        defaultValues: {
+          other: 'test',
+        },
+        onSubmit: (_, addErrors) => {
+          addErrors({
+            other: 'error',
+          })
+        },
+      })
+      await form.mount()
+
+      expect(form.errors.value).toEqual([])
+      await form.handleSubmit()
+      expect(form.errors.value).toEqual([])
+    })
+    it('should add zod errors during submission via the error transformer', async () => {
+      vi.useFakeTimers()
+      const form = new FormLogic({
+        defaultValues: {
+          names: ['item', 'item2'],
+          address: {
+            zipCode: 9999,
+          },
+        },
+        onSubmit: async (_, addErrors) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          const issues = [
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'number',
+              path: ['names', 1],
+              message: 'Invalid input: expected string, received number',
+            },
+            {
+              code: 'unrecognized_keys',
+              keys: ['extra'],
+              path: ['address'],
+              message: "Unrecognized key(s) in object: 'extra'",
+            },
+            {
+              code: 'too_small',
+              minimum: 10000,
+              type: 'number',
+              inclusive: true,
+              path: ['address', 'zipCode'],
+              message: 'Value should be greater than or equal to 10000',
+            },
+          ]
+          addErrors(ErrorTransformers.zod(issues))
+        },
+      })
+      await form.mount()
+
+      const firstNameField = form.getOrCreateField('names.1')
+      await firstNameField.mount()
+      const addressField = form.getOrCreateField('address')
+      await addressField.mount()
+      const zipCodeField = form.getOrCreateField('address.zipCode')
+      await zipCodeField.mount()
+
+      expect(firstNameField.errors.value).toEqual([])
+      expect(addressField.errors.value).toEqual([])
+      expect(zipCodeField.errors.value).toEqual([])
+      const submitPromise = form.handleSubmit()
+      await vi.advanceTimersByTimeAsync(100)
+      await submitPromise
+      expect(firstNameField.errors.value).toEqual([
+        'Invalid input: expected string, received number',
+      ])
+      expect(addressField.errors.value).toEqual([
+        "Unrecognized key(s) in object: 'extra'",
+      ])
+      expect(zipCodeField.errors.value).toEqual([
+        'Value should be greater than or equal to 10000',
+      ])
+      vi.useRealTimers()
+    })
+    it('should be able to add errors to the form itself during submission', async () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: (_, addErrors) => {
+          addErrors({
+            '': 'error',
+          })
+        },
+      })
+      await form.mount()
+
+      expect(form.errors.value).toEqual([])
+      await form.handleSubmit()
+      expect(form.errors.value).toEqual(['error'])
     })
   })
   describe('helperMethods', () => {

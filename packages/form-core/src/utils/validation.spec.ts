@@ -1,6 +1,7 @@
 import { effect, signal } from '@preact/signals-core'
 import { describe, expect, it, vi } from 'vitest'
 import {
+  ErrorTransformers,
   type ValidationErrorMap,
   type ValidatorEvents,
   clearSubmitEventErrors,
@@ -745,6 +746,44 @@ describe('validation', () => {
         syncErrorEvent: undefined,
         async: undefined,
         asyncErrorEvent: undefined,
+      })
+    })
+  })
+
+  describe('ErrorTransformers', () => {
+    it('should transform Zod errors to an error map', () => {
+      const zodError = {
+        issues: [
+          {
+            code: 'invalid_type',
+            expected: 'string',
+            received: 'number',
+            path: ['names', 1],
+            message: 'Invalid input: expected string, received number',
+          },
+          {
+            code: 'unrecognized_keys',
+            keys: ['extra'],
+            path: ['address'],
+            message: "Unrecognized key(s) in object: 'extra'",
+          },
+          {
+            code: 'too_small',
+            minimum: 10000,
+            type: 'number',
+            inclusive: true,
+            path: ['address', 'zipCode'],
+            message: 'Value should be greater than or equal to 10000',
+          },
+        ],
+      }
+
+      const transformed = ErrorTransformers.zod(zodError.issues)
+
+      expect(transformed).toEqual({
+        'names.1': 'Invalid input: expected string, received number',
+        address: "Unrecognized key(s) in object: 'extra'",
+        'address.zipCode': 'Value should be greater than or equal to 10000',
       })
     })
   })

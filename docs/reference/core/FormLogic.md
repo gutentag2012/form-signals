@@ -57,19 +57,19 @@ export type FormLogicOptions<
 
   defaultValues?: TData
 
-  onSubmit?: (data: TData) => void | Promise<void>
+  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void) => void | Promise<void>
 }
 ```
 
-| Option                | Description                                                                                                                                                                                                                                                 |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| validatorAdapter      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
-| validator             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
-| validatorOptions      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
-| validatorAsync        | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
-| validatorAsyncOptions | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
-| defaultValues         | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
-| onSubmit              | The function that is called once the form is submitted without any validation errors. This function recieves the `TData` as the input and can be an asynchronous function.                                                                                  |
+| Option                  | Description                                                                                                                                                                                                                                                 |
+|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `validatorAdapter`      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
+| `validator`             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
+| `validatorOptions`      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
+| `validatorAsync`        | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
+| `validatorAsyncOptions` | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
+| `defaultValues`         | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
+| `onSubmit`              | The function that is called once the form is submitted without any validation errors. This function receives the `TData` as the input as well as a function to add errors to the form or fields during validation. It can be an asynchronous function.      |
 
 ## Form State
 
@@ -128,31 +128,31 @@ interface FormLogic<
 }
 ```
 
-| State                   | Description                                                                                                                                                        |
-|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| data                    | The reactive signal of the form values. **The returned signal can be written to.**                                                                                 |
-| getValueForPath         | Get the signal of a specific field in the form. **The returned signal can be written to.**                                                                         |
-| json                    | The signal of the form values as a plain JSON object. All signal references are resolved there.                                                                    |
-| isMounted               | Is the form currently mounted                                                                                                                                      |
-| errors                  | The reactive signal of all errors in the form.                                                                                                                     |
-| mountedFieldErrors      | The reactive signal of all errors in the mounted fields.                                                                                                           |
-| unmountedFieldErrors    | The reactive signal of all errors in the unmounted fields.                                                                                                         |
-| fields                  | The reactive signal of all fields in the form.                                                                                                                     |
-| isValidForm             | Is the form valid?                                                                                                                                                 |
-| isValidFields           | Are all fields valid?                                                                                                                                              |
-| isValid                 | Is the form together with all its fields valid?                                                                                                                    |
-| isTouched               | Is the form touched? The form is touched if any of the fields got blurred.                                                                                         |
-| isDirty                 | Is the form dirty? This property is calculated based on the current value and the default values. A form is dirty if those values are unequal using deep equality. |
-| submitCountSuccessful   | The number of successful submits.                                                                                                                                  |
-| submitCountUnsuccessful | The number of unsuccessful submits.                                                                                                                                |
-| submitCount             | The number of total submits.                                                                                                                                       |
-| isValidatingFields      | Is the form currently validating fields?                                                                                                                           |
-| isValidatingForm        | Is the form currently validating?                                                                                                                                  |
-| isValidating            | Is the form currently validating fields or the form?                                                                                                               |
-| isSubmitting            | Is the form currently submitting?                                                                                                                                  |
-| isSubmitted             | Has the form been submitted?                                                                                                                                       |
-| canSubmit               | Can the form be submitted? It can only be submitted, if the form is not currently submitting, is valid and not currently validating.                               |
-| options                 | The options passed to the form. If the options get updated, this also reflects here.                                                                               |
+| State                     | Description                                                                                                                                                        |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `data`                    | The reactive signal of the form values. **The returned signal can be written to.**                                                                                 |
+| `getValueForPath`         | Get the signal of a specific field in the form. **The returned signal can be written to.**                                                                         |
+| `json`                    | The signal of the form values as a plain JSON object. All signal references are resolved there.                                                                    |
+| `isMounted`               | Is the form currently mounted                                                                                                                                      |
+| `errors`                  | The reactive signal of all errors in the form.                                                                                                                     |
+| `mountedFieldErrors`      | The reactive signal of all errors in the mounted fields.                                                                                                           |
+| `unmountedFieldErrors`    | The reactive signal of all errors in the unmounted fields.                                                                                                         |
+| `fields`                  | The reactive signal of all fields in the form.                                                                                                                     |
+| `isValidForm`             | Is the form valid?                                                                                                                                                 |
+| `isValidFields`           | Are all fields valid?                                                                                                                                              |
+| `isValid`                 | Is the form together with all its fields valid?                                                                                                                    |
+| `isTouched`               | Is the form touched? The form is touched if any of the fields got blurred.                                                                                         |
+| `isDirty`                 | Is the form dirty? This property is calculated based on the current value and the default values. A form is dirty if those values are unequal using deep equality. |
+| `submitCountSuccessful`   | The number of successful submits.                                                                                                                                  |
+| `submitCountUnsuccessful` | The number of unsuccessful submits.                                                                                                                                |
+| `submitCount`             | The number of total submits.                                                                                                                                       |
+| `isValidatingFields`      | Is the form currently validating fields?                                                                                                                           |
+| `isValidatingForm`        | Is the form currently validating?                                                                                                                                  |
+| `isValidating`            | Is the form currently validating fields or the form?                                                                                                               |
+| `isSubmitting`            | Is the form currently submitting?                                                                                                                                  |
+| `isSubmitted`             | Has the form been submitted?                                                                                                                                       |
+| `canSubmit`               | Can the form be submitted? It can only be submitted, if the form is not currently submitting, is valid and not currently validating.                               |
+| `options`                 | The options passed to the form. If the options get updated, this also reflects here.                                                                               |
 
 ## Form Lifecycle Methods
 
@@ -168,14 +168,17 @@ interface FormLogic<
   mount(): Promise<() => void>
 
   unmount(): void
+
+  setErrors(errors: Partial<ValidationErrorMap>): void
 }
 ```
 
-| Method        | Input           | Description                                                                                             |
-|---------------|-----------------|---------------------------------------------------------------------------------------------------------|
-| updateOptions | The new options | Update the options of the form. This can be used to update the validation schema or the default values. |
-| mount         | -               | Mount the form. This is necessary to start the validation and submit the form.                          |
-| unmount       | -               | Unmount the form. This is necessary to stop the validation and submit the form.                         |
+| Method          | Input           | Description                                                                                                                                           |
+|-----------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `updateOptions` | The new options | Update the options of the form. This can be used to update the validation schema or the default values.                                               |
+| `mount`         | -               | Mount the form. This is necessary to start the validation and submit the form.                                                                        |
+| `unmount`       | -               | Unmount the form. This is necessary to stop the validation and submit the form.                                                                       |
+| `setErrors`     | The new errors  | Set errors to the form. This can be used to add errors to the form that are not part of the validation. Existing errors will stay unless overwritten. |
 
 ::: info
 When using `updateOptions` to update the form default values,
@@ -207,12 +210,12 @@ interface FormLogic<
 }
 ```
 
-| Handler          | Input                                                                                                                 | Description                                                                                                                                                                                                                     |
-|------------------|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| validateForEvent | The event to validate for                                                                                             | Validate the form for a specific event. This can be used to manually trigger a validation.                                                                                                                                      |
-| handleChange     | The path the the value; The value to update to; Additional options, whether the field at that path should get touched | Change the value of a specific field in the form.                                                                                                                                                                               |
-| handleBlur       | -                                                                                                                     | Trigger the blur event on the form.                                                                                                                                                                                             |
-| handleSubmit     | -                                                                                                                     | Submit the form. This will validate the form and if it is valid, call the `onSubmit` function. If the `onSubmit` function is an asynchronous function, the form will be in the submitting state until the function is resolved. |
+| Handler            | Input                                                                                                                 | Description                                                                                                                                                                                                                     |
+|--------------------|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `validateForEvent` | The event to validate for                                                                                             | Validate the form for a specific event. This can be used to manually trigger a validation.                                                                                                                                      |
+| `handleChange`     | The path the the value; The value to update to; Additional options, whether the field at that path should get touched | Change the value of a specific field in the form.                                                                                                                                                                               |
+| `handleBlur`       | -                                                                                                                     | Trigger the blur event on the form.                                                                                                                                                                                             |
+| `handleSubmit`     | -                                                                                                                     | Submit the form. This will validate the form and if it is valid, call the `onSubmit` function. If the `onSubmit` function is an asynchronous function, the form will be in the submitting state until the function is resolved. |
 
 ## Field Helpers
 
@@ -244,11 +247,11 @@ interface FormLogic<
 }
 ```
 
-| Helper                 | Input                                                         | Description                                                                                                            |
-|------------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| getOrCreateField       | The path to the value of the field; The options for the field | Get or create a field in the form. If a field already exists, its options are getting updated with the passed options. |
-| getDefaultValueForPath | The path to the value of the field                            | Get the default value for a specific field in the form.                                                                |
-| getFieldForPath        | The path to the value of the field                            | Get a specific field in the form.                                                                                      |
+| Helper                   | Input                                                         | Description                                                                                                            |
+|--------------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `getOrCreateField`       | The path to the value of the field; The options for the field | Get or create a field in the form. If a field already exists, its options are getting updated with the passed options. |
+| `getDefaultValueForPath` | The path to the value of the field                            | Get the default value for a specific field in the form.                                                                |
+| `getFieldForPath`        | The path to the value of the field                            | Get a specific field in the form.                                                                                      |
 
 ## Form Helpers
 
@@ -363,16 +366,16 @@ interface FormLogic<
 }
 ```
 
-| Helper                  | Input                                                                                                                                                                     | Description                                                                                                                    |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| setValueInObject        | The path to the object; The key to the value; The value to update to; Additional options, whether the field at that path should get touched                               | Change the value of a specific key in an object in the form.                                                                   |
-| removeValueInObject     | The path to the object; The key to the value; Additional options, whether the field at that path should get touched                                                       | Remove a specific key in an object in the form.                                                                                |
-| insertValueInArray      | The path to the array; The index to insert the value; The value to insert; Additional options, whether the field at that path should get touched                          | Insert a value at a specific index in an array in the form. This will override the value at that position.                     |
-| pushValueToArray        | The path to the array; The value to push; Additional options, whether the field at that path should get touched                                                           | Push a value to the end of an array in the form.                                                                               |
-| pushValueToArrayAtIndex | The path to the array; The index to insert the value; The value to insert; Additional options, whether the field at that path should get touched                          | Push a value at a specific index in an array in the form. All indexes >= the wanted index are getting pushed one to the right. |
-| removeValueFromArray    | The path to the array; The index to remove the value; Additional options, whether the field at that path should get touched                                               | Remove a value at a specific index in an array in the form.                                                                    |
-| swapValuesInArray       | The path to the array; The index of the first value to swap; The index of the second value to swap; Additional options, whether the field at that path should get touched | Swap two values in an array in the form.                                                                                       |
-| moveValueInArray        | The path to the array; The index of the value to move; The index to move the value to; Additional options, whether the field at that path should get touched              | Move a value from one index to another in an array in the form.                                                                |
+| Helper                    | Input                                                                                                                                                                     | Description                                                                                                                    |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `setValueInObject`        | The path to the object; The key to the value; The value to update to; Additional options, whether the field at that path should get touched                               | Change the value of a specific key in an object in the form.                                                                   |
+| `removeValueInObject`     | The path to the object; The key to the value; Additional options, whether the field at that path should get touched                                                       | Remove a specific key in an object in the form.                                                                                |
+| `insertValueInArray`      | The path to the array; The index to insert the value; The value to insert; Additional options, whether the field at that path should get touched                          | Insert a value at a specific index in an array in the form. This will override the value at that position.                     |
+| `pushValueToArray`        | The path to the array; The value to push; Additional options, whether the field at that path should get touched                                                           | Push a value to the end of an array in the form.                                                                               |
+| `pushValueToArrayAtIndex` | The path to the array; The index to insert the value; The value to insert; Additional options, whether the field at that path should get touched                          | Push a value at a specific index in an array in the form. All indexes >= the wanted index are getting pushed one to the right. |
+| `removeValueFromArray`    | The path to the array; The index to remove the value; Additional options, whether the field at that path should get touched                                               | Remove a value at a specific index in an array in the form.                                                                    |
+| `swapValuesInArray`       | The path to the array; The index of the first value to swap; The index of the second value to swap; Additional options, whether the field at that path should get touched | Swap two values in an array in the form.                                                                                       |
+| `moveValueInArray`        | The path to the array; The index of the value to move; The index to move the value to; Additional options, whether the field at that path should get touched              | Move a value from one index to another in an array in the form.                                                                |
 
 ## Form Reset
 
@@ -395,10 +398,10 @@ interface FormLogic<
 }
 ```
 
-| Method           | Description                                                                       |
-|------------------|-----------------------------------------------------------------------------------|
-| resetStateForm   | Reset the form state.                                                             |
-| resetStateFields | Reset the fields state. This will call the reset method on each field.            |
-| resetState       | Reset the form state and the fields state.                                        |
-| resetValues      | Reset the form values to the default values.                                      |
-| reset            | Reset the form state, the fields state and the form values to the default values. |
+| Method             | Description                                                                       |
+|--------------------|-----------------------------------------------------------------------------------|
+| `resetStateForm`   | Reset the form state.                                                             |
+| `resetStateFields` | Reset the fields state. This will call the reset method on each field.            |
+| `resetState`       | Reset the form state and the fields state.                                        |
+| `resetValues`      | Reset the form values to the default values.                                      |
+| `reset`            | Reset the form state, the fields state and the form values to the default values. |

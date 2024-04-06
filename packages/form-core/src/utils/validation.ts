@@ -107,6 +107,7 @@ const ValidatorEventsArray = [
   'onBlur',
   'onSubmit',
   'onMount',
+  'server',
 ] as const
 
 /**
@@ -126,6 +127,7 @@ export type ValidationErrorMap = {
   syncErrorEvent?: ValidatorEvents
   async?: ValidationError
   asyncErrorEvent?: ValidatorEvents
+  general?: ValidationError
 }
 
 /**
@@ -393,9 +395,11 @@ export const clearSubmitEventErrors = (
 
   if (
     newValue.syncErrorEvent !== 'onSubmit' &&
-    newValue.asyncErrorEvent !== 'onSubmit'
-  )
+    newValue.asyncErrorEvent !== 'onSubmit' &&
+    !newValue.general
+  ) {
     return
+  }
 
   if (newValue.syncErrorEvent === 'onSubmit') {
     newValue.sync = undefined
@@ -404,6 +408,9 @@ export const clearSubmitEventErrors = (
   if (newValue.asyncErrorEvent === 'onSubmit') {
     newValue.async = undefined
     newValue.asyncErrorEvent = undefined
+  }
+  if (newValue.general) {
+    newValue.general = undefined
   }
 
   errorMap.value = newValue
@@ -456,4 +463,23 @@ export function getValidatorFromAdapter<
   return validator as
     | ValidatorSync<TValue, TMixins>
     | ValidatorAsync<TValue, TMixins>
+}
+
+type ZodIssues = Array<{
+  message: string
+  path: (string | number)[]
+}>
+
+/**
+ * Transforms errors from different schema validation libraries into error that can be consumed by the form
+ */
+export const ErrorTransformers = {
+  zod: (zodErrors: ZodIssues) => {
+    const errorMap: Record<string, string> = {}
+    for (const issue of zodErrors) {
+      const path = issue.path.join('.')
+      errorMap[path] = issue.message
+    }
+    return errorMap
+  },
 }

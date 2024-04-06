@@ -3,6 +3,9 @@
 # dependencies
 node_modules
 
+**/.cache
+**/cache
+
 # compiled output
 types
 build

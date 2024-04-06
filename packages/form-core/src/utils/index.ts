@@ -17,14 +17,15 @@ export {
   makeArrayEntry,
 } from './signals.utils'
 export type { ValueAtPath, Paths } from './types'
-export type {
-  ValidatorAdapter,
-  ValidatorSchemaType,
-  ValidatorSync,
-  ValidatorAsync,
-  ValidatorAsyncOptions,
-  ValidatorOptions,
-  ValidationError,
-  ValidatorEvents,
-  ValidationErrorMap,
+export {
+  type ValidatorAdapter,
+  type ValidatorSchemaType,
+  type ValidatorSync,
+  type ValidatorAsync,
+  type ValidatorAsyncOptions,
+  type ValidatorOptions,
+  type ValidationError,
+  type ValidatorEvents,
+  type ValidationErrorMap,
+  ErrorTransformers,
 } from './validation'

@@ -197,14 +197,17 @@ interface FieldLogicLifecycle<
   mount(): Promise<() => void>
 
   unmount(): void
+
+  setErrors(errors: Partial<ValidationErrorMap>): void
 }
 ```
 
-| Method          | Input           | Description                                                                                                 |
-|-----------------|-----------------|-------------------------------------------------------------------------------------------------------------|
-| `updateOptions` | The new options | Update the options of the field. This is useful for changing the validation functions or the default value. |
-| `mount`         | -               | Mount the field. This is necessary to start the validation and to make the field available for the form.    |
-| `unmount`       | -               | Unmount the field. This is necessary to stop the validation and to remove the field from the form.          |
+| Method          | Input           | Description                                                                                                                                            |
+|-----------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `updateOptions` | The new options | Update the options of the field. This is useful for changing the validation functions or the default value.                                            |
+| `mount`         | -               | Mount the field. This is necessary to start the validation and to make the field available for the form.                                               |
+| `unmount`       | -               | Unmount the field. This is necessary to stop the validation and to remove the field from the form.                                                     |
+| `setErrors`     | The new errors  | Set errors to the field. This can be used to add errors to the form that are not part of the validation. Existing errors will stay unless overwritten. |
 
 ::: info
 When using `updateOptions` to update the field default values,
