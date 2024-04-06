@@ -9,25 +9,20 @@
     "style": "pnpm dlx @biomejs/biome check .",
     "style:fix": "pnpm dlx @biomejs/biome check --apply .",
     "style:fix:unsafe": "pnpm dlx @biomejs/biome check --apply-unsafe .",
-
     "test": "nx run-many --target=test --all",
     "test:core": "nx test form-core",
     "test:react": "nx test form-react",
     "test:validator-zod": "nx test validation-adapter-zod",
-
     "build": "nx run-many --target=build --all",
     "build:core": "nx build form-core",
     "build:react": "nx build form-react",
     "build:validator-zod": "nx build validation-adapter-zod",
-
     "example:react:complex:form-signals": "nx dev complex-product-details-form-signals-react",
     "example:react:complex:react-hook-form": "nx dev complex-product-details-react-hook-form-react",
     "example:react:complex:tanstack-form": "nx dev complex-product-details-tanstack-form-react",
-
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-
     "release": "node ./scripts/release.cjs"
   },
   "devDependencies": {
@@ -43,5 +38,10 @@
     "vitepress": "^1.0.1",
     "vitepress-plugin-tabs": "^0.5.0",
     "vitest": "^1.4.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@nx/js@18.0.2": "patches/@nx__js@18.0.2.patch"
+    }
   }
 }

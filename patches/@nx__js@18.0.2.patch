@@ -1,0 +1,16 @@
+diff --git a/src/executors/release-publish/release-publish.impl.js b/src/executors/release-publish/release-publish.impl.js
+index 5f30f0d87751d5ddb9f2ca54150aef281f6490be..e73863e1343816b637f627c68d6b1bf6b6537c47 100644
+--- a/src/executors/release-publish/release-publish.impl.js
++++ b/src/executors/release-publish/release-publish.impl.js
+@@ -155,7 +155,10 @@ async function runExecutor(options, context) {
+             cwd: packageRoot,
+             stdio: ['ignore', 'pipe', 'pipe'],
+         });
+-        const stdoutData = JSON.parse(output.toString());
++        const outputString = output.toString()
++        const startOfObject = outputString.indexOf('{')
++        const endOfObject = outputString.lastIndexOf('}') + 1
++        const stdoutData = JSON.parse(outputString.slice(startOfObject, endOfObject))
+         // If npm workspaces are in use, the publish output will nest the data under the package name, so we normalize it first
+         const normalizedStdoutData = stdoutData[packageName] ?? stdoutData;
+         (0, log_tar_1.logTar)(normalizedStdoutData);
