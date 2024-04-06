@@ -4,7 +4,10 @@
   "description": "Validation adapter for zod enabling the usage of zod schemas with signal forms",
   "author": "joshua.gawenda",
   "license": "MIT",
-  "repository": "gutentag2012/form-signals",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gutentag2012/form-signals.git"
+  },
   "homepage": "https://gutentag2012.github.io/form-signals/",
   "bugs": {
     "url": "https://github.com/gutentag2012/form-signals/issues"
