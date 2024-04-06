@@ -433,6 +433,21 @@ export class FormLogic<
 
     this._unsubscribeFromChangeEffect?.()
   }
+
+  /**
+   * Adds errors to the form.
+   *
+   * @param errors - The errors to add.
+   *
+   * @note
+   * Existing errors will be kept unless they are overwritten by the new errors.
+   */
+  public setErrors(errors: Partial<ValidationErrorMap>): void {
+    this._errorMap.value = {
+      ...this._errorMap.value,
+      ...errors,
+    }
+  }
   //endregion
 
   //region Handlers

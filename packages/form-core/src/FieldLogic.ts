@@ -158,7 +158,6 @@ export type FieldLogicOptions<
   transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
 }
 
-// TODO Add async annotations so you only need to await if it is really needed
 // TODO Add core method to get a subfield
 /**
  * Logic for a field in the form.
@@ -508,6 +507,21 @@ export class FieldLogic<
       this._options.peek()?.preserveValueOnUnmount,
       this._options.peek()?.resetValueToDefaultOnUnmount,
     )
+  }
+
+  /**
+   * Adds errors to the field.
+   *
+   * @param errors - The errors to add.
+   *
+   * @note
+   * Existing errors will be kept unless they are overwritten by the new errors.
+   */
+  public setErrors(errors: Partial<ValidationErrorMap>): void {
+    this._errorMap.value = {
+      ...this._errorMap.value,
+      ...errors,
+    }
   }
   //endregion
 
