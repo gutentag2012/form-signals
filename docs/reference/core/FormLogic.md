@@ -57,19 +57,19 @@ export type FormLogicOptions<
 
   defaultValues?: TData
 
-  onSubmit?: (data: TData) => void | Promise<void>
+  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void) => void | Promise<void>
 }
 ```
 
-| Option                | Description                                                                                                                                                                                                                                                 |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| validatorAdapter      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
-| validator             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
-| validatorOptions      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
-| validatorAsync        | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
-| validatorAsyncOptions | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
-| defaultValues         | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
-| onSubmit              | The function that is called once the form is submitted without any validation errors. This function recieves the `TData` as the input and can be an asynchronous function.                                                                                  |
+| Option                  | Description                                                                                                                                                                                                                                                 |
+|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `validatorAdapter`      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
+| `validator`             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
+| `validatorOptions`      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
+| `validatorAsync`        | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
+| `validatorAsyncOptions` | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
+| `defaultValues`         | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
+| `onSubmit`              | The function that is called once the form is submitted without any validation errors. This function receives the `TData` as the input as well as a function to add errors to the form or fields during validation. It can be an asynchronous function.      |
 
 ## Form State
 
