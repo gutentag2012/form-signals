@@ -15,3 +15,5 @@
 - [ ] The code is well documented
 - [ ] The documentation website is up-to-date
 - [ ] Tests cover new code or fixes
+
+## Changes
