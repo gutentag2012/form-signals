@@ -61,9 +61,7 @@ export default function MyForm() {
 ```
 
 ::: tip
-It is recommended
-to create your custom `input` component that takes the field signal as a prop to optimize the re-renders.
-If you use the `nameField.data.value` in the main component, it will re-render the whole component on every change.
+To optimize re-renders, create a custom `input` component that receives the field signal as a prop. Using `nameField.data.value` directly in the main component triggers a full re-render on every change.
 :::
 
 ::: info
@@ -93,9 +91,9 @@ export default function MyForm() {
 ```
 
 ::: danger WARNING
-You cannot subscribe to a signal value from within an arrow function.
-So you will not be able to use `field.data.value` directly in the main component,
-but rather have to create a child component that subscribes to the signal.
+You cannot subscribe to a signal value within an arrow function.
+This means using `field.data.value` directly in the main component is not possible.
+To access the signal value, you'll need to create a child component that subscribes to the signal.
 :::
 
 If you want to avoid this pitfall, you can use the `FieldProvider` component and consume the fields context in a child
@@ -129,7 +127,7 @@ export default function MyForm() {
 
 The basic principles of form submission are the same as in the core library.
 
-It is recommended to use a default html `form` element to wrap your form and hook into the `onSubmit` event.
+It is recommended to use a default HTML `form` element to wrap your form and hook into the `onSubmit` event.
 
 ```tsx {10-13,17-18}
 export default function MyForm() {
@@ -159,8 +157,7 @@ export default function MyForm() {
 
 The basic principles of accessing data are the same as in the core library.
 
-Additionally, it is important to note, that you can always use the `useFormContext` and `useFieldContext` hooks to
-access the form and field data.
+Additionally, you can always use the `useFormContext` and `useFieldContext` hooks to access form and field data directly.
 
 ::: info
 You can only use these hooks from children of the `FormProvider` or `FieldProvider` components.
@@ -191,11 +188,7 @@ export default function MyForm() {
 
 ## Add Transformation
 
-The basic principles of adding transformation are the same as in the core library.
-
-So adding transformation to a field is as simple
-as adding the `transformFromBinding` and `transformToBinding` options to the field
-and using the `transformedData` property of the field.
+The basic principles of transforming data are the same as in the core library. To add a transformation to a field, use the `transformFromBinding` and `transformToBinding` options. You can then access the transformed data using the `transformedData` property of the field.
 
 ```tsx {8-9,12}
 export default function MyForm() {

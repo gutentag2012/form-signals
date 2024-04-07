@@ -51,11 +51,10 @@ It is not possible to disable the validation on submit.
 
 ## Async Validation
 
-This library also allows for async validation by default.
-To do that, pass an asynchronous function to the `validatorAsync` option.
-It follows the same rules as the synchronous validation, but instead of returning a string,
-it returns a promise that resolves to a string or `undefined`.
-It also receives an `AbortSignal` as a second argument, which can be used to cancel the validation.
+This library also supports asynchronous validation out of the box.
+To enable it, pass an asynchronous function to the `validatorAsync` option.
+It follows the same rules as synchronous validation, but instead of returning a `string` directly, it returns a promise that resolves to either a `string` or `undefined`.
+The asynchronous function also receives an `AbortSignal` as a second argument, which allows you to cancel the validation in progress.
 If the signal is aborted, the validation is considered canceled and all errors are discarded.
 
 ::: info
@@ -113,19 +112,19 @@ const form = new FormLogic({
 ```
 
 ::: info
-The abortSignal of the validator is also aborted if there is a new debounced validation.
+The `abortSignal` of the `validator` is also aborted if there is a new debounced validation.
 That means, with this example, you will only see the error message after 1500ms after the last validation.
 :::
 
 ## Deep Validation
 
-As mentioned before, the form will run onChange validation on every nested change.
+As mentioned before, the form will run `onChange` validation on every nested change.
 Fields, however, only run validation if the direct value is changed.
-So if you have a field that has an array value, it only runs validation if elements are added, removed or swapped.
-No validation will be run if the value of an array item is changed.
+So, if you have a field that has an array value, it only runs validation if elements are added, removed or swapped.
+No validation is run if the value of an item within the array is changed.
 
 This library allows you to listen to those deep changes
-and trigger an onChange validation on a parent if a nested value changes.
+and trigger an `onChange` validation on a parent if a nested value changes.
 To do that, you can set the `validateOnNestedChange` option to `true` when creating a new field.
 
 ```ts
@@ -154,15 +153,9 @@ So even a change 5 levels deep will trigger the validation of the parent.
 
 ## Validation Mixins
 
-Sometimes you have to validate a field relative to the value of another field.
-Many libraries struggle with this issue and usually require you to have validation on a common parent.
-This library solves the issue with validation mixins,
-which allow you to add any other value from the form to the validation function.
+Sometimes, you have to validate a field relative to the value of another field. Many libraries struggle with this issue and usually require you to have validation on a common parent. This library solves the issue with validation mixins, which allow you to add any other value from the form to the validation function.
 
-To do that, add the paths as an array to the `validateMixin` option when creating a new field.
-This will transform the input of the validator to a tuple,
-where the first value is the value of the field,
-and the other values are the values provided by the paths in the same order.
+To do that, add the paths as an array to the `validateMixin` option when creating a new field. This will transform the input of the validator to a tuple, where the first value is the value of the field, and the other values are the values provided by the paths in the same order.
 
 ```ts
 import {FormLogic} from '@formsignals/form-core';

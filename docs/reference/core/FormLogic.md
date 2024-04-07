@@ -258,8 +258,7 @@ interface FormLogic<
 The form offers several helpers to interact with [arrays](/guide/array-fields)
 and [dynamic objects](/guide/dynamic-objects).
 
-Some of these types might look complex, but they are necessary to ensure,
-that you only can insert, swap or remove at the correct positions.
+Some of these types might look complex, but they are necessary to ensure that you only can insert, swap or remove at the correct positions.
 E.g., you can only swap two values in an array if they are of the same type, or you can never insert into a tuple
 
 ```ts

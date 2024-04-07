@@ -41,8 +41,7 @@ interface FormContextType<
 | `handleSubmitOnEnter` | A function that can be used capture the enter key press on an HTML element, stop the events propagation and run the `handleSubmit` method of the form. |
 
 ::: info
-The `handleSubmitOnEnter` can be useful if you have a form that has no HTML form element, or is a subform within an HTML form.
-You cannot nest HTML form elements, so the browser functionality to submit a form on entering will not work unless you use this function on a wrapping container of the subform elements.
+The `handleSubmitOnEnter` function can be useful for forms that lack a standard HTML form element, or for subforms within a larger HTML form. Since HTML forms cannot be nested, the browser's built-in functionality to submit on Enter won't work. To address this, use `handleSubmitOnEnter` on the container element that wraps your subform's elements.
 :::
 
 ## formLogicToFormContext

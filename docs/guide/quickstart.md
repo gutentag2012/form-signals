@@ -40,13 +40,7 @@ If you want to use a schema validation library you can also install the correspo
 
 ## Creating your first form
 
-This is how you would create a simple registration form with a name and email field would look like.
-This example also includes validation using the Zod library.
-
-In a real world project, you would then probably connect the state of the form to a UI, this is not covered in this
-example.
-Check out the [React quickstart guide](/guide/react/quickstart#creating-your-first-form) for an example with the React
-bindings.
+This is what a simple registration form with a name and email field would look like. This example also includes validation using the Zod library. Connecting the form state to a UI is not covered here. For an example with React bindings, check out the [React quickstart guide](/guide/react/quickstart#creating-your-first-form).
 
 ::: code-group
 

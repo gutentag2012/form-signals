@@ -5,20 +5,13 @@ let's take a look at what to keep in mind when working with the core components 
 
 ## Form
 
-A form is the main part of the library.
-It is the single source of truth for the form data,
-it holds all the references to the data of each field and the data that is not controlled by a field.
+The form is the core component of this library. It acts as **the single source of truth** for all form data. It holds references to both the data of each field and any data not controlled by a specific field.
 
-Besides owning the data,
-the form is also alone responsible for the submission of the form data
-and can handle validation on the complete form data.
+In addition to managing the data, the form is solely responsible for submitting form data and can handle validation for the complete form data.
 
-With these functionalities the form is able to work without the need for any fields.
-All the core functionalities can be accessed through the form instance.
+These functionalities allow the form to function independently of any fields. All core features can be accessed through the form instance itself.
 
-Nested data will be stored as nested signals,
-that way the form can guarantee that each change to a value will only affect subscribers to the child value.
-You would access nested data like this:
+Nested data is stored using nested signals. This approach ensures that any changes to a value only affect subscribers to the specific child value. You would access nested data in the following way:
 
 ```ts
 import {FormLogic} from "./FormLogic";
@@ -41,26 +34,20 @@ Only use the `.value` prop if you want to subscribe to changes of that value, ot
 
 ## Field
 
-A field is a wrapper around a single piece of data within the form.
+A field acts as a wrapper for a single piece of data within the form.
 It is responsible for storing field-specific state and handling logic like validation and transformation.
 
-Fields are meant
-to be used as a way to ease the interaction with the form
-and reduce the amount of long chaining for forms with deeply nested data.
+Fields are designed to simplify interaction with the form and reduce the need for long method chaining when working with forms containing deeply nested data.
 
-Once a field is created, it takes control of the data assigned to it.
-It does not store the data itself but rather a reference to the data in the form.
-The field value is now connected to the field lifecycle and will be removed from the form when the field is removed.
-This behavior can be configured, but by default, the field will destroy the connected data when it is unmounted.
+When you create a field, it takes control of the referenced data within the form. It doesn't store the data directly but rather a reference to it. This connects the field value to the field's lifecycle. Any data associated with the field will be removed from the form when the field itself is removed. This behavior can be customized, but by default, the field will delete the referenced data when it's unmounted.
 
 ## Arrays
 
-Arrays are mostly handled like every other nested field,
-it can be accessed through its path string, and every value is wrapped in a signal.
-Most UI libraries, however, need some sort of unique identifier for items in an array
-to keep track of whether an item is added,
-removed or moved.
-For that reason this library adds a unique `key` identifier to each array signal created.
+Arrays are mostly handled like every other nested field.
+It can be accessed through its path string, and every value is wrapped in a signal.
+However, most UI libraries require unique identifiers for array items
+to track whether an item is added, removed or moved.
+To address this, this library automatically adds a unique `key` identifier to each array signal.
 
 So be aware when using arrays and keep in mind, that the raw data has to be accessed through the `.data` prop.
 
