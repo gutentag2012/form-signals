@@ -12,7 +12,7 @@ declare function useForm<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
 >(
-  options: FormLogicOptions<TData, TAdapter>,
+  options?: FormLogicOptions<TData, TAdapter>,
 ): FormContextType<TData, TAdapter>;
 ```
 

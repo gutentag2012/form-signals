@@ -22,7 +22,7 @@ export function useForm<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
 >(
-  options: FormLogicOptions<TData, TAdapter>,
+  options?: FormLogicOptions<TData, TAdapter>,
 ): FormContextType<TData, TAdapter> {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a form once
   const finalForm = React.useMemo(() => {
