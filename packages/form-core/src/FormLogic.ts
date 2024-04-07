@@ -27,7 +27,6 @@ import {
   isEqualDeep,
   makeArrayEntry,
   removeSignalValueAtPath,
-  removeValueAtPath,
   setSignalValueAtPath,
   setSignalValuesFromObject,
   setValueAtPath,
@@ -394,9 +393,9 @@ export class FormLogic<
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
     const newDefaultValues = { ...options.defaultValues }
     for (const dirtyField of dirtyFields) {
-      removeValueAtPath(newDefaultValues, dirtyField as never)
+      setValueAtPath(newDefaultValues, dirtyField as never, undefined)
     }
-    setSignalValuesFromObject(this._data, newDefaultValues, true)
+    setSignalValuesFromObject(this._data, newDefaultValues)
   }
 
   /**
