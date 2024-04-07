@@ -473,12 +473,15 @@ describe('FormLogic', () => {
       form.updateOptions({ defaultValues: { name: 'another' } })
       expect(form.data.value.name.value).toBe('another')
     })
-    it("should be able to remove fields of dynamic objects or items from an array when updating the options", () =>{
-      const form = new FormLogic<{ obj: { [key: string]: string }, array: number[] }>({
+    it('should be able to remove fields of dynamic objects or items from an array when updating the options', () => {
+      const form = new FormLogic<{
+        obj: { [key: string]: string }
+        array: number[]
+      }>({
         defaultValues: {
           obj: {
-            stay: "stay",
-            go: "go"
+            stay: 'stay',
+            go: 'go',
           },
           array: [1, 2, 3],
         },
@@ -487,18 +490,23 @@ describe('FormLogic', () => {
 
       expect(form.json.value).toEqual({
         obj: {
-          stay: "stay",
-          go: "go"
+          stay: 'stay',
+          go: 'go',
         },
-        array: [1, 2, 3]
+        array: [1, 2, 3],
       })
-      form.updateOptions({ defaultValues: { obj: {stay: "stay(changed)", new: "new"}, array: [2] } })
+      form.updateOptions({
+        defaultValues: {
+          obj: { stay: 'stay(changed)', new: 'new' },
+          array: [2],
+        },
+      })
       expect(form.json.value).toEqual({
         obj: {
-          stay: "stay(changed)",
-          new: "new"
+          stay: 'stay(changed)',
+          new: 'new',
         },
-        array: [2]
+        array: [2],
       })
     })
 
@@ -1835,7 +1843,7 @@ describe('FormLogic', () => {
         expect(form.data.value.deep.value.new.value).toBe(2)
         expect(fn).toHaveBeenCalledTimes(1)
       })
-      it("should touch a field when adding a new key to an object if configured", () => {
+      it('should touch a field when adding a new key to an object if configured', () => {
         const form = new FormLogic<{ deep: { [key: string]: number } }>({
           defaultValues: {
             deep: {
@@ -1928,7 +1936,7 @@ describe('FormLogic', () => {
         expect(form.data.value.deep.value.value).toBeUndefined()
         expect(fn).toHaveBeenCalledTimes(1)
       })
-      it("should touch a field when removing a key from an object if configured", () => {
+      it('should touch a field when removing a key from an object if configured', () => {
         const form = new FormLogic<{ deep: { value?: number } }>({
           defaultValues: {
             deep: {
