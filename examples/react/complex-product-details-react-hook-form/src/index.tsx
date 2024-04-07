@@ -86,24 +86,24 @@ export const Index = () => {
 
   return (
     <main className="container mt-3">
-      <h1 className="text-4xl font-extrabold tracking-tight mb-1">
+      <h1 className="mb-1 font-extrabold text-4xl tracking-tight">
         Product Configuration
       </h1>
-      <p className="text-lg text-gray-300 mb-6">
+      <p className="mb-6 text-gray-300 text-lg">
         This is an example form with a complex data structure demonstrated on a
         form to update product information.
       </p>
 
       <FormProvider {...form}>
         <form
-          className="flex flex-col gap-4 w-full"
+          className="flex w-full flex-col gap-4"
           onSubmit={form.handleSubmit((values) => {
             window.alert(
               `Form submitted with values\n${JSON.stringify(values, null, 2)}`,
             )
           })}
         >
-          <h5 className="text-lg font-bold">General</h5>
+          <h5 className="font-bold text-lg">General</h5>
 
           <FormTextInput name="name" label="Name" maxLength={45} />
 
@@ -119,10 +119,10 @@ export const Index = () => {
 
           <DateRangePicker />
 
-          <h5 className="text-lg font-bold">Prices</h5>
+          <h5 className="font-bold text-lg">Prices</h5>
           <PriceTable />
 
-          <h5 className="text-lg font-bold">Variants</h5>
+          <h5 className="font-bold text-lg">Variants</h5>
           <VariantCreator />
 
           <SubmitButton />

@@ -8,7 +8,7 @@ export const ErrorText = ({
 }: { field: FieldApi<any, any, any, any, any> }) => {
   if (!field.state.meta.errors.length) return null
   return (
-    <p className="text-[0.8rem] font-medium text-destructive">
+    <p className="font-medium text-[0.8rem] text-destructive">
       {field.state.meta.errors.join(', ')}
     </p>
   )

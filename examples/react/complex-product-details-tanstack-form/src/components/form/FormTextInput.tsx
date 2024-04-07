@@ -31,7 +31,7 @@ export const FormTextInput = ({
       />
       <div
         className={cn(
-          'flex flex-row justify-between text-[0.8rem] font-medium mb-[-16px]',
+          'mb-[-16px] flex flex-row justify-between font-medium text-[0.8rem]',
           errorClassName,
         )}
       >

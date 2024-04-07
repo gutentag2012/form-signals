@@ -13,7 +13,7 @@ export const DateRangePicker = () => {
     <div className="flex flex-row gap-2">
       <form.FieldProvider name="validRange.0" validator={z.date()}>
         {(field) => (
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-1 flex-col gap-1">
             <Label htmlFor={field.name}>Valid from</Label>
             <DatePicker
               id={field.name}
@@ -36,7 +36,7 @@ export const DateRangePicker = () => {
         validateMixin={['validRange.0']}
       >
         {(field) => (
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-1 flex-col gap-1">
             <Label htmlFor={field.name}>Valid until</Label>
             <DatePicker
               id={field.name}
