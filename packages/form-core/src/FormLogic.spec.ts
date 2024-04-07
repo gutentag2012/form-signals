@@ -42,9 +42,12 @@ const adapter: ValidatorAdapter = {
 describe('FormLogic', () => {
   it('should have the correct initial state', () => {
     const form = new FormLogic()
-    form.mount()
 
-    expect(form.fields.peek().length).toBe(0)
+    expect(form.isMounted.value).toBeFalsy()
+    form.mount()
+    expect(form.isMounted.value).toBeTruthy()
+
+    expect(form.fields.value.length).toBe(0)
 
     expect(form.data.value).toStrictEqual({})
     expect(form.json.value).toStrictEqual({})
@@ -469,6 +472,34 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'changed this'
       form.updateOptions({ defaultValues: { name: 'another' } })
       expect(form.data.value.name.value).toBe('another')
+    })
+    it("should be able to remove fields of dynamic objects or items from an array when updating the options", () =>{
+      const form = new FormLogic<{ obj: { [key: string]: string }, array: number[] }>({
+        defaultValues: {
+          obj: {
+            stay: "stay",
+            go: "go"
+          },
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      expect(form.json.value).toEqual({
+        obj: {
+          stay: "stay",
+          go: "go"
+        },
+        array: [1, 2, 3]
+      })
+      form.updateOptions({ defaultValues: { obj: {stay: "stay(changed)", new: "new"}, array: [2] } })
+      expect(form.json.value).toEqual({
+        obj: {
+          stay: "stay(changed)",
+          new: "new"
+        },
+        array: [2]
+      })
     })
 
     it('should update the data when using the handleChange method', () => {
@@ -1804,6 +1835,22 @@ describe('FormLogic', () => {
         expect(form.data.value.deep.value.new.value).toBe(2)
         expect(fn).toHaveBeenCalledTimes(1)
       })
+      it("should touch a field when adding a new key to an object if configured", () => {
+        const form = new FormLogic<{ deep: { [key: string]: number } }>({
+          defaultValues: {
+            deep: {
+              value: 1,
+            },
+          },
+        })
+        form.mount()
+        const field = new FieldLogic(form, 'deep')
+        field.mount()
+
+        expect(field.isTouched.value).toBe(false)
+        form.setValueInObject('deep', 'new', 2, { shouldTouch: true })
+        expect(field.isTouched.value).toBe(true)
+      })
       it('should update a value in an object that already has the key', () => {
         const form = new FormLogic<{ deep: { [key: string]: number } }>({
           defaultValues: {
@@ -1880,6 +1927,22 @@ describe('FormLogic', () => {
         form.removeValueInObject('deep', 'value')
         expect(form.data.value.deep.value.value).toBeUndefined()
         expect(fn).toHaveBeenCalledTimes(1)
+      })
+      it("should touch a field when removing a key from an object if configured", () => {
+        const form = new FormLogic<{ deep: { value?: number } }>({
+          defaultValues: {
+            deep: {
+              value: 1,
+            },
+          },
+        })
+        form.mount()
+        const field = new FieldLogic(form, 'deep')
+        field.mount()
+
+        expect(field.isTouched.value).toBe(false)
+        form.removeValueInObject('deep', 'value', { shouldTouch: true })
+        expect(field.isTouched.value).toBe(true)
       })
       it('should do nothing when trying to remove a key to a value that is not an object or a date', () => {
         const form = new FormLogic({
