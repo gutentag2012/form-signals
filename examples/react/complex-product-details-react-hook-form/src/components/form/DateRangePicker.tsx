@@ -11,7 +11,7 @@ export const DateRangePicker = () => {
       <Controller
         name="validRange.0"
         render={(field) => (
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-1 flex-col gap-1">
             <Label htmlFor="validRange.0">Valid from</Label>
             <DatePicker
               id="validRange.0"
@@ -32,7 +32,7 @@ export const DateRangePicker = () => {
       <Controller
         name="validRange.1"
         render={(field) => (
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-1 flex-col gap-1">
             <Label htmlFor={field.field.name}>Valid from</Label>
             <DatePicker
               id={field.field.name}

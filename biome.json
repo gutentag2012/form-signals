@@ -36,6 +36,9 @@
       },
       "correctness": {
         "noUnusedImports": "warn"
+      },
+      "nursery": {
+        "useSortedClasses": "error"
       }
     }
   },

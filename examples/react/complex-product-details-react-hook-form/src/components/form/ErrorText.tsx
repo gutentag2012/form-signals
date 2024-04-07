@@ -1,4 +1,4 @@
 export const ErrorText = ({ message }: { message?: string }) => {
   if (!message) return null
-  return <p className="text-[0.8rem] font-medium text-destructive">{message}</p>
+  return <p className="font-medium text-[0.8rem] text-destructive">{message}</p>
 }
