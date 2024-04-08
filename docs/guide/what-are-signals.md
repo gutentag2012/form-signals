@@ -10,7 +10,7 @@ changes.
 
 Several frontend libraries use Signals as their state management solution, including [Svelte V5](https://svelte.dev/blog/runes), [SolidJS](https://www.solidjs.com/tutorial/introduction_signals), [Angular](https://angular.io/guide/signals), [Qwik](https://qwik.dev/docs/components/state/), [Preact](https://preactjs.com/guide/v10/signals/)
 (and possibly many more).
-Signals are not just a concept for; they can also be used in vanilla JavaScript code to create reactive values.
+Signals are not just a concept used for UI libraries; they can also be used in vanilla JavaScript code to create reactive values.
 The Preact team has built a great solution by exposing their Signals API to the public and even created bindings for
 some other libraries like React.
 
