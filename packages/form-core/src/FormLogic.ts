@@ -1131,7 +1131,16 @@ export class FormLogic<
   public resetValues(): void {
     batch(() => {
       this._isMounted.value = false
-      setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
+
+      // TODO Add tests
+      const formDefaultValues = this._options.peek()?.defaultValues ?? {}
+      const defaultValues = {...formDefaultValues} as TData
+      for (const field of this._fieldsArray.peek()) {
+        if(!field.isMounted.peek()) continue
+        setValueAtPath(defaultValues, field.name, field.defaultValue.peek() as any)
+      }
+
+      setSignalValuesFromObject(this._data, defaultValues)
     })
     this._isMounted.value = true
   }
