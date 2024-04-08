@@ -395,27 +395,29 @@ export class FieldLogic<
       TMixin
     >,
   ): void {
-    const isDirty = this._isDirty.peek()
-    this._options.value = options
+    batch(() => {
+      const isDirty = this._isDirty.peek()
+      this._options.value = options
 
-    if (options?.defaultState?.isTouched) {
-      this._isTouched.value = true
-    }
-    // We should only set the errors, if they are set, the field is not yet touched or dirty, and the field is valid
-    if (
-      options?.defaultState?.errors &&
-      !this._isTouched.peek() &&
-      !this._isDirty.value &&
-      this._isValid.peek()
-    ) {
-      this._errorMap.value = options.defaultState.errors
-    }
+      if (options?.defaultState?.isTouched) {
+        this._isTouched.value = true
+      }
+      // We should only set the errors, if they are set, the field is not yet touched or dirty, and the field is valid
+      if (
+        options?.defaultState?.errors &&
+        !this._isTouched.peek() &&
+        !this._isDirty.value &&
+        this._isValid.peek()
+      ) {
+        this._errorMap.value = options.defaultState.errors
+      }
 
-    if (isDirty) return
+      if (isDirty) return
 
-    if (options?.defaultValue !== undefined) {
-      setSignalValuesFromObject(this.data, options.defaultValue)
-    }
+      if (options && "defaultValue" in options) {
+        setSignalValuesFromObject(this.data, options.defaultValue)
+      }
+    })
   }
 
   /**
