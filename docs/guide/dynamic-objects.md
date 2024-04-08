@@ -1,7 +1,6 @@
 # Dymamic Objects
 
-In some cases, you may want to have a dynamic object structure, where the keys are not known in advance.
-This library handles those scenarios as if they were static objects, but exposes some helper functions
+In some cases, you may want to have a dynamic object structure, where the keys are not known in advance. This library handles these scenarios as if they were static objects, but exposes some helper functions for working with them.
 
 ## Helper Functions
 

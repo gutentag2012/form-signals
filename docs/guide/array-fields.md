@@ -1,7 +1,6 @@
 # Array Fields
 
-In many cases using arrays in forms is necessary and hard to manage.
-You need to keep of the changes to each item and the array itself to know if an item was added, removed or swapped.
+In many cases, using arrays in forms is necessary but hard to manage. You need to keep track of the changes to each item and the array itself to know if an item was added, removed, or swapped.
 
 ## Data Representation
 
