@@ -1149,8 +1149,10 @@ export class FormLogic<
    * This will both the state and values of the form and all fields.
    */
   public reset(): void {
-    this.resetValues()
-    this.resetState()
+    batch(() => {
+      this.resetValues()
+      this.resetState()
+    })
   }
   //endregion
 
