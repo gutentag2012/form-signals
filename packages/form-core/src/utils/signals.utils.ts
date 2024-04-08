@@ -239,12 +239,12 @@ export function getSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   obj: SignalifiedData<TValue> | Signal<undefined>,
   path: TPath,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
-  if (!path) {
+  if (!path || !obj) {
     return obj as SignalifiedData<ValueAtPath<TValue, TPath>>
   }
 
-  if (!obj?.peek()) {
-    return undefined
+  if (!obj.peek()) {
+    return obj as SignalifiedData<ValueAtPath<TValue, TPath>>
   }
   const parts = pathToParts(path as string)
 
