@@ -60,7 +60,7 @@ field.data.value = "New Name"
 ## Form Submission
 
 A form is not complete without a submit-handler.
-To add one, add the onSubmit method to the form options.
+To add one, add the `onSubmit` method to the form options.
 
 ```ts
 const form = new FormLogic<FormValues>({
@@ -124,8 +124,9 @@ to convert the error to a valid format.
 
 ## Accessing Data
 
-There are several different ways to access the form data.
-Your choice will depend on the use case.
+There are several ways to access form data in this library, each suited for different scenarios.
+
+We'll explore these methods and discuss when each approach might be most beneficial.
 
 ### Through Fields
 
@@ -196,13 +197,11 @@ you will subscribe to every change within the form data.
 
 ## Add Validation
 
-A crucial part of forms is validation.
-You can either add validation to the whole form or to a single field.
+Validation is essential for forms as it safeguards data integrity and provides a smooth user experience. This library offers two approaches to validation: form-level and field-level.
 
 ### Field Validation
 
-Adding validation to a single field might be the simplest and most common way to validate a form.
-You can add a validation function to the field options.
+Adding validation rules directly to individual fields is a common and straightforward approach. This library allows you to define a validation function within the field options.
 
 ```ts
 const field = form.getOrCreateField("name", {
@@ -276,7 +275,7 @@ please refer to the [Validation Guide](/guide/validation).
 
 ## Add Transformation
 
-In many cases, you have data in your form that has a type which cannot be used by your application.
+In many cases, you have data in your form that has a type incompatible with your application.
 A common example is numbers, which are stored as such in the form,
 but are needed as string in the application (e.g., in an input field).
 The users of the transformed values are called bindings in this context.

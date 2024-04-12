@@ -45,8 +45,7 @@ If you want to use a schema validation library you can also install the correspo
 
 ## Creating your first form
 
-This is how you would create a simple registration form with a name and email field would look like.
-This example also includes validation using the Zod library.
+This code snippet demonstrates a simple registration form with `name`, `email`, and `password` fields. The example utilizes Zod for validation.
 
 ::: tip
 Just like in this example it is advised to create your own input components, that accept signals as props.
