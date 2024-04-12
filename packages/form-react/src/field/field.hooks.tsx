@@ -41,20 +41,26 @@ export function useField<
     TMixin
   >,
 ): FieldContextType<TData, TName, TBoundValue, TAdapter, TFormAdapter, TMixin> {
-  const field = form.getOrCreateField(name, options)
-  const finalField = React.useMemo(
-    () => fieldLogicToFieldContext(field),
-    [field],
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a field once, and we have to update the options in a layout effect to avoid setting state during render
+  const field = React.useMemo(
+    () => fieldLogicToFieldContext(form.getOrCreateField(name, options)),
+    [form, name],
   )
 
   useIsomorphicLayoutEffect(() => {
-    finalField.mount()
-    return () => {
-      finalField.unmount()
-    }
-  }, [finalField])
+    // That way we can make sure to not update the options for the first render
+    if (!field.isMounted.peek()) return
+    field.updateOptions(options)
+  }, [field, options])
 
-  return finalField
+  useIsomorphicLayoutEffect(() => {
+    field.mount()
+    return () => {
+      field.unmount()
+    }
+  }, [field])
+
+  return field
 }
 
 /**
