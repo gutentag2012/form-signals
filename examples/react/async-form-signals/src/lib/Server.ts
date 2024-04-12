@@ -8,24 +8,18 @@ const users: User[] = [
     name: 'Alice',
     email: 'alice@example.com',
     dob: new Date('1990-01-01'),
-    friends: [1, 2],
-    blocked: [],
   },
   {
     id: ++idCounter,
     name: 'Sam',
     email: 'sam@example.com',
     dob: new Date('1992-04-07'),
-    friends: [1],
-    blocked: [],
   },
   {
     id: ++idCounter,
     name: 'Sally',
     email: 'sally@example.com',
     dob: new Date('1991-02-18'),
-    friends: [],
-    blocked: [2],
   },
 ]
 
@@ -63,14 +57,4 @@ export async function updateUser(id: number, user: Omit<Partial<User>, 'id'>) {
 
   await serverDelay()
   Object.assign(currentUser, user)
-}
-
-export async function getAvailableUserFriends(id: number): Promise<User[]> {
-  const user = await getUserById(id)
-  if (!user) {
-    throw new Error('User not found')
-  }
-
-  await serverDelay()
-  return users.filter(u => u.id !== user.id && !u.blocked.includes(user.id))
 }

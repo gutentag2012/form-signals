@@ -2,19 +2,16 @@ import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { InputSignal } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
-import {createUser, getAvailableUserFriends, getUserById, updateUser} from '@/lib/Server.ts'
+import {createUser, getUserById, updateUser} from '@/lib/Server.ts'
 import { SelectedUser } from '@/signals.ts'
 import type { User } from '@/types.ts'
-import {unSignalifyValueSubscribed, useField, useFieldContext, useForm} from '@formsignals/form-react'
+import {useForm} from '@formsignals/form-react'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 import { Loader2Icon } from 'lucide-react'
-import {Checkbox} from "@/components/ui/checkbox.tsx";
 
-// TODO add proper loading states (disabled fields)
-// TODO Add support for proper field disabled states
-// TODO Add support for partial default values on the form
-// TODO Make API easier to use
+// TODO Add support for proper field disabled states (when loading)
 // TODO Add tests for everything that was fixed
+// TODO Add a partial async state once partial data is enabled
 
 export function UserForm() {
   const selectedUser = SelectedUser.value
@@ -34,13 +31,6 @@ export function UserForm() {
   }
 
   const form = useForm<Omit<User, 'id'>>({
-    defaultValues: user.data ?? {
-      name: "",
-      email: "",
-      dob: undefined as unknown as Date,
-      friends: [],
-      blocked: [],
-    },
     onSubmit: (values) => onSubmit(values).then(() => {
       SelectedUser.value = undefined
       form.reset()
@@ -61,7 +51,7 @@ export function UserForm() {
             return form.handleSubmit()
           }}
         >
-          <form.FieldProvider name="name">
+          <form.FieldProvider name="name" defaultValue={user.data?.name ?? ""}>
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Name</Label>
@@ -76,6 +66,7 @@ export function UserForm() {
           </form.FieldProvider>
           <form.FieldProvider
             name="email"
+            defaultValue={user.data?.email ?? ""}
           >
             {(field) => (
               <div>
@@ -90,7 +81,8 @@ export function UserForm() {
               </div>
             )}
           </form.FieldProvider>
-          <form.FieldProvider name="dob">
+          {/* TODO Allow null as a valid default value */}
+          <form.FieldProvider name="dob" defaultValue={user.data?.dob ?? null as unknown as Date}>
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Date of Birth</Label>
@@ -106,14 +98,8 @@ export function UserForm() {
             )}
           </form.FieldProvider>
 
-          <form.FieldProvider
-            name="friends"
-          >
-            <FriendsList />
-          </form.FieldProvider>
-
           <div className="flex flex-row gap-1">
-            <Button type="submit" className="ml-auto">
+            <Button type="submit" className="ml-auto" disabled={!form.canSubmit.value || !form.isDirty.value}>
               Submit
             </Button>
             <Button
@@ -130,63 +116,5 @@ export function UserForm() {
         </form>
       </form.FormProvider>
     </div>
-  )
-}
-
-function FriendsList() {
-  const selectedUser = SelectedUser.value
-
-  const availableFriends = useQuery({
-    queryKey: ['users', selectedUser, 'availableFriends'],
-    queryFn: () => getAvailableUserFriends(selectedUser as number),
-    enabled: selectedUser !== undefined,
-  })
-
-  return <div>
-    <Label>Friends</Label>
-    {(availableFriends.isFetching) && <Loader2Icon className="h-6 w-6 animate-spin"/>}
-    <ul>
-      {availableFriends.data?.map((friend) => (
-        <FriendListItem key={friend.id} friend={friend} />
-      ))}
-    </ul>
-  </div>
-}
-
-function FriendListItem({friend}: {friend: User}) {
-  const field = useFieldContext<User, "friends">()
-  const friends = unSignalifyValueSubscribed(field.data)
-
-  const blockedField = useField(field.form, "blocked", {
-    preserveValueOnUnmount: true
-  })
-  const blockedUsers = unSignalifyValueSubscribed(blockedField.data)
-  const isBlocked = blockedUsers?.includes(friend.id)
-
-  const toggleBlock = () => {
-    const indexOfBlock = blockedUsers?.indexOf(friend.id)
-    if(indexOfBlock !== -1) {
-      blockedField.removeValueFromArray(indexOfBlock)
-    } else {
-      blockedField.pushValueToArray(friend.id)
-    }
-  }
-
-  const toggleFriend = (isFriend: boolean) => {
-    if(isFriend) {
-      field.pushValueToArray(friend.id)
-    } else {
-      field.removeValueFromArray(friends.indexOf(friend.id))
-    }
-  }
-
-  return (
-    <li className="flex flex-row gap-2 items-center">
-      <Checkbox checked={friends.some(u => u === friend.id)} disabled={isBlocked} onCheckedChange={toggleFriend}/>
-      {friend.name}
-      <Button size="sm" variant="ghost" onClick={toggleBlock} type="button">
-        {isBlocked ? "Unblock" : "Block"} User
-      </Button>
-    </li>
   )
 }

@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover.tsx'
 import { cn } from '@/lib/utils.ts'
-import type { Signal } from '@preact/signals-react'
+import {type Signal, useComputed} from '@preact/signals-react'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
@@ -15,6 +15,7 @@ interface DatePickerProps extends Omit<ButtonProps, 'value' | 'onChange'> {
 }
 
 export const DatePicker = ({ className, value, ...props }: DatePickerProps) => {
+  const selected = useComputed(() => value.value ? format(value.value, 'PPP') : <span>Pick a date</span>)
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -27,7 +28,7 @@ export const DatePicker = ({ className, value, ...props }: DatePickerProps) => {
           {...props}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value.value ? format(value.value, 'PPP') : <span>Pick a date</span>}
+          {selected.value}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
