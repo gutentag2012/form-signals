@@ -14,6 +14,7 @@ import { createRoot } from 'react-dom/client'
 import { z } from 'zod'
 import { Button } from './components/ui/button'
 import './index.css'
+import {FormDevTools} from "@formsignals/dev-tools-react";
 
 export const Index = () => {
   const form = useForm<Product, typeof ZodAdapter>({
@@ -36,6 +37,7 @@ export const Index = () => {
       </p>
 
       <form.FormProvider>
+        <FormDevTools />
         <form
           className="flex w-full flex-col gap-4"
           onSubmit={(e) => {
@@ -48,6 +50,7 @@ export const Index = () => {
 
           <form.FieldProvider
             name="name"
+            defaultValue=""
             validator={z
               .string()
               .min(5, 'Value must be longer than 5 characters')}

@@ -1,0 +1,234 @@
+#fs-open-button {
+  margin: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  background: var(--fs-text-color);
+}
+
+#fs-close-button {
+  position: sticky;
+  bottom: 0;
+  top: 0;
+  z-index: 1001;
+
+  display: flex;
+  width: 100%;
+
+  background: var(--fs-bg-color);
+}
+
+#fs-close-button > button {
+  padding-block: 4px;
+  padding-inline: 8px;
+  border-radius: 4px;
+  background: var(--fs-bg-secondary-color);
+  color: var(--fs-text-color);
+  font-size: 16px;
+  margin: 16px;
+}
+
+.collapsible {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  color: var(--fs-text-color);
+  border-color: var(--fs-bg-secondary-color);
+  border-style: solid;
+  border-bottom-width: 1px;
+}
+
+.collapsible__button {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding-inline: 8px;
+  padding-block: 4px;
+  font-weight: 500;
+}
+
+.collapsible__content {
+  width: 100%;
+  max-width: calc(30vw - 32px);
+  overflow: auto;
+  padding: 8px;
+}
+
+.collapsible__endAttachment {
+  margin-left: auto;
+}
+
+.fs-drawer--field-states .collapsible {
+  border-bottom-width: 0;
+}
+
+.fs-drawer--field-state > .collapsible {
+  margin-top: 4px;
+}
+
+.fs-drawer--field-state--value {
+  display: flex;
+  gap: 8px;
+  padding-inline: 4px;
+}
+
+.bg-success {
+  background: var(--fs-success-color);
+}
+.bg-error {
+  background: var(--fs-error-color);
+}
+
+.fs-boolean-display {
+  --fs-boolean-dot-size: 8px;
+
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  padding: 4px;
+  color: var(--fs-text-color);
+}
+.fs-boolean-display > .fs-boolean-dot {
+  display: inline-block;
+  width: var(--fs-boolean-dot-size);
+  height: var(--fs-boolean-dot-size);
+  border-radius: var(--fs-boolean-dot-size);
+}
+
+.fs-number-display {
+  padding: 4px;
+  color: var(--fs-text-color);
+}
+
+
+#fs-drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--fs-bg-color);
+  color: var(--fs-text-color);
+}
+
+#fs-drawer--action-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+#fs-drawer--action-buttons > button {
+  padding-inline: 8px;
+  padding-block: 4px;
+  border-radius: 4px;
+  background: var(--fs-bg-secondary-color);
+  color: var(--fs-text-color);
+}
+
+#fs-drawer--title {
+  font-size: 0.9rem;
+  padding: 8px;
+  color: var(--fs-text-color);
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.fs-drawer--section-title {
+  font-size: 0.9rem;
+  padding: 8px;
+  color: var(--fs-text-color);
+  opacity: 0.85;
+  font-weight: 400;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+#fs-drawer--header {
+  max-width: 30vw;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+#fs-drawer--header > * {
+  padding-inline: 8px;
+  border-color: var(--fs-bg-secondary-color);
+  border-style: solid;
+}
+
+.fs-drawer--header--section-title {
+  font-size: 0.9rem;
+  padding: 8px;
+  color: var(--fs-text-color);
+  opacity: 0.85;
+  font-weight: 600;
+  grid-column: 1 / span 6;
+  border-bottom-width: 1px;
+}
+.fs-drawer--header--section-title:nth-child(1) {
+  border-top-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(2) {
+  grid-column: 1 / span 3;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(3) {
+  grid-column: 4 / span 3;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(4) {
+  grid-column: 1 / span 1;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(5) {
+  grid-column: 2 / span 5;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(13) {
+  grid-column: 1 / span 6;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(15) {
+  grid-column: 1 / span 2;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(16) {
+  grid-column: 3 / span 2;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(17) {
+  grid-column: 5 / span 2;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(7), #fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(18) {
+  grid-column: 1 / span 2;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(8), #fs-drawer--header > :nth-child(11), #fs-drawer--header > :nth-child(19) {
+  grid-column: 3 / span 2;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+#fs-drawer--header > :nth-child(9), #fs-drawer--header > :nth-child(12), #fs-drawer--header > :nth-child(20) {
+  grid-column: 5 / span 2;
+  border-bottom-width: 1px;
+}

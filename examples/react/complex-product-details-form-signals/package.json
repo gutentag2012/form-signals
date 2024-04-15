@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formsignals/dev-tools-react": "workspace:*",
     "@formsignals/form-core": "workspace:*",
     "@formsignals/form-react": "workspace:*",
     "@formsignals/validation-adapter-zod": "workspace:*",
