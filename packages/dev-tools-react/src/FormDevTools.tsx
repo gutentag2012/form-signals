@@ -23,6 +23,7 @@ export type FormDevToolsProps = {
 // TODO Testing
 // TODO Docs
 
+// TODO Removing a field should remove all child fields as well
 // TODO When removing a variant, the value is still preserved event though I explicitly removed it
 // TODO Dynamic object is not marked as dirty
 // TODO Dynamic object cannot be reset (price)
