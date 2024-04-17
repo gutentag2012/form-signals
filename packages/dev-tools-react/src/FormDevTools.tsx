@@ -1,10 +1,11 @@
 import './index.css'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React from "react"
+import React, {type CSSProperties} from "react"
 import {useSignal} from '@preact/signals-react'
 import {defaultContext, formDevToolsContext,} from './FormDevToolsContext'
 import {FormDevToolsDrawer} from "./components/FormDevToolsDrawer";
 import {AppIcon} from "./icons/AppIcon";
+import {TooltipProvider} from "./components/Tooltip";
 
 export type FormDevToolsProps = {
   bgColor?: string
@@ -19,18 +20,13 @@ export type FormDevToolsProps = {
   position?: `${'top' | 'bottom'}-${'left' | 'right'}`
 }
 
-// TODO Improve styling
-  // TODO 1. Add header with brand + action buttons (close, full screen)
-  // TODO 2. Add form actions (submit, reset, resetState, resetValues, validateForEvent)
-  // TODO 3. Add collapsible sections for form state, fields, field state
-  // TODO 4. Improve spacing and alignment (currently the state takes up way too much space) maybe don't use a table
-  // TODO 5. Hover over a value or key to show a description of what it is + if applicable what it is calculated from
+// TODO Testing
+// TODO Docs
 
 // TODO When removing a variant, the value is still preserved event though I explicitly removed it
 // TODO Dynamic object is not marked as dirty
+// TODO Dynamic object cannot be reset (price)
 // TODO Reset does not reset not defined default values
-
-// TODO When bundeling make sure, that the production bundle does not include the form debugger, this can be done by changing the pacakge.json entry files and only includeing the form debugger in the development bundle
 
 export function FormDevTools(props: FormDevToolsProps) {
   const [verticalKey, horizontalKey] = props.position?.split('-') ?? [
@@ -66,33 +62,30 @@ export function FormDevTools(props: FormDevToolsProps) {
 
   return (
     <formDevToolsContext.Provider value={contextValue}>
-      <div
-        style={{
-          ...cssVars,
-          position: 'fixed',
-          [contextValue.verticalKey]: 0,
-          [contextValue.horizontalKey]: 0,
-          overflow: 'auto',
-          maxHeight: '100vh',
-          maxWidth: '30vw',
-          opacity: 1,
-          zIndex: 1000,
-        }}
-      >
-        {isOpen.value ? (
-          <FormDevToolsDrawer isOpen={isOpen} />
-        ) : (
-          <button
-            id="fs-open-button"
-            type="button"
-            onClick={() => {
-              isOpen.value = true
-            }}
-          >
-            <AppIcon size={32} />
-          </button>
-        )}
-      </div>
+      <TooltipProvider>
+        <div
+          id="fs-dev-tools--container"
+          style={{
+            ...cssVars,
+            [contextValue.verticalKey]: 0,
+            [contextValue.horizontalKey]: 0,
+          } as CSSProperties}
+        >
+          {isOpen.value ? (
+            <FormDevToolsDrawer isOpen={isOpen} />
+          ) : (
+            <button
+              id="fs-open-button"
+              type="button"
+              onClick={() => {
+                isOpen.value = true
+              }}
+            >
+              <AppIcon size={32} />
+            </button>
+          )}
+        </div>
+      </TooltipProvider>
     </formDevToolsContext.Provider>
   )
 }

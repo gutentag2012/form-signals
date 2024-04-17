@@ -16,7 +16,7 @@ export function FieldStates() {
         <Collapsible
           key={field.name}
           title={field.name}
-          endAttachment={<BooleanDisplay label="Valid" value={field.isValid} />}
+          endAttachment={<BooleanDisplay label="Valid" value={field.isValid} tooltip="Is the field valid?" />}
         >
           <FieldState fieldName={field.name} />
         </Collapsible>

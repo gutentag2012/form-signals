@@ -38,18 +38,18 @@
     "README.md"
   ],
   "peerDependencies": {
-    "@preact/signals-react": "^2.0.0",
     "@formsignals/form-react": "^0.1.0",
+    "@preact/signals-react": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
     "@preact/signals-react-transform": "^0.3.0",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.2.56",
-    "@types/react-dom": "^18.2.19"
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1"
   },
   "keywords": [
     "signals",
@@ -63,5 +63,8 @@
     "build": "vite build",
     "test": "vitest",
     "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@radix-ui/react-tooltip": "^1.0.7"
   }
 }

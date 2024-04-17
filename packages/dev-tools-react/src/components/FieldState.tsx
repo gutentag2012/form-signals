@@ -14,7 +14,13 @@ export function FieldState({ fieldName }: { fieldName: string }) {
   const field = form.fields.value.find((f) => f.name === fieldName)
 
   const errors = useComputed(() => field?.errors?.value?.join(', ') || '-')
-  const currentValue = useComputed(() => {
+  const shouldDisplayRawString = useComputed(() => {
+    const data = field?.data?.value
+    if (typeof data === 'string') return true
+    if (typeof data === 'number') return true
+    return data instanceof Date;
+  })
+  const currentValueString = useComputed(() => {
     const data = field?.data
     if (!data) return null
     const unsignalified = unSignalifyValueSubscribed(data)
@@ -29,14 +35,16 @@ export function FieldState({ fieldName }: { fieldName: string }) {
 
   return (
     <div className="fs-drawer--field-state">
-      <BooleanDisplay label="Mounted" value={field.isMounted} />
-      <BooleanDisplay label="Touched" value={field.isTouched} />
-      <BooleanDisplay label="Dirty" value={field.isDirty} />
-      <TextDisplay label="Errors" value={errors} />
-      <BooleanDisplay label="Validating" value={field.isValidating} />
+      <div className="fs-drawer--field-state--header">
+        <BooleanDisplay label="Mounted" value={field.isMounted} tooltip="Is the field mounted within React?" />
+        <BooleanDisplay label="Touched" value={field.isTouched} tooltip="Has the field been touched?" />
+        <BooleanDisplay label="Dirty" value={field.isDirty} tooltip="Is the current data different from the default data?" />
+        <BooleanDisplay label="Validating" value={field.isValidating} tooltip="Is the field currently validating?" />
+        <TextDisplay label="Errors" value={errors} tooltip="What are the current field errors?" />
+      </div>
 
       <div className="fs-drawer--field-state--value">
-        <strong>Value</strong> <pre>{currentValue}</pre>
+        <strong>Value</strong> {shouldDisplayRawString.value ? currentValueString : <pre>{currentValueString}</pre>}
       </div>
 
       <div id="fs-drawer--action-buttons">

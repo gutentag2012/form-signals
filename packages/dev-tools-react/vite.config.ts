@@ -47,6 +47,7 @@ export default defineConfig({
         '@preact/signals-react-transform',
         '@preact/signals-react/runtime',
         '@formsignals/form-react',
+        '@radix-ui/react-tooltip',
         'react',
         'react/jsx-runtime',
       ],
