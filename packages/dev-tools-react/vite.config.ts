@@ -55,7 +55,7 @@ export default defineConfig({
       },
     },
     lib: {
-      entry: resolve(__dirname, 'src/index.tsx'),
+      entry: resolve(__dirname, 'src/index.ts'),
       fileName: (format, entryName) => {
         const folder = format === 'cjs' ? 'cjs' : 'esm'
         const fileEnding = format === 'cjs' ? 'cjs' : 'js'
