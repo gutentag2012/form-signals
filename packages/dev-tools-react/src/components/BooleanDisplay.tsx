@@ -1,6 +1,6 @@
+import type { Signal } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
-import type { Signal } from '@preact/signals-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip'
 
 export type BooleanDisplayProps = {
@@ -11,7 +11,9 @@ export type BooleanDisplayProps = {
 
 export function BooleanDisplay(props: BooleanDisplayProps) {
   const value = props.value.value
-  const dotClass = `${value ? 'fs-utils--bg-success' : 'fs-utils--bg-error'} fs-boolean-dot`
+  const dotClass = `${
+    value ? 'fs-utils--bg-success' : 'fs-utils--bg-error'
+  } fs-boolean-dot`
 
   return (
     <div className="fs-utils--flex">

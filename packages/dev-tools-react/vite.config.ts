@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
-import { defineConfig } from 'vitest/config'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {

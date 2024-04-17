@@ -1,6 +1,6 @@
+import type { Signal } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
-import type { Signal } from '@preact/signals-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip'
 
 export type NumberDisplayProps = {

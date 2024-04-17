@@ -1,5 +1,5 @@
-import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import * as React from 'react'
 
 const TooltipProvider = TooltipPrimitive.Provider
 
@@ -14,7 +14,7 @@ const TooltipContent = React.forwardRef<
   <TooltipPrimitive.Content
     ref={ref}
     sideOffset={sideOffset}
-    className='fs-tooltip--content'
+    className="fs-tooltip--content"
     {...props}
   />
 ))

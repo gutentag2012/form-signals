@@ -1,11 +1,11 @@
 import { useFormContext } from '@formsignals/form-react'
 import { useComputed } from '@preact/signals-react'
+// biome-ignore lint/correctness/noUnusedImports: This is the React import
+import React from 'react'
 import { BooleanDisplay } from './BooleanDisplay'
-import { TextDisplay } from './TextDisplay'
 import { Collapsible } from './Collapsible'
 import { FieldStates } from './FieldStates'
-// biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React from "react"
+import { TextDisplay } from './TextDisplay'
 
 export function FormDevToolsDrawerContent() {
   const form = useFormContext()
@@ -28,35 +28,91 @@ export function FormDevToolsDrawerContent() {
       <div id="fs-drawer--header">
         <p className="fs-drawer--header--section-title">Basic State</p>
 
-        <BooleanDisplay value={form.isMounted} label="Mounted" tooltip="Is the form mounted within React?" />
-        <BooleanDisplay value={form.isTouched} label="Touched" tooltip="Is one of the fields touched?" />
+        <BooleanDisplay
+          value={form.isMounted}
+          label="Mounted"
+          tooltip="Is the form mounted within React?"
+        />
+        <BooleanDisplay
+          value={form.isTouched}
+          label="Touched"
+          tooltip="Is one of the fields touched?"
+        />
 
-        <BooleanDisplay value={form.isDirty} label="Dirty" tooltip="Is the current data different from the default data?" />
-        <TextDisplay value={dirtyFields} label="Dirty Fields" tooltip="Which keys have been changed?" />
+        <BooleanDisplay
+          value={form.isDirty}
+          label="Dirty"
+          tooltip="Is the current data different from the default data?"
+        />
+        <TextDisplay
+          value={dirtyFields}
+          label="Dirty Fields"
+          tooltip="Which keys have been changed?"
+        />
 
         <p className="fs-drawer--header--section-title">Validation State</p>
 
-        <BooleanDisplay value={form.isValid} label="Valid" tooltip="Is the form and all its fields valid?" />
-        <BooleanDisplay value={form.isValidForm} label="Valid Form" tooltip="Is the form valid?" />
-        <BooleanDisplay value={form.isValidFields} label="Valid Fields" tooltip="Are all fields valid?" />
+        <BooleanDisplay
+          value={form.isValid}
+          label="Valid"
+          tooltip="Is the form and all its fields valid?"
+        />
+        <BooleanDisplay
+          value={form.isValidForm}
+          label="Valid Form"
+          tooltip="Is the form valid?"
+        />
+        <BooleanDisplay
+          value={form.isValidFields}
+          label="Valid Fields"
+          tooltip="Are all fields valid?"
+        />
 
-        <BooleanDisplay value={form.isValidating} label="Validating" tooltip="Is the form or any of its fields validating?" />
-        <BooleanDisplay value={form.isValidatingForm} label="Validating Form" tooltip="Is the form currently validating?" />
+        <BooleanDisplay
+          value={form.isValidating}
+          label="Validating"
+          tooltip="Is the form or any of its fields validating?"
+        />
+        <BooleanDisplay
+          value={form.isValidatingForm}
+          label="Validating Form"
+          tooltip="Is the form currently validating?"
+        />
         <BooleanDisplay
           value={form.isValidatingFields}
           label="Validating Fields"
           tooltip="Are any of the fields validating?"
         />
 
-        <TextDisplay value={errors} label="Form Errors" tooltip="What are the current form errors?" />
+        <TextDisplay
+          value={errors}
+          label="Form Errors"
+          tooltip="What are the current form errors?"
+        />
 
         <p className="fs-drawer--header--section-title">Submission State</p>
 
-        <BooleanDisplay value={form.canSubmit} label="Can Submit" tooltip="Is the form ready to be submitted? (It must be valid, not currently validating and not currently submitting)" />
-        <BooleanDisplay value={form.isSubmitted} label="Submitted" tooltip="Has the form been submitted?" />
-        <BooleanDisplay value={form.isSubmitting} label="Submitting" tooltip="Is the form currently submitting?" />
+        <BooleanDisplay
+          value={form.canSubmit}
+          label="Can Submit"
+          tooltip="Is the form ready to be submitted? (It must be valid, not currently validating and not currently submitting)"
+        />
+        <BooleanDisplay
+          value={form.isSubmitted}
+          label="Submitted"
+          tooltip="Has the form been submitted?"
+        />
+        <BooleanDisplay
+          value={form.isSubmitting}
+          label="Submitting"
+          tooltip="Is the form currently submitting?"
+        />
 
-        <TextDisplay value={form.submitCount} label="Submission Count" tooltip="How often has the form been submitted?" />
+        <TextDisplay
+          value={form.submitCount}
+          label="Submission Count"
+          tooltip="How often has the form been submitted?"
+        />
         <TextDisplay
           value={form.submitCountSuccessful}
           label="Successful Count"

@@ -1,4 +1,4 @@
-import {createContext, useContext} from "react";
+import { createContext, useContext } from 'react'
 
 type FormDevToolsContextType = {
   bgColor?: string
@@ -28,12 +28,15 @@ export const defaultContext = {
   horizontalKey: 'right',
 } satisfies FormDevToolsContextType
 
-export const formDevToolsContext = createContext<FormDevToolsContextType | null>(defaultContext)
+export const formDevToolsContext =
+  createContext<FormDevToolsContextType | null>(defaultContext)
 
 export const useFormDevToolsContext = () => {
   const context = useContext(formDevToolsContext)
   if (context === null) {
-    throw new Error('useFormDevToolsContext must be used within a FormDevToolsProvider')
+    throw new Error(
+      'useFormDevToolsContext must be used within a FormDevToolsProvider',
+    )
   }
   return context
 }

@@ -5,6 +5,7 @@ import { VariantCreator } from '@/components/form/VariantCreator.tsx'
 import { Label } from '@/components/ui/label'
 import { TextareaSignal } from '@/components/ui/textarea'
 import type { Product } from '@/types.ts'
+import { FormDevTools } from '@formsignals/dev-tools-react'
 import { useForm, useFormContext } from '@formsignals/form-react'
 import {
   type ZodAdapter,
@@ -14,7 +15,6 @@ import { createRoot } from 'react-dom/client'
 import { z } from 'zod'
 import { Button } from './components/ui/button'
 import './index.css'
-import {FormDevTools} from "@formsignals/dev-tools-react";
 
 export const Index = () => {
   const form = useForm<Product, typeof ZodAdapter>({

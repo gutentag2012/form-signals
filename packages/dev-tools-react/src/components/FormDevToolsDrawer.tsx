@@ -1,8 +1,8 @@
 import type { Signal } from '@preact/signals-react'
+// biome-ignore lint/correctness/noUnusedImports: This is the React import
+import React from 'react'
 import { useFormDevToolsContext } from '../FormDevToolsContext'
 import { FormDevToolsDrawerContent } from './FormDevToolsDrawerContent'
-// biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React from "react"
 
 type FormDevToolsDrawerProps = {
   isOpen: Signal<boolean>

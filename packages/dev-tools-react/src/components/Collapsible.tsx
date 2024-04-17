@@ -1,16 +1,20 @@
+import { useSignal } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React from "react"
-import {useSignal} from "@preact/signals-react";
-import {ChevronDownIcon} from "../icons/ChevronDownIcon";
-import {ChevronRightIcon} from "../icons/ChevronRightIcon";
-import type {PropsWithChildren, ReactNode} from "react";
+import React from 'react'
+import type { PropsWithChildren, ReactNode } from 'react'
+import { ChevronDownIcon } from '../icons/ChevronDownIcon'
+import { ChevronRightIcon } from '../icons/ChevronRightIcon'
 
 export type CollapsibleProps = {
   title: string
   endAttachment?: ReactNode
 }
 
-export function Collapsible({ title, endAttachment, children }: PropsWithChildren<CollapsibleProps>) {
+export function Collapsible({
+  title,
+  endAttachment,
+  children,
+}: PropsWithChildren<CollapsibleProps>) {
   const isOpen = useSignal(false)
 
   return (
@@ -18,13 +22,15 @@ export function Collapsible({ title, endAttachment, children }: PropsWithChildre
       <button
         type="button"
         className="collapsible__button"
-        onClick={() =>{
+        onClick={() => {
           isOpen.value = !isOpen.peek()
         }}
       >
         {isOpen.value ? <ChevronDownIcon /> : <ChevronRightIcon />}
         {title}
-        {endAttachment && <div className="collapsible__endAttachment">{endAttachment}</div>}
+        {endAttachment && (
+          <div className="collapsible__endAttachment">{endAttachment}</div>
+        )}
       </button>
       {isOpen.value && <div className="collapsible__content">{children}</div>}
     </div>

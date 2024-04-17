@@ -1,5 +1,5 @@
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React from "react"
+import React from 'react'
 
 export function ChevronDownIcon() {
   return (

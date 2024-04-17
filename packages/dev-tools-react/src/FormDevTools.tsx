@@ -1,11 +1,11 @@
-import './index.css'
+import { useSignal } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
-import React, {type CSSProperties} from "react"
-import {useSignal} from '@preact/signals-react'
-import {defaultContext, formDevToolsContext,} from './FormDevToolsContext'
-import {FormDevToolsDrawer} from "./components/FormDevToolsDrawer";
-import {AppIcon} from "./icons/AppIcon";
-import {TooltipProvider} from "./components/Tooltip";
+import React, { type CSSProperties } from 'react'
+import { defaultContext, formDevToolsContext } from './FormDevToolsContext'
+import { FormDevToolsDrawer } from './components/FormDevToolsDrawer'
+import { TooltipProvider } from './components/Tooltip'
+import { AppIcon } from './icons/AppIcon'
+import './index.css'
 
 export type FormDevToolsProps = {
   bgColor?: string
@@ -66,11 +66,13 @@ export function FormDevTools(props: FormDevToolsProps) {
       <TooltipProvider>
         <div
           id="fs-dev-tools--container"
-          style={{
-            ...cssVars,
-            [contextValue.verticalKey]: 0,
-            [contextValue.horizontalKey]: 0,
-          } as CSSProperties}
+          style={
+            {
+              ...cssVars,
+              [contextValue.verticalKey]: 0,
+              [contextValue.horizontalKey]: 0,
+            } as CSSProperties
+          }
         >
           {isOpen.value ? (
             <FormDevToolsDrawer isOpen={isOpen} />
