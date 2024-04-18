@@ -1,3 +1,15 @@
+## 0.1.1 (2024-04-18)
+
+
+### 🚀 Features
+
+- **dev-tools-react:** Add dev tools for the React bindings ([378b635](https://github.com/gutentag2012/form-signals/commit/378b635))
+
+### 🩹 Fixes
+
+- **form-core:** Fix FormLogic.updateOptions not allowing to delete fields + array items through new default values ([719318a](https://github.com/gutentag2012/form-signals/commit/719318a))
+- **form-react:** Fix form options not being optional ([c4f958f](https://github.com/gutentag2012/form-signals/commit/c4f958f))
+
 ## 0.1.0 (2024-04-06)
 
 
