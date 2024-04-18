@@ -714,6 +714,10 @@ export class FormLogic<
 
     const newMap = new Map(this._fields.peek())
     newMap.delete(path)
+    for (const key of newMap.keys()) {
+      if(!(key as string).startsWith(`${path}.`)) continue
+      newMap.delete(key)
+    }
     this._fields.value = newMap
 
     if (resetToDefault) {
@@ -813,6 +817,17 @@ export class FormLogic<
         `Tried to remove a value from a non-object field at path ${path}`,
       )
       return
+    }
+
+    const newMap = new Map(this._fields.peek())
+    let changed = false
+    for (const key of newMap.keys()) {
+      if(!(key as string).startsWith((`${path}.`))) continue
+      newMap.delete(key)
+      changed = true
+    }
+    if(changed) {
+      this._fields.value = newMap
     }
 
     batch(() => {
@@ -959,6 +974,17 @@ export class FormLogic<
         `Tried to remove a value from an array at path ${name} at index ${index} that does not exist`,
       )
       return
+    }
+
+    const newMap = new Map(this._fields.peek())
+    let changed = false
+    for (const key of newMap.keys()) {
+      if(!(key as string).startsWith((`${name}.`))) continue
+      newMap.delete(key)
+      changed = true
+    }
+    if(changed) {
+      this._fields.value = newMap
     }
 
     batch(() => {
