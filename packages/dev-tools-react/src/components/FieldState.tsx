@@ -11,27 +11,23 @@ import { TextDisplay } from './TextDisplay'
 export function FieldState({ fieldName }: { fieldName: string }) {
   const form = useFormContext()
 
-  const field = form.fields.value.find((f) => f.name === fieldName)
+  const field = form.fields.value.find((f) => f.name === fieldName)!
 
-  const errors = useComputed(() => field?.errors?.value?.join(', ') || '-')
+  const errors = useComputed(() => field.errors.value.join(', ') || '-')
   const shouldDisplayRawString = useComputed(() => {
-    const data = field?.data?.value
+    const data = field.data.value
     if (typeof data === 'string') return true
     if (typeof data === 'number') return true
     return data instanceof Date
   })
   const currentValueString = useComputed(() => {
-    const data = field?.data
-    if (!data) return null
-    const unsignalified = unSignalifyValueSubscribed(data)
+    const unsignalified = unSignalifyValueSubscribed(field.data)
 
     if (typeof unsignalified === 'string') return unsignalified
-    if (unsignalified instanceof Date) return unsignalified.toLocaleString()
+    if (unsignalified instanceof Date) return unsignalified.toISOString()
 
     return JSON.stringify(unsignalified, null, 2)
   })
-
-  if (!field) return null
 
   return (
     <div className="fs-drawer--field-state">
@@ -72,15 +68,9 @@ export function FieldState({ fieldName }: { fieldName: string }) {
         )}
       </div>
 
-      <div id="fs-drawer--action-buttons">
+      <div className="fs-drawer--action-buttons">
         <button type="button" onClick={() => field?.reset()}>
           Reset
-        </button>
-        <button type="button" onClick={() => field?.resetValue()}>
-          Reset Values
-        </button>
-        <button type="button" onClick={() => field?.resetState()}>
-          Reset State
         </button>
       </div>
     </div>

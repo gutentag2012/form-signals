@@ -1,7 +1,6 @@
 import { useSignal } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React, { type CSSProperties } from 'react'
-import { defaultContext, formDevToolsContext } from './FormDevToolsContext'
 import { FormDevToolsDrawer } from './components/FormDevToolsDrawer'
 import { TooltipProvider } from './components/Tooltip'
 import { AppIcon } from './icons/AppIcon'
@@ -26,69 +25,72 @@ export type FormDevToolsProps = {
 // TODO Removing a field should remove all child fields as well
 // TODO When removing a variant, the value is still preserved event though I explicitly removed it
 // TODO Dynamic object is not marked as dirty
-// TODO Dynamic object cannot be reset (price)
+// TODO Dynamic object and arrays cannot be reset (price, valid range)
 // TODO Reset does not reset not defined default values
 
+const defaultValues = {
+  bgColor: '#1c1917',
+  bgSecondaryColor: '#44403c',
+  textColor: '#fafaf9',
+  accentColor: '#0369a1',
+  onAccentColor: '#f0f9ff',
+  errorColor: '#b91c1c',
+  successColor: '#15803d',
+
+  initialOpen: false,
+  verticalKey: 'bottom',
+  horizontalKey: 'right',
+} as const
+
 export function FormDevTools(props: FormDevToolsProps) {
-  const [verticalKey, horizontalKey] = props.position?.split('-') ?? [
+  const [verticalKey, horizontalKey] = (props.position?.split('-') ?? [
     'bottom',
     'right',
-  ]
-  const contextValue = {
-    bgColor: props.bgColor ?? defaultContext.bgColor,
-    bgSecondaryColor: props.bgSecondaryColor ?? defaultContext.bgSecondaryColor,
-    textColor: props.textColor ?? defaultContext.textColor,
-    accentColor: props.accentColor ?? defaultContext.accentColor,
-    onAccentColor: props.onAccentColor ?? defaultContext.onAccentColor,
-    errorColor: props.errorColor ?? defaultContext.errorColor,
-    successColor: props.successColor ?? defaultContext.successColor,
+  ]) as ['top' | 'bottom', 'left' | 'right']
 
-    initialOpen: props.initialOpen ?? defaultContext.initialOpen,
-    verticalKey:
-      (verticalKey as 'top' | 'bottom') ?? defaultContext.verticalKey,
-    horizontalKey:
-      (horizontalKey as 'left' | 'right') ?? defaultContext.horizontalKey,
-  }
   const cssVars = {
-    '--fs-bg-color': contextValue.bgColor,
-    '--fs-bg-secondary-color': contextValue.bgSecondaryColor,
-    '--fs-text-color': contextValue.textColor,
-    '--fs-accent-color': contextValue.accentColor,
-    '--fs-on-accent-color': contextValue.onAccentColor,
-    '--fs-error-color': contextValue.errorColor,
-    '--fs-success-color': contextValue.successColor,
+    '--fs-bg-color': props.bgColor ?? defaultValues.bgColor,
+    '--fs-bg-secondary-color':
+      props.bgSecondaryColor ?? defaultValues.bgSecondaryColor,
+    '--fs-text-color': props.textColor ?? defaultValues.textColor,
+    '--fs-accent-color': props.accentColor ?? defaultValues.accentColor,
+    '--fs-on-accent-color': props.onAccentColor ?? defaultValues.onAccentColor,
+    '--fs-error-color': props.errorColor ?? defaultValues.errorColor,
+    '--fs-success-color': props.successColor ?? defaultValues.successColor,
   }
 
-  const isOpen = useSignal(contextValue.initialOpen)
+  const isOpen = useSignal(props.initialOpen ?? defaultValues.initialOpen)
 
   return (
-    <formDevToolsContext.Provider value={contextValue}>
-      <TooltipProvider>
-        <div
-          id="fs-dev-tools--container"
-          style={
-            {
-              ...cssVars,
-              [contextValue.verticalKey]: 0,
-              [contextValue.horizontalKey]: 0,
-            } as CSSProperties
-          }
-        >
-          {isOpen.value ? (
-            <FormDevToolsDrawer isOpen={isOpen} />
-          ) : (
-            <button
-              id="fs-open-button"
-              type="button"
-              onClick={() => {
-                isOpen.value = true
-              }}
-            >
-              <AppIcon size={32} />
-            </button>
-          )}
-        </div>
-      </TooltipProvider>
-    </formDevToolsContext.Provider>
+    <TooltipProvider>
+      <div
+        id="fs-dev-tools--container"
+        style={
+          {
+            ...cssVars,
+            [verticalKey]: 0,
+            [horizontalKey]: 0,
+          } as CSSProperties
+        }
+      >
+        {isOpen.value ? (
+          <FormDevToolsDrawer
+            isOpen={isOpen}
+            verticalKey={verticalKey}
+            horizontalKey={horizontalKey}
+          />
+        ) : (
+          <button
+            id="fs-open-button"
+            type="button"
+            onClick={() => {
+              isOpen.value = true
+            }}
+          >
+            <AppIcon />
+          </button>
+        )}
+      </div>
+    </TooltipProvider>
   )
 }

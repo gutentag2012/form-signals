@@ -1,15 +1,15 @@
 #fs-dev-tools--container {
+  position: fixed;
+  z-index: 1000;
   --fs-max-width: clamp(550px, 30vw, 650px);
   --fs-bg-color: #1c1917;
   --fs-bg-secondary-color: #44403c;
   --fs-text-color: #fafaf9;
   --fs-accent-color: #0369a1;
   --fs-on-accent-color: #f0f9ff;
+
   --fs-error-color: #b91c1c;
   --fs-success-color: #15803d;
-
-  position: fixed;
-  z-index: 1000;
 }
 
 /*region Control Button*/
@@ -22,9 +22,9 @@
 
 #fs-close-button {
   position: sticky;
-  bottom: 0;
-  top: 0;
   z-index: 1001;
+  top: 0;
+  bottom: 0;
 
   display: flex;
   width: 100%;
@@ -33,13 +33,13 @@
 }
 
 #fs-close-button > button {
-  padding-block: 4px;
-  padding-inline: 8px;
-  border-radius: 4px;
-  background: var(--fs-bg-secondary-color);
-  color: var(--fs-text-color);
   font-size: 16px;
   margin: 16px;
+  color: var(--fs-text-color);
+  border-radius: 4px;
+  background: var(--fs-bg-secondary-color);
+  padding-block: 4px;
+  padding-inline: 8px;
 }
 
 /*endregion*/
@@ -50,27 +50,27 @@
   align-items: flex-start;
   flex-direction: column;
   color: var(--fs-text-color);
-  border-color: var(--fs-bg-secondary-color);
   border-style: solid;
+  border-color: var(--fs-bg-secondary-color);
   border-bottom-width: 1px;
 }
 
 .collapsible__button {
+  font-weight: 500;
   display: flex;
-  flex-direction: row;
-  gap: 4px;
   align-items: center;
+  flex-direction: row;
   width: 100%;
   text-align: left;
+  gap: 4px;
   padding-inline: 8px;
   padding-block: 4px;
-  font-weight: 500;
 }
 
 .collapsible__content {
+  overflow: auto;
   width: 100%;
   max-width: calc(var(--fs-max-width) - 32px);
-  overflow: auto;
   padding: 8px;
 }
 
@@ -92,28 +92,29 @@
 .fs-utils--flex {
   display: flex;
 }
+
 /*endregion*/
 
 /*region Displays*/
 .fs-tooltip--content {
+  font-size: 0.8rem;
+  overflow: hidden;
   color: var(--fs-text-color);
+  border-radius: 4px;
   background: var(--fs-bg-secondary-color);
   padding-block: 4px;
   padding-inline: 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  overflow: hidden;
 }
 
 .fs-boolean-display {
-  --fs-boolean-dot-size: 8px;
-
   display: flex;
-  flex-direction: row;
-  gap: 8px;
+
   align-items: center;
+  flex-direction: row;
   padding: 4px;
   color: var(--fs-text-color);
+  --fs-boolean-dot-size: 8px;
+  gap: 8px;
 }
 
 .fs-boolean-display > .fs-boolean-dot {
@@ -123,7 +124,7 @@
   border-radius: var(--fs-boolean-dot-size);
 }
 
-.fs-number-display {
+.fs-text-display {
   padding: 4px;
   color: var(--fs-text-color);
 }
@@ -134,16 +135,17 @@
 #fs-drawer {
   position: relative;
   display: flex;
+  overflow: auto;
   flex-direction: column;
   justify-content: space-between;
-  padding-left: 8px;
-  gap: 8px;
-  overflow: auto;
+  width: var(--fs-max-width);
+  max-width: var(--fs-max-width);
   height: 100vh;
   max-height: 100vh;
-  max-width: var(--fs-max-width);
-  background: var(--fs-bg-color);
+  padding-left: 8px;
   color: var(--fs-text-color);
+  background: var(--fs-bg-color);
+  gap: 8px;
 }
 
 @supports (scrollbar-gutter: stable) {
@@ -152,95 +154,109 @@
   }
 }
 
-#fs-drawer--action-buttons {
+.fs-drawer--action-buttons {
   display: flex;
   flex-direction: row;
-  gap: 8px;
   justify-content: flex-end;
   padding: 8px;
+  gap: 8px;
 }
 
-#fs-drawer--action-buttons > button {
-  padding-inline: 8px;
-  padding-block: 4px;
+.fs-drawer--action-buttons > button {
+  color: var(--fs-text-color);
   border-radius: 4px;
   background: var(--fs-bg-secondary-color);
-  color: var(--fs-text-color);
+  padding-inline: 8px;
+  padding-block: 4px;
+}
+
+#fs-drawer--content {
+  width: 100%;
 }
 
 #fs-drawer--title {
   font-size: 0.9rem;
-  padding: 8px;
-  color: var(--fs-text-color);
-  opacity: 0.85;
   font-weight: 600;
+  padding: 8px;
+  opacity: 0.85;
+  color: var(--fs-text-color);
 }
 
 .fs-drawer--section-title {
   font-size: 0.9rem;
-  padding: 8px;
-  color: var(--fs-text-color);
-  opacity: 0.85;
   font-weight: 400;
   margin-top: 8px;
   margin-bottom: 4px;
+  padding: 8px;
+  opacity: 0.85;
+  color: var(--fs-text-color);
 }
 
 #fs-drawer--header {
-  max-width: calc(var(--fs-max-width) - 16px);
   display: grid;
+  max-width: calc(var(--fs-max-width) - 16px);
   grid-template-columns: repeat(6, 1fr);
 }
 
+/*region Field State Header Section*/
 .fs-drawer--field-state--header {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
 }
 
 .fs-drawer--field-state--header > * {
-  padding-inline: 8px;
-  border-color: var(--fs-bg-secondary-color);
   border-style: solid;
+  border-color: var(--fs-bg-secondary-color);
+  padding-inline: 8px;
 }
 
 .fs-drawer--field-state--header > :nth-child(1) {
+  border-width: 1px;
   grid-column: 1 / span 2;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-}
-.fs-drawer--field-state--header > :nth-child(2) {
-  grid-column: 3 / span 2;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-}
-.fs-drawer--field-state--header > :nth-child(3) {
-  grid-column: 5 / span 2;
-  border-bottom-width: 1px;
-}
-.fs-drawer--field-state--header > :nth-child(4) {
-  grid-column: 1 / span 1;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-}
-.fs-drawer--field-state--header > :nth-child(5) {
-  grid-column: 2 / span 5;
-  border-bottom-width: 1px;
 }
 
+.fs-drawer--field-state--header > :nth-child(2) {
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 3 / span 2;
+}
+
+.fs-drawer--field-state--header > :nth-child(3) {
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 5 / span 2;
+}
+
+.fs-drawer--field-state--header > :nth-child(4) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  grid-column: 1 / span 1;
+}
+
+.fs-drawer--field-state--header > :nth-child(5) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 2 / span 5;
+}
+/*endregion*/
+
 #fs-drawer--header > * {
-  padding-inline: 8px;
-  border-color: var(--fs-bg-secondary-color);
   border-style: solid;
+  border-color: var(--fs-bg-secondary-color);
+  padding-inline: 8px;
 }
 
 .fs-drawer--header--section-title {
   font-size: 0.9rem;
-  padding: 8px;
-  color: var(--fs-text-color);
-  opacity: 0.85;
   font-weight: 600;
-  grid-column: 1 / span 6;
+  padding: 8px;
+  opacity: 0.85;
+  color: var(--fs-text-color);
   border-bottom-width: 1px;
+  grid-column: 1 / span 6;
 }
 
 .fs-drawer--header--section-title:nth-child(1) {
@@ -249,64 +265,64 @@
 
 /*region Drawer Header Sections*/
 #fs-drawer--header > :nth-child(2) {
-  grid-column: 1 / span 3;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 1 / span 3;
 }
 
 #fs-drawer--header > :nth-child(3) {
-  grid-column: 4 / span 3;
   border-bottom-width: 1px;
+  grid-column: 4 / span 3;
 }
 
 #fs-drawer--header > :nth-child(4) {
-  grid-column: 1 / span 1;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 1 / span 1;
 }
 
 #fs-drawer--header > :nth-child(5) {
-  grid-column: 2 / span 5;
   border-bottom-width: 1px;
+  grid-column: 2 / span 5;
 }
 
 #fs-drawer--header > :nth-child(13) {
-  grid-column: 1 / span 6;
   border-bottom-width: 1px;
+  grid-column: 1 / span 6;
 }
 
 #fs-drawer--header > :nth-child(15) {
-  grid-column: 1 / span 2;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(16) {
-  grid-column: 3 / span 2;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 3 / span 2;
 }
 
 #fs-drawer--header > :nth-child(17) {
-  grid-column: 5 / span 2;
   border-bottom-width: 1px;
+  grid-column: 5 / span 2;
 }
 
 #fs-drawer--header > :nth-child(7), #fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(18) {
-  grid-column: 1 / span 2;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(8), #fs-drawer--header > :nth-child(11), #fs-drawer--header > :nth-child(19) {
-  grid-column: 3 / span 2;
   border-right-width: 1px;
   border-bottom-width: 1px;
+  grid-column: 3 / span 2;
 }
 
 #fs-drawer--header > :nth-child(9), #fs-drawer--header > :nth-child(12), #fs-drawer--header > :nth-child(20) {
-  grid-column: 5 / span 2;
   border-bottom-width: 1px;
+  grid-column: 5 / span 2;
 }
 
 /*endregion*/
@@ -321,6 +337,9 @@
 
 .fs-drawer--field-state--value {
   display: flex;
+  margin-top: 8px;
+  border: 1px solid var(--fs-bg-secondary-color);
   gap: 8px;
-  padding-inline: 4px;
+  padding-inline: 12px;
+  padding-block: 4px;
 }

@@ -1,13 +1,9 @@
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 
-type IconProps = {
-  size?: number
-}
-
-export function AppIcon({ size = 64 }: IconProps) {
+export function AppIcon() {
   return (
-    <svg width={size} height={size} viewBox="0 0 128 128" fill="none">
+    <svg width="32" height="32" viewBox="0 0 128 128" fill="none">
       <rect
         x="37.3335"
         y="37.3333"

@@ -13,7 +13,7 @@ export function TextDisplay(props: NumberDisplayProps) {
   return (
     <div className="fs-utils--flex">
       <Tooltip delayDuration={500}>
-        <label className="fs-number-display">
+        <label className="fs-text-display">
           <TooltipTrigger asChild>
             <strong>{props.label}</strong>
           </TooltipTrigger>{' '}

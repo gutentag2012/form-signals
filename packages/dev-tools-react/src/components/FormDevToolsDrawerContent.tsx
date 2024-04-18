@@ -22,7 +22,7 @@ export function FormDevToolsDrawerContent() {
   )
 
   return (
-    <div>
+    <div id="fs-drawer--content">
       <h5 id="fs-drawer--title">Form Signals DevTools</h5>
 
       <div id="fs-drawer--header">
@@ -132,15 +132,9 @@ export function FormDevToolsDrawerContent() {
         <pre>{currentValues}</pre>
       </Collapsible>
 
-      <div id="fs-drawer--action-buttons">
+      <div className="fs-drawer--action-buttons">
         <button type="button" onClick={() => form.reset()}>
           Reset
-        </button>
-        <button type="button" onClick={() => form.resetValues()}>
-          Reset Values
-        </button>
-        <button type="button" onClick={() => form.resetState()}>
-          Reset State
         </button>
       </div>
 
