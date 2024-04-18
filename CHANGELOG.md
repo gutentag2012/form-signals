@@ -1,3 +1,11 @@
+## 0.1.2 (2024-04-18)
+
+
+### 🩹 Fixes
+
+- **form-core:** Fix child fields not being unregistered when parent is unregistered + remove fields if their value is removed through helper methods ([e2d3e93](https://github.com/gutentag2012/form-signals/commit/e2d3e93))
+- **form-core:** Fix incorrect default value used within form based on fields ([5b0c92a](https://github.com/gutentag2012/form-signals/commit/5b0c92a))
+
 ## 0.1.1 (2024-04-18)
 
 

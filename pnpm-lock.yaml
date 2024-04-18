@@ -432,7 +432,7 @@ importers:
   packages/form-react:
     dependencies:
       '@formsignals/form-core':
-        specifier: 0.1.1
+        specifier: 0.1.2
         version: link:../form-core
       '@preact/signals-react':
         specifier: ^2.0.0
@@ -466,7 +466,7 @@ importers:
   packages/validation-adapter-zod:
     dependencies:
       '@formsignals/form-core':
-        specifier: 0.1.1
+        specifier: 0.1.2
         version: link:../form-core
       zod:
         specifier: ^3.22.4
