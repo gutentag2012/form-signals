@@ -884,10 +884,8 @@ export class FieldLogic<
    * Resets the field values and state.
    */
   public reset(): void {
-    batch(() => {
-      this.resetState()
-      this.resetValue()
-    })
+    this.resetState()
+    this.resetValue()
   }
   //endregion
 
