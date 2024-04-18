@@ -119,6 +119,8 @@ export class FormLogic<
   > = signal(undefined)
 
   private _unsubscribeFromChangeEffect?: () => void
+
+  private _skipValidation = false
   //endregion
 
   //region Fields
@@ -1176,12 +1178,10 @@ export class FormLogic<
    * No validation will be run when resetting the value.
    */
   public resetValues(): void {
-    batch(() => {
-      this._isMounted.value = false
-      // TODO Test, that this includes the field default values
-      setSignalValuesFromObject(this._data, this._combinedDefaultValues.peek())
-    })
-    this._isMounted.value = true
+    this._skipValidation = true
+    // TODO Test, that this includes the field default values
+    setSignalValuesFromObject(this._data, this._combinedDefaultValues.peek())
+    this._skipValidation = false
   }
 
   /**
@@ -1198,7 +1198,7 @@ export class FormLogic<
     event: ValidatorEvents,
     checkValue?: TData,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() && event !== 'onSubmit') return
+    if (this._skipValidation || (!this._isMounted.peek() && event !== 'onSubmit')) return
 
     const value = checkValue ?? unSignalifyValue(this.data)
 

@@ -1598,6 +1598,20 @@ describe('FormLogic', () => {
         form.removeValueFromArray('array', 1)
         expect(form.json.value.array).toEqual([1, 3])
       })
+      it("should remove fields that are removed from the form's array", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        const field = new FieldLogic(form, 'array.1')
+        field.mount()
+
+        expect(form.fields.value.length).toBe(1)
+        form.removeValueFromArray('array', 1)
+        expect(form.fields.value.length).toBe(0)
+      })
       it('should remove from the base object, if the whole form is an array', () => {
         const form = new FormLogic({
           defaultValues: [1, 2, 3],
@@ -1936,6 +1950,22 @@ describe('FormLogic', () => {
         expect(form.data.value.deep.value.value).toBeUndefined()
         expect(fn).toHaveBeenCalledTimes(1)
       })
+      it("should remove fields that are removed from the object's keys", () => {
+        const form = new FormLogic<{ deep: { value?: number } }>({
+          defaultValues: {
+            deep: {
+              value: 1,
+            },
+          },
+        })
+        form.mount()
+        const field = new FieldLogic(form, 'deep.value')
+        field.mount()
+
+        expect(form.fields.value.length).toBe(1)
+        form.removeValueInObject('deep', 'value')
+        expect(form.fields.value.length).toBe(0)
+      })
       it('should touch a field when removing a key from an object if configured', () => {
         const form = new FormLogic<{ deep: { value?: number } }>({
           defaultValues: {
@@ -2032,12 +2062,12 @@ describe('FormLogic', () => {
         field.mount()
         expect(field.errors.value).toEqual(['error'])
       })
-      it('should retieve an existing field and update its options', () => {
+      it('should retrieve an existing field and update its options', () => {
         const form = new FormLogic<{ name: string }>()
         form.mount()
         new FieldLogic(form, 'name', {
           defaultValue: 'default',
-        })
+        }).mount()
 
         const field = form.getOrCreateField('name', {
           defaultValue: 'new default',

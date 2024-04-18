@@ -197,6 +197,8 @@ export class FieldLogic<
   > = signal(undefined)
 
   private _unsubscribeFromChangeEffect?: () => void
+
+  private skipValidation = false
   //endregion
 
   //region State
@@ -207,12 +209,14 @@ export class FieldLogic<
   //endregion
 
   //region Computed State
-  private readonly _defaultValue = computed(() =>
-      getValueAtPath<TData, TName>(
+  private readonly _defaultValue = computed(() => {
+      const def = getValueAtPath<TData, TName>(
         this._form.defaultValues.value,
         this._name,
-      )
-    )
+      );
+      return def
+    }
+  )
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
       !isEqualDeep(
@@ -870,19 +874,17 @@ export class FieldLogic<
    * No validation will be run when resetting the value.
    */
   public resetValue(): void {
-    batch(() => {
-      this._isMounted.value = false
-      setSignalValuesFromObject(this.data, this._defaultValue.peek())
-    })
-    this._isMounted.value = true
+    this.skipValidation = true
+    setSignalValuesFromObject(this.data, this.defaultValue.peek())
+    this.skipValidation = false
   }
 
   /**
    * Resets the field values and state.
    */
   public reset(): void {
-    this.resetState()
     this.resetValue()
+    this.resetState()
   }
   //endregion
 
@@ -934,7 +936,7 @@ export class FieldLogic<
     checkValue?: ValueAtPath<TData, TName>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this.data) return
+    if (!this._isMounted.peek() || !this.data || this.skipValidation) return
     const value = checkValue ?? unSignalifyValue(this.data)
     const mixinValues =
       mixins ??
