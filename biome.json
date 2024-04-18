@@ -32,7 +32,8 @@
         "noExplicitAny": "off"
       },
       "style": {
-        "useImportType": "warn"
+        "useImportType": "warn",
+        "noNonNullAssertion": "off"
       },
       "correctness": {
         "noUnusedImports": "warn"

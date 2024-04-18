@@ -116,7 +116,6 @@ const SubmitButton = ({ form }: { form: FormApi<any, any> }) => {
   )
 }
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
 const rootElement = document.getElementById('root')!
 
 createRoot(rootElement).render(<Index />)
