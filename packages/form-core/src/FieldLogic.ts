@@ -207,15 +207,12 @@ export class FieldLogic<
   //endregion
 
   //region Computed State
-  private readonly _defaultValue = computed(() => {
-    return (
-      this._options.value?.defaultValue ??
+  private readonly _defaultValue = computed(() =>
       getValueAtPath<TData, TName>(
-        this._form.options.value?.defaultValues,
+        this._form.defaultValues.value,
         this._name,
       )
     )
-  })
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
       !isEqualDeep(

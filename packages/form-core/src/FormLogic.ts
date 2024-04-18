@@ -194,7 +194,10 @@ export class FormLogic<
         !field.options.value?.preserveValueOnUnmount
       )
         continue
-      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
+      const fieldOptions = field.options.value
+      const currentDefaultValue = getValueAtPath(defaultValues, field.name)
+      if(currentDefaultValue !== undefined) continue
+      setValueAtPath(defaultValues, field.name, fieldOptions?.defaultValue)
     }
 
     return defaultValues
@@ -276,7 +279,6 @@ export class FormLogic<
    * Changes to any nested value will trigger an update to this signal.
    */
   public get json(): ReadonlySignal<TData> {
-    // This is not really always the full data, but this way you get type safety
     return this._jsonData
   }
 
@@ -412,7 +414,7 @@ export class FormLogic<
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
     const newDefaultValues = { ...options.defaultValues }
     for (const dirtyField of dirtyFields) {
-      setValueAtPath(newDefaultValues, dirtyField as never, undefined)
+      setValueAtPath(newDefaultValues, dirtyField as never, getSignalValueAtPath(this.data, dirtyField).peek() as any)
     }
     setSignalValuesFromObject(this._data, newDefaultValues)
   }
@@ -687,7 +689,7 @@ export class FormLogic<
     path: TPath,
     defaultValue?: ValueAtPath<TData, TPath>,
   ): void {
-    if (this.getValueForPath(path)) return
+    if (this.getValueForPath(path) !== undefined) return
     setSignalValueAtPath(this._data, path, defaultValue)
   }
 

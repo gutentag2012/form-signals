@@ -347,6 +347,7 @@ export function setSignalValuesFromObject<
       return signal(undefined)
     }
     if (value === undefined) {
+      ;(obj as Signal<undefined>).value = undefined
       return obj
     }
     if (Array.isArray(value)) {
