@@ -15,7 +15,7 @@
   },
   "cacheDirectory": "node_modules/.cache",
   "release": {
-    "projects": ["form-core", "form-react", "validation-adapter-zod"],
+    "projects": ["form-core", "form-react", "validation-adapter-zod", "dev-tools-react"],
     "version": {
       "generatorOptions": {
         "currentVersionResolver": "git-tag",
