@@ -119,6 +119,8 @@ export class FormLogic<
   > = signal(undefined)
 
   private _unsubscribeFromChangeEffect?: () => void
+
+  private _skipValidation = false
   //endregion
 
   //region Fields
@@ -128,9 +130,12 @@ export class FormLogic<
   private readonly _fields: Signal<
     Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>
   > = signal(new Map())
-  private readonly _fieldsArray = computed(() =>
-    Array.from(this._fields.value.values()),
-  )
+  private readonly _fieldsArray = computed(() => {
+    const fields = Array.from(this._fields.value.values())
+    // We are sorting this in the hierarchical order, so that parents are sorted before their children
+    fields.sort((a, b) => (a.name as string).localeCompare(b.name))
+    return fields
+  })
   //endregion
 
   //region State
@@ -180,6 +185,25 @@ export class FormLogic<
   //endregion
 
   //region Computed State
+  private readonly _combinedDefaultValues = computed(() => {
+    const defaultValues = this._options.value?.defaultValues ?? ({} as TData)
+    const fields = this._fieldsArray.value
+
+    // Get any possible default value overrides from the fields
+    for (const field of fields) {
+      if (
+        !field.isMounted.value &&
+        !field.options.value?.preserveValueOnUnmount
+      )
+        continue
+      const fieldOptions = field.options.value
+      const currentDefaultValue = getValueAtPath(defaultValues, field.name)
+      if (currentDefaultValue !== undefined) continue
+      setValueAtPath(defaultValues, field.name, fieldOptions?.defaultValue)
+    }
+
+    return defaultValues
+  })
   private readonly _isTouched = computed(() =>
     this._fieldsArray.value.some((field) => field.isTouched.value),
   )
@@ -190,24 +214,16 @@ export class FormLogic<
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
-  private readonly _isDirty = computed(() => {
-    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
-    // Get any possible default value overrides from the fields
-    for (const field of this._fieldsArray.value) {
-      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
-    }
-
-    return !isEqualDeep(defaultValues, this._jsonData.value)
-  })
-  private readonly _dirtyFields = computed(() => {
-    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
-    // Get any possible default value overrides from the fields
-    for (const field of this._fieldsArray.value) {
-      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
-    }
-
-    return getLeftUnequalPaths(defaultValues, this._jsonData.value)
-  })
+  private readonly _isDirty = computed(
+    () => !isEqualDeep(this._combinedDefaultValues.value, this._jsonData.value),
+  )
+  private readonly _dirtyFields = computed(
+    () =>
+      getLeftUnequalPaths(
+        this._combinedDefaultValues.value,
+        this._jsonData.value,
+      ) as Paths<TData>[],
+  )
   private readonly _canSubmit = computed(() => {
     return (
       !this._isSubmitting.value &&
@@ -265,7 +281,6 @@ export class FormLogic<
    * Changes to any nested value will trigger an update to this signal.
    */
   public get json(): ReadonlySignal<TData> {
-    // This is not really always the full data, but this way you get type safety
     return this._jsonData
   }
 
@@ -321,6 +336,10 @@ export class FormLogic<
     return this._isDirty
   }
 
+  public get dirtyFields(): ReadonlySignal<Paths<TData>[]> {
+    return this._dirtyFields
+  }
+
   public get submitCountSuccessful(): ReadonlySignal<number> {
     return this._submitCountSuccessfulReadOnly
   }
@@ -363,6 +382,10 @@ export class FormLogic<
     return this._optionsReadOnly
   }
 
+  public get defaultValues(): ReadonlySignal<TData> {
+    return this._combinedDefaultValues
+  }
+
   public getValueForPath<TPath extends Paths<TData>>(
     path: TPath,
   ): SignalifiedData<ValueAtPath<TData, TPath>> {
@@ -393,7 +416,11 @@ export class FormLogic<
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
     const newDefaultValues = { ...options.defaultValues }
     for (const dirtyField of dirtyFields) {
-      setValueAtPath(newDefaultValues, dirtyField as never, undefined)
+      setValueAtPath(
+        newDefaultValues,
+        dirtyField as never,
+        getSignalValueAtPath(this.data, dirtyField).peek() as any,
+      )
     }
     setSignalValuesFromObject(this._data, newDefaultValues)
   }
@@ -668,7 +695,7 @@ export class FormLogic<
     path: TPath,
     defaultValue?: ValueAtPath<TData, TPath>,
   ): void {
-    if (this.getValueForPath(path)) return
+    if (this.getValueForPath(path) !== undefined) return
     setSignalValueAtPath(this._data, path, defaultValue)
   }
 
@@ -695,6 +722,10 @@ export class FormLogic<
 
     const newMap = new Map(this._fields.peek())
     newMap.delete(path)
+    for (const key of newMap.keys()) {
+      if (!(key as string).startsWith(`${path}.`)) continue
+      newMap.delete(key)
+    }
     this._fields.value = newMap
 
     if (resetToDefault) {
@@ -708,7 +739,7 @@ export class FormLogic<
     path: TPath,
   ): ValueAtPath<TData, TPath> | undefined {
     return getValueAtPath<TData, TPath>(
-      this._options.peek()?.defaultValues,
+      this._combinedDefaultValues.peek(),
       path,
     )
   }
@@ -794,6 +825,17 @@ export class FormLogic<
         `Tried to remove a value from a non-object field at path ${path}`,
       )
       return
+    }
+
+    const newMap = new Map(this._fields.peek())
+    let changed = false
+    for (const key of newMap.keys()) {
+      if (!(key as string).startsWith(`${path}.`)) continue
+      newMap.delete(key)
+      changed = true
+    }
+    if (changed) {
+      this._fields.value = newMap
     }
 
     batch(() => {
@@ -940,6 +982,17 @@ export class FormLogic<
         `Tried to remove a value from an array at path ${name} at index ${index} that does not exist`,
       )
       return
+    }
+
+    const newMap = new Map(this._fields.peek())
+    let changed = false
+    for (const key of newMap.keys()) {
+      if (!(key as string).startsWith(`${name}.`)) continue
+      newMap.delete(key)
+      changed = true
+    }
+    if (changed) {
+      this._fields.value = newMap
     }
 
     batch(() => {
@@ -1129,20 +1182,9 @@ export class FormLogic<
    * No validation will be run when resetting the value.
    */
   public resetValues(): void {
-    batch(() => {
-      this._isMounted.value = false
-
-      // TODO Add tests
-      const formDefaultValues = this._options.peek()?.defaultValues ?? {}
-      const defaultValues = {...formDefaultValues} as TData
-      for (const field of this._fieldsArray.peek()) {
-        if(!field.isMounted.peek()) continue
-        setValueAtPath(defaultValues, field.name, field.defaultValue.peek() as any)
-      }
-
-      setSignalValuesFromObject(this._data, defaultValues)
-    })
-    this._isMounted.value = true
+    this._skipValidation = true
+    setSignalValuesFromObject(this._data, this._combinedDefaultValues.peek())
+    this._skipValidation = false
   }
 
   /**
@@ -1161,7 +1203,11 @@ export class FormLogic<
     event: ValidatorEvents,
     checkValue?: TData,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() && event !== 'onSubmit') return
+    if (
+      this._skipValidation ||
+      (!this._isMounted.peek() && event !== 'onSubmit')
+    )
+      return
 
     const value = checkValue ?? unSignalifyValue(this.data)
 

@@ -102,8 +102,9 @@ export const PriceTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {supportedCurrencies.map((currency) =>
-            currency !== selectedCurrency ? null : (
+          {supportedCurrencies
+            .filter((currency) => currency === selectedCurrency)
+            .map((currency) => (
               <form.Field
                 key={`prices.${currency}`}
                 name={`prices.${currency}`}
@@ -114,8 +115,7 @@ export const PriceTable = ({
                   <PriceTableBody field={field} pricesField={pricesField} />
                 )}
               </form.Field>
-            ),
-          )}
+            ))}
           <PriceTableErrorText field={pricesField} />
         </TableBody>
         <TableFooter>

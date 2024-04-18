@@ -5,6 +5,7 @@ import { VariantCreator } from '@/components/form/VariantCreator.tsx'
 import { Label } from '@/components/ui/label'
 import { TextareaSignal } from '@/components/ui/textarea'
 import type { Product } from '@/types.ts'
+import { FormDevTools } from '@formsignals/dev-tools-react'
 import { useForm, useFormContext } from '@formsignals/form-react'
 import {
   type ZodAdapter,
@@ -36,6 +37,7 @@ export const Index = () => {
       </p>
 
       <form.FormProvider>
+        <FormDevTools />
         <form
           className="flex w-full flex-col gap-4"
           onSubmit={(e) => {
@@ -48,6 +50,7 @@ export const Index = () => {
 
           <form.FieldProvider
             name="name"
+            defaultValue=""
             validator={z
               .string()
               .min(5, 'Value must be longer than 5 characters')}
@@ -100,7 +103,6 @@ const SubmitButton = () => {
   )
 }
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
 const rootElement = document.getElementById('root')!
 
 createRoot(rootElement).render(<Index />)

@@ -1,3 +1,30 @@
+## 0.1.3 (2024-04-18)
+
+
+### 🩹 Fixes
+
+- Add dev-tools-react to release ([4b578b9](https://github.com/gutentag2012/form-signals/commit/4b578b9))
+
+## 0.1.2 (2024-04-18)
+
+
+### 🩹 Fixes
+
+- **form-core:** Fix child fields not being unregistered when parent is unregistered + remove fields if their value is removed through helper methods ([e2d3e93](https://github.com/gutentag2012/form-signals/commit/e2d3e93))
+- **form-core:** Fix incorrect default value used within form based on fields ([5b0c92a](https://github.com/gutentag2012/form-signals/commit/5b0c92a))
+
+## 0.1.1 (2024-04-18)
+
+
+### 🚀 Features
+
+- **dev-tools-react:** Add dev tools for the React bindings ([378b635](https://github.com/gutentag2012/form-signals/commit/378b635))
+
+### 🩹 Fixes
+
+- **form-core:** Fix FormLogic.updateOptions not allowing to delete fields + array items through new default values ([719318a](https://github.com/gutentag2012/form-signals/commit/719318a))
+- **form-react:** Fix form options not being optional ([c4f958f](https://github.com/gutentag2012/form-signals/commit/c4f958f))
+
 ## 0.1.0 (2024-04-06)
 
 

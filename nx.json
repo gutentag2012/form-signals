@@ -6,7 +6,7 @@
   },
   "targetDefaults": {
     "build": {
-      "cache": false,
+      "cache": true,
       "dependsOn": ["^build"]
     },
     "test": {
@@ -15,7 +15,12 @@
   },
   "cacheDirectory": "node_modules/.cache",
   "release": {
-    "projects": ["form-core", "form-react", "validation-adapter-zod"],
+    "projects": [
+      "form-core",
+      "form-react",
+      "validation-adapter-zod",
+      "dev-tools-react"
+    ],
     "version": {
       "generatorOptions": {
         "currentVersionResolver": "git-tag",

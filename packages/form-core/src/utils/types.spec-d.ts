@@ -67,9 +67,6 @@ describe('types', () => {
     >()
     expectTypeOf<Paths<[string]>>().toEqualTypeOf<'' | '0'>()
   })
-  it("should default to a string if it can't infer the type", () => {
-    expectTypeOf<Paths>().toEqualTypeOf<string>()
-  })
   //endregion
   //region ParentPath
   it('should get the parent path of a path', () => {

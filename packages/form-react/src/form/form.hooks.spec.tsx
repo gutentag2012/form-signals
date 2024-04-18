@@ -35,7 +35,7 @@ describe('Form hooks', () => {
         useEffect(() => {
           mounted(form.isMounted.value)
           return () => mounted(form.isMounted.value)
-        }, [form, mounted])
+        }, [form])
         return <div>{form.data.value.name.value}</div>
       }
 

@@ -197,6 +197,8 @@ export class FieldLogic<
   > = signal(undefined)
 
   private _unsubscribeFromChangeEffect?: () => void
+
+  private skipValidation = false
   //endregion
 
   //region State
@@ -208,13 +210,11 @@ export class FieldLogic<
 
   //region Computed State
   private readonly _defaultValue = computed(() => {
-    return (
-      this._options.value?.defaultValue ??
-      getValueAtPath<TData, TName>(
-        this._form.options.value?.defaultValues,
-        this._name,
-      )
+    const def = getValueAtPath<TData, TName>(
+      this._form.defaultValues.value,
+      this._name,
     )
+    return def
   })
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
@@ -374,6 +374,19 @@ export class FieldLogic<
     ValueAtPath<TData, TName> | undefined
   > {
     return this._defaultValue
+  }
+
+  public get options(): ReadonlySignal<
+    | FieldLogicOptions<
+        TData,
+        TName,
+        TBoundValue,
+        TAdapter extends undefined ? TFormAdapter : TAdapter,
+        TMixin
+      >
+    | undefined
+  > {
+    return this._options
   }
   //endregion
 
@@ -862,21 +875,17 @@ export class FieldLogic<
    * No validation will be run when resetting the value.
    */
   public resetValue(): void {
-    batch(() => {
-      this._isMounted.value = false
-      setSignalValuesFromObject(this.data, this._defaultValue.peek())
-    })
-    this._isMounted.value = true
+    this.skipValidation = true
+    setSignalValuesFromObject(this.data, this.defaultValue.peek())
+    this.skipValidation = false
   }
 
   /**
    * Resets the field values and state.
    */
   public reset(): void {
-    batch(() => {
-      this.resetState()
-      this.resetValue()
-    })
+    this.resetValue()
+    this.resetState()
   }
   //endregion
 
@@ -928,7 +937,7 @@ export class FieldLogic<
     checkValue?: ValueAtPath<TData, TName>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this.data) return
+    if (!this._isMounted.peek() || !this.data || this.skipValidation) return
     const value = checkValue ?? unSignalifyValue(this.data)
     const mixinValues =
       mixins ??
