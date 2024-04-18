@@ -23,12 +23,6 @@ type CombinePath<
   ? `${Path}.${Paths<T[Path], [...DepthCheck, unknown]>}`
   : never
 
-const PathDefaultValueSymbol = Symbol('PathDefaultValue')
-/**
- * This is a symbol that represents whether a value was passed to a generic type or not.
- */
-type PathsDefaultValue = typeof PathDefaultValueSymbol
-
 /**
  * This returns all possible nested paths of an object in dot notation.
  *
@@ -51,12 +45,10 @@ type PathsDefaultValue = typeof PathDefaultValueSymbol
  * Paths<User> // "name" | "age" | "address" | "dates" | "friends" | "address.street" | ... | "dates.0" | "dates.1" | "friends.${number}" | ...
  * ```
  */
-export type Paths<T = PathsDefaultValue, DepthCheck extends unknown[] = []> =
+export type Paths<T, DepthCheck extends unknown[] = []> =
   | (DepthCheck['length'] extends 0 ? '' : never)
   | (DepthCheck['length'] extends MaxIterationLength
       ? never
-      : T extends PathsDefaultValue
-        ? string
         : T extends Date
           ? never
           : T extends readonly any[] & IsTuple<T>

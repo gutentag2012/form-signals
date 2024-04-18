@@ -233,6 +233,43 @@ describe('validation', () => {
 
       vi.useRealTimers()
     })
+    it("should forward mixins to the debounced validation", async () => {
+      vi.useFakeTimers()
+      const value = 'test'
+      const event = 'onChange' as ValidatorEvents
+      const validate = vi.fn()
+      const validator = async (value: [string, ...number[]]) => {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        validate(value)
+        return 'error'
+      }
+      const asyncValidatorState = signal(undefined)
+      const errorMap = signal<Partial<ValidationErrorMap>>({})
+      const isValidating = signal(false)
+      const valueMixins = [1, 2, 3]
+
+      const promise = validateWithValidators(
+        value,
+        valueMixins,
+        event,
+        undefined,
+        undefined,
+        validator,
+        {
+          debounceMs: 100,
+        },
+        asyncValidatorState,
+        errorMap,
+        isValidating,
+        false,
+      )
+      await vi.advanceTimersByTimeAsync(200)
+      await promise
+
+      expect(validate).toHaveBeenCalledWith([value, ...valueMixins])
+
+      vi.useRealTimers()
+    })
     it('should ignore debounced validation if the validation was aborted before the debounce time', async () => {
       vi.useFakeTimers()
       const value = 'test'

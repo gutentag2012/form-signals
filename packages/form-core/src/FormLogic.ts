@@ -1179,7 +1179,6 @@ export class FormLogic<
    */
   public resetValues(): void {
     this._skipValidation = true
-    // TODO Test, that this includes the field default values
     setSignalValuesFromObject(this._data, this._combinedDefaultValues.peek())
     this._skipValidation = false
   }

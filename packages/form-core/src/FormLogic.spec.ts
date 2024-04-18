@@ -1422,6 +1422,7 @@ describe('FormLogic', () => {
         expect(field.errors.value).toEqual(['error'])
         expect(form.isTouched.value).toBe(true)
         expect(form.isDirty.value).toBe(true)
+        expect(form.dirtyFields.value).toEqual(["name", "deep.value"])
         expect(form.submitCount.value).toBe(1)
 
         form.reset()
@@ -1432,7 +1433,21 @@ describe('FormLogic', () => {
         expect(field.errors.value).toEqual([])
         expect(form.isTouched.value).toBe(false)
         expect(form.isDirty.value).toBe(false)
+        expect(form.dirtyFields.value).toEqual([])
         expect(form.submitCount.value).toBe(0)
+      })
+      it("should use the default values of the fields when resetting the values", () => {
+        const form = new FormLogic<{name: string}>()
+        const field = new FieldLogic(form, 'name', {
+          defaultValue: "test"
+        })
+        form.mount()
+        field.mount()
+
+        field.handleChange('value')
+        expect(form.data.value.name.value).toBe('value')
+        form.reset()
+        expect(form.data.value.name.value).toBe('test')
       })
       it('should trigger the reactive updates of all nested values within the default values', () => {
         const defaultValues = {

@@ -1705,6 +1705,18 @@ describe('FieldLogic', () => {
       expect(field.errors.value).toEqual([])
       expect(field.isTouched.value).toBe(false)
     })
+    it("should remove a key from the data when using the helper function", () => {
+      const form = new FormLogic<{ name: {first: string; last?: string} }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        defaultValue: {first: "default", last: "hey"},
+      })
+      field.mount()
+
+      expect(field.data.value.last).toBeDefined()
+      field.removeValueInObject("last")
+      expect(field.data.value.last).toBeUndefined()
+    })
   })
   describe('transform', () => {
     it('should return undefined if no transformers are given', () => {
