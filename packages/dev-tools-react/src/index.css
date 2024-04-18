@@ -137,7 +137,6 @@
   display: flex;
   overflow: auto;
   flex-direction: column;
-  justify-content: space-between;
   width: var(--fs-max-width);
   max-width: var(--fs-max-width);
   height: 100vh;
