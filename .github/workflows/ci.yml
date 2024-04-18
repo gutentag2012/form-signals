@@ -45,6 +45,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - name: Coverage Report (dev-tools-react)
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          name: "Dev Tools React Coverage"
+          json-summary-path: "./packages/dev-tools-react/coverage/coverage-summary.json"
+          json-final-path: "./packages/dev-tools-react/coverage/coverage-final.json"
       - name: Coverage Report (form-core)
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2
