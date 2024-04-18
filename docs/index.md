@@ -43,13 +43,21 @@ features:
       light: /arrow-left-right.svg
       dark: /arrow-left-right-dark.svg
       alt: Transformations
-  - title: Arrays + Dynamic Objects
-    details: Make use of arrays and dynamic objects within your forms.
-    link: /guide/array-fields
+#  Keep this commented out until there is an event number of features again
+#  - title: Arrays + Dynamic Objects
+#    details: Make use of arrays and dynamic objects within your forms.
+#    link: /guide/array-fields
+#    icon:
+#      light: /brackets.svg
+#      dark: /brackets-dark.svg
+#      alt: Arrays + Objects
+  - title: Devtools
+    details: Debug your form state with the included devtools.
+    link: /guide/devtools
     icon:
-      light: /brackets.svg
-      dark: /brackets-dark.svg
-      alt: Arrays + Objects
+      light: /code.svg
+      dark: /code-dark.svg
+      alt: Devtools
   - title: Type-safety
     details: Utilize the best of TypeScript for optimal developer experience.
     icon:

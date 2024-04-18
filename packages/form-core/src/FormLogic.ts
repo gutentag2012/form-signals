@@ -128,9 +128,12 @@ export class FormLogic<
   private readonly _fields: Signal<
     Map<Paths<TData>, FieldLogic<TData, Paths<TData>, any>>
   > = signal(new Map())
-  private readonly _fieldsArray = computed(() =>
-    Array.from(this._fields.value.values()),
-  )
+  private readonly _fieldsArray = computed(() => {
+    const fields = Array.from(this._fields.value.values())
+    // We are sorting this in the hierarchical order, so that parents are sorted before their children
+    fields.sort((a, b) => (a.name as string).localeCompare(b.name))
+    return fields
+  })
   //endregion
 
   //region State
@@ -180,6 +183,22 @@ export class FormLogic<
   //endregion
 
   //region Computed State
+  private readonly _combinedDefaultValues = computed(() => {
+    const defaultValues = this._options.value?.defaultValues ?? ({} as TData)
+    const fields = this._fieldsArray.value
+
+    // Get any possible default value overrides from the fields
+    for (const field of fields) {
+      if (
+        !field.isMounted.value &&
+        !field.options.value?.preserveValueOnUnmount
+      )
+        continue
+      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
+    }
+
+    return defaultValues
+  })
   private readonly _isTouched = computed(() =>
     this._fieldsArray.value.some((field) => field.isTouched.value),
   )
@@ -190,24 +209,16 @@ export class FormLogic<
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
-  private readonly _isDirty = computed(() => {
-    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
-    // Get any possible default value overrides from the fields
-    for (const field of this._fieldsArray.value) {
-      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
-    }
-
-    return !isEqualDeep(defaultValues, this._jsonData.value)
-  })
-  private readonly _dirtyFields = computed(() => {
-    const defaultValues = (this._options.value?.defaultValues ?? {}) as TData
-    // Get any possible default value overrides from the fields
-    for (const field of this._fieldsArray.value) {
-      setValueAtPath(defaultValues, field.name, field.defaultValue.value)
-    }
-
-    return getLeftUnequalPaths(defaultValues, this._jsonData.value)
-  })
+  private readonly _isDirty = computed(
+    () => !isEqualDeep(this._combinedDefaultValues.value, this._jsonData.value),
+  )
+  private readonly _dirtyFields = computed(
+    () =>
+      getLeftUnequalPaths(
+        this._combinedDefaultValues.value,
+        this._jsonData.value,
+      ) as Paths<TData>[],
+  )
   private readonly _canSubmit = computed(() => {
     return (
       !this._isSubmitting.value &&
@@ -321,6 +332,10 @@ export class FormLogic<
     return this._isDirty
   }
 
+  public get dirtyFields(): ReadonlySignal<Paths<TData>[]> {
+    return this._dirtyFields
+  }
+
   public get submitCountSuccessful(): ReadonlySignal<number> {
     return this._submitCountSuccessfulReadOnly
   }
@@ -361,6 +376,10 @@ export class FormLogic<
     FormLogicOptions<TData, TAdapter> | undefined
   > {
     return this._optionsReadOnly
+  }
+
+  public get defaultValues(): ReadonlySignal<TData> {
+    return this._combinedDefaultValues
   }
 
   public getValueForPath<TPath extends Paths<TData>>(
@@ -708,7 +727,7 @@ export class FormLogic<
     path: TPath,
   ): ValueAtPath<TData, TPath> | undefined {
     return getValueAtPath<TData, TPath>(
-      this._options.peek()?.defaultValues,
+      this._combinedDefaultValues.peek(),
       path,
     )
   }
@@ -1131,7 +1150,8 @@ export class FormLogic<
   public resetValues(): void {
     batch(() => {
       this._isMounted.value = false
-      setSignalValuesFromObject(this._data, this._options.peek()?.defaultValues)
+      // TODO Test, that this includes the field default values
+      setSignalValuesFromObject(this._data, this._combinedDefaultValues.peek())
     })
     this._isMounted.value = true
   }

@@ -13,6 +13,7 @@ The React bindings for form management with Preact Signals.
 - **Transformations** - Transform values for the specific needs of your input fields.
 - **Arrays + Dynamic Objects** - Utilize arrays and dynamic objects within your forms.
 - **React** - React bindings for easy integration with React.
+- **Dev Tools** - Offers a dev tools component to debug your forms.
 
 ## Install
 

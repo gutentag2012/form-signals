@@ -375,6 +375,19 @@ export class FieldLogic<
   > {
     return this._defaultValue
   }
+
+  public get options(): ReadonlySignal<
+    | FieldLogicOptions<
+        TData,
+        TName,
+        TBoundValue,
+        TAdapter extends undefined ? TFormAdapter : TAdapter,
+        TMixin
+      >
+    | undefined
+  > {
+    return this._options
+  }
   //endregion
 
   //region Lifecycle
@@ -871,10 +884,8 @@ export class FieldLogic<
    * Resets the field values and state.
    */
   public reset(): void {
-    batch(() => {
-      this.resetState()
-      this.resetValue()
-    })
+    this.resetState()
+    this.resetValue()
   }
   //endregion
 
