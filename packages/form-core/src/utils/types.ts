@@ -49,15 +49,15 @@ export type Paths<T, DepthCheck extends unknown[] = []> =
   | (DepthCheck['length'] extends 0 ? '' : never)
   | (DepthCheck['length'] extends MaxIterationLength
       ? never
-        : T extends Date
-          ? never
-          : T extends readonly any[] & IsTuple<T>
-            ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
-            : T extends any[]
-              ? `${number}` | CombinePath<T, number, DepthCheck>
-              : T extends object
-                ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
-                : never)
+      : T extends Date
+        ? never
+        : T extends readonly any[] & IsTuple<T>
+          ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
+          : T extends any[]
+            ? `${number}` | CombinePath<T, number, DepthCheck>
+            : T extends object
+              ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
+              : never)
 
 /**
  * Returns the parent path of a nested path.

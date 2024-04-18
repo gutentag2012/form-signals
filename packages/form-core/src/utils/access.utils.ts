@@ -94,7 +94,7 @@ export function removeValueAtPath<TValue, TPath extends Paths<TValue>>(
 
   const part = parts[parts.length - 1]
   if (typeof part === 'number' && Array.isArray(parent)) {
-    (parent as Array<never>).splice(part, 1)
+    ;(parent as Array<never>).splice(part, 1)
   } else {
     delete parent[part as keyof typeof parent]
   }

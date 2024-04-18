@@ -1494,8 +1494,8 @@ describe('FieldLogic', () => {
 
       expect(field.isTouched.value).toBe(true)
     })
-    it("should remove child fields from form if parent is unmounted", () => {
-      const form = new FormLogic<{ parent: {child: number} }>()
+    it('should remove child fields from form if parent is unmounted', () => {
+      const form = new FormLogic<{ parent: { child: number } }>()
       form.mount()
       const field = new FieldLogic(form, 'parent')
       field.mount()
@@ -1705,16 +1705,16 @@ describe('FieldLogic', () => {
       expect(field.errors.value).toEqual([])
       expect(field.isTouched.value).toBe(false)
     })
-    it("should remove a key from the data when using the helper function", () => {
-      const form = new FormLogic<{ name: {first: string; last?: string} }>()
+    it('should remove a key from the data when using the helper function', () => {
+      const form = new FormLogic<{ name: { first: string; last?: string } }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        defaultValue: {first: "default", last: "hey"},
+        defaultValue: { first: 'default', last: 'hey' },
       })
       field.mount()
 
       expect(field.data.value.last).toBeDefined()
-      field.removeValueInObject("last")
+      field.removeValueInObject('last')
       expect(field.data.value.last).toBeUndefined()
     })
   })

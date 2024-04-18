@@ -233,7 +233,7 @@ describe('validation', () => {
 
       vi.useRealTimers()
     })
-    it("should forward mixins to the debounced validation", async () => {
+    it('should forward mixins to the debounced validation', async () => {
       vi.useFakeTimers()
       const value = 'test'
       const event = 'onChange' as ValidatorEvents

@@ -1422,7 +1422,7 @@ describe('FormLogic', () => {
         expect(field.errors.value).toEqual(['error'])
         expect(form.isTouched.value).toBe(true)
         expect(form.isDirty.value).toBe(true)
-        expect(form.dirtyFields.value).toEqual(["name", "deep.value"])
+        expect(form.dirtyFields.value).toEqual(['name', 'deep.value'])
         expect(form.submitCount.value).toBe(1)
 
         form.reset()
@@ -1436,10 +1436,10 @@ describe('FormLogic', () => {
         expect(form.dirtyFields.value).toEqual([])
         expect(form.submitCount.value).toBe(0)
       })
-      it("should use the default values of the fields when resetting the values", () => {
-        const form = new FormLogic<{name: string}>()
+      it('should use the default values of the fields when resetting the values', () => {
+        const form = new FormLogic<{ name: string }>()
         const field = new FieldLogic(form, 'name', {
-          defaultValue: "test"
+          defaultValue: 'test',
         })
         form.mount()
         field.mount()

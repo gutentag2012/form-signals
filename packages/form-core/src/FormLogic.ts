@@ -198,7 +198,7 @@ export class FormLogic<
         continue
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
-      if(currentDefaultValue !== undefined) continue
+      if (currentDefaultValue !== undefined) continue
       setValueAtPath(defaultValues, field.name, fieldOptions?.defaultValue)
     }
 
@@ -416,7 +416,11 @@ export class FormLogic<
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
     const newDefaultValues = { ...options.defaultValues }
     for (const dirtyField of dirtyFields) {
-      setValueAtPath(newDefaultValues, dirtyField as never, getSignalValueAtPath(this.data, dirtyField).peek() as any)
+      setValueAtPath(
+        newDefaultValues,
+        dirtyField as never,
+        getSignalValueAtPath(this.data, dirtyField).peek() as any,
+      )
     }
     setSignalValuesFromObject(this._data, newDefaultValues)
   }
@@ -719,7 +723,7 @@ export class FormLogic<
     const newMap = new Map(this._fields.peek())
     newMap.delete(path)
     for (const key of newMap.keys()) {
-      if(!(key as string).startsWith(`${path}.`)) continue
+      if (!(key as string).startsWith(`${path}.`)) continue
       newMap.delete(key)
     }
     this._fields.value = newMap
@@ -826,11 +830,11 @@ export class FormLogic<
     const newMap = new Map(this._fields.peek())
     let changed = false
     for (const key of newMap.keys()) {
-      if(!(key as string).startsWith((`${path}.`))) continue
+      if (!(key as string).startsWith(`${path}.`)) continue
       newMap.delete(key)
       changed = true
     }
-    if(changed) {
+    if (changed) {
       this._fields.value = newMap
     }
 
@@ -983,11 +987,11 @@ export class FormLogic<
     const newMap = new Map(this._fields.peek())
     let changed = false
     for (const key of newMap.keys()) {
-      if(!(key as string).startsWith((`${name}.`))) continue
+      if (!(key as string).startsWith(`${name}.`)) continue
       newMap.delete(key)
       changed = true
     }
-    if(changed) {
+    if (changed) {
       this._fields.value = newMap
     }
 
@@ -1197,7 +1201,11 @@ export class FormLogic<
     event: ValidatorEvents,
     checkValue?: TData,
   ): void | Promise<void> {
-    if (this._skipValidation || (!this._isMounted.peek() && event !== 'onSubmit')) return
+    if (
+      this._skipValidation ||
+      (!this._isMounted.peek() && event !== 'onSubmit')
+    )
+      return
 
     const value = checkValue ?? unSignalifyValue(this.data)
 
