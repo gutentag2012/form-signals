@@ -34,6 +34,8 @@ export function FormDevToolsDrawer(props: FormDevToolsDrawerProps) {
       id="fs-drawer"
       style={{
         alignItems: props.horizontalKey === 'right' ? 'flex-end' : 'flex-start',
+        justifyContent:
+          props.verticalKey === 'top' ? undefined : 'space-between',
       }}
     >
       {isCloseOpen && CloseButton}

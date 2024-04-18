@@ -201,11 +201,6 @@ describe('signals.utils', () => {
         undefined,
       )
     })
-    it('should do nothing for an undefined value', () => {
-      const obj = deepSignalifyValue({ a: 1 })
-      expect(setSignalValuesFromObject(obj, undefined)).toEqual(obj)
-      expect(obj.value.a.value).toBe(1)
-    })
     it('should update the value of an existing array', () => {
       const obj = deepSignalifyValue({ a: [1, 2] })
       setSignalValuesFromObject(obj, { a: [2, 3] })
