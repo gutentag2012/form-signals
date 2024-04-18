@@ -19,15 +19,6 @@ export type FormDevToolsProps = {
   position?: `${'top' | 'bottom'}-${'left' | 'right'}`
 }
 
-// TODO Testing
-// TODO Docs
-
-// TODO Removing a field should remove all child fields as well
-// TODO When removing a variant, the value is still preserved event though I explicitly removed it
-// TODO Dynamic object is not marked as dirty
-// TODO Dynamic object and arrays cannot be reset (price, valid range)
-// TODO Reset does not reset not defined default values
-
 const defaultValues = {
   bgColor: '#1c1917',
   bgSecondaryColor: '#44403c',

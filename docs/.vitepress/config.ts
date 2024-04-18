@@ -30,6 +30,7 @@ export default defineConfig({
             items: [{ text: 'React', link: '/guide/react/quickstart' }],
           },
           { text: 'Concepts', link: '/guide/concepts' },
+          { text: 'Devtools', link: '/guide/devtools' },
         ],
       },
       {
