@@ -1,3 +1,10 @@
+## 0.1.3 (2024-04-18)
+
+
+### 🩹 Fixes
+
+- Add dev-tools-react to release ([4b578b9](https://github.com/gutentag2012/form-signals/commit/4b578b9))
+
 ## 0.1.2 (2024-04-18)
 
 
