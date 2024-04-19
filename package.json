@@ -19,6 +19,7 @@
     "build:core": "nx build form-core",
     "build:react": "nx build form-react",
     "build:validator-zod": "nx build validation-adapter-zod",
+    "example:react:async:form-signals": "nx dev async-form-signals-react",
     "example:react:complex:form-signals": "nx dev complex-product-details-form-signals-react",
     "example:react:complex:react-hook-form": "nx dev complex-product-details-react-hook-form-react",
     "example:react:complex:tanstack-form": "nx dev complex-product-details-tanstack-form-react",

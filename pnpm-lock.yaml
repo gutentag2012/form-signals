@@ -55,6 +55,9 @@ importers:
 
   examples/react/async-form-signals:
     dependencies:
+      '@formsignals/dev-tools-react':
+        specifier: workspace:*
+        version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
         specifier: workspace:*
         version: link:../../../packages/form-core
