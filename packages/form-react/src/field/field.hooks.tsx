@@ -48,17 +48,17 @@ export function useField<
   )
 
   useIsomorphicLayoutEffect(() => {
-    // That way we can make sure to not update the options for the first render
-    if (!field.isMounted.peek()) return
-    field.updateOptions(options)
-  }, [field, options])
-
-  useIsomorphicLayoutEffect(() => {
     field.mount()
     return () => {
       field.unmount()
     }
   }, [field])
+
+  useIsomorphicLayoutEffect(() => {
+    // That way we can make sure to not update the options for the first render
+    if (!field.isMounted.peek()) return
+    field.updateOptions(options)
+  }, [field, options])
 
   return field
 }
