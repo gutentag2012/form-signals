@@ -52,6 +52,11 @@ export type FormLogicOptions<
   TAdapter extends ValidatorAdapter | undefined = undefined,
 > = {
   /**
+   * Whether the form is disabled.
+   * If true, the form will not be able to submit or run validations or accept changed through the form handlers.
+   */
+  disabled?: boolean
+  /**
    * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
    */
   validatorAdapter?: TAdapter
@@ -88,7 +93,9 @@ export type FormLogicOptions<
    */
   onSubmit?: (
     data: TData,
-    addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>> | ValidationError) => void,
+    addErrors: (
+      errors: Partial<Record<Paths<TData>, ValidationError>> | ValidationError,
+    ) => void,
   ) => void | Promise<void>
 }
 
@@ -145,6 +152,7 @@ export class FormLogic<
   private readonly _isSubmitting = signal(false)
   private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
   private readonly _isValidatingForm = signal(false)
+  private readonly _disabled = signal(false)
   //endregion
 
   //region Computed Error State
@@ -228,7 +236,8 @@ export class FormLogic<
     return (
       !this._isSubmitting.value &&
       !this._isValidating.value &&
-      this._isValid.value
+      this._isValid.value &&
+      !this._disabled.value
     )
   })
   //endregion
@@ -248,6 +257,7 @@ export class FormLogic<
   private readonly _isSubmittingReadOnly = computed(
     () => this._isSubmitting.value,
   )
+  private readonly _disabledReadOnly = computed(() => this._disabled.value)
   //endregion
 
   constructor(options?: FormLogicOptions<TData, TAdapter>) {
@@ -376,6 +386,18 @@ export class FormLogic<
     return this._canSubmit
   }
 
+  public get disabled(): ReadonlySignal<boolean> {
+    return this._disabledReadOnly
+  }
+
+  /**
+   * This value is used to skip validation if values are currently being reset
+   * @internal
+   */
+  public get skipValidation(): boolean {
+    return this._skipValidation
+  }
+
   public get options(): ReadonlySignal<
     FormLogicOptions<TData, TAdapter> | undefined
   > {
@@ -409,10 +431,15 @@ export class FormLogic<
     const dirtyFields = this._dirtyFields.peek()
     this._options.value = options
 
+    if (options && 'disabled' in options) {
+      this._disabled.value = !!options.disabled
+    }
+
     if (!options?.defaultValues) {
       return
     }
 
+    this._skipValidation = true
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
     const newDefaultValues = { ...options.defaultValues }
     for (const dirtyField of dirtyFields) {
@@ -423,6 +450,7 @@ export class FormLogic<
       )
     }
     setSignalValuesFromObject(this._data, newDefaultValues)
+    this._skipValidation = false
   }
 
   /**
@@ -510,7 +538,7 @@ export class FormLogic<
     newValue: ValueAtPath<TData, TPath>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (!this._isMounted.peek()) return
+    if (!this._isMounted.peek() || this._disabled.peek()) return
     const field = this.getFieldForPath(path)
     batch(() => {
       setSignalValueAtPath(this._data, path, newValue)
@@ -521,12 +549,17 @@ export class FormLogic<
   }
 
   public async handleBlur(): Promise<void> {
-    if (!this._isMounted.peek()) return
+    if (!this._isMounted.peek() || this._disabled.peek()) return
     await this.validateForEvent('onBlur')
   }
 
   public async handleSubmit(): Promise<void> {
-    if (!this._isMounted.peek() || !this.canSubmit.peek()) return
+    if (
+      !this._isMounted.peek() ||
+      !this.canSubmit.peek() ||
+      this._disabled.peek()
+    )
+      return
 
     const onFinished = (successful: boolean) => {
       batch(() => {
@@ -562,7 +595,7 @@ export class FormLogic<
 
     try {
       await currentOptions.onSubmit(this._jsonData.peek(), (errors) => {
-        if(typeof errors === 'string') {
+        if (typeof errors === 'string') {
           this.setErrors({
             async: errors,
             asyncErrorEvent: 'server',
@@ -600,6 +633,14 @@ export class FormLogic<
         general: e.message,
       }
     }
+  }
+
+  public disable(): void {
+    this._disabled.value = true
+  }
+
+  public enable(): void {
+    this._disabled.value = false
   }
   //endregion
 
@@ -791,6 +832,7 @@ export class FormLogic<
     value: ValueAtPath<TData, ConnectPath<TPath, TKey>>,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(path)
     const currentValue = signal.value
     if (typeof currentValue !== 'object' || currentValue instanceof Date) {
@@ -825,6 +867,7 @@ export class FormLogic<
     key: KeepOptionalKeys<ValueAtPath<TData, TPath>, TKey>,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(path)
     const currentValue = signal.value
     if (typeof currentValue !== 'object' || currentValue instanceof Date) {
@@ -876,6 +919,7 @@ export class FormLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -907,6 +951,7 @@ export class FormLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -944,6 +989,7 @@ export class FormLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -976,6 +1022,7 @@ export class FormLogic<
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -1051,6 +1098,7 @@ export class FormLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -1118,6 +1166,7 @@ export class FormLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this._disabled.peek()) return
     const signal = this.getValueForPath(name)
     const currentValue = signal.value
     if (!Array.isArray(currentValue)) {
@@ -1210,7 +1259,8 @@ export class FormLogic<
   ): void | Promise<void> {
     if (
       this._skipValidation ||
-      (!this._isMounted.peek() && event !== 'onSubmit')
+      (!this._isMounted.peek() && event !== 'onSubmit') ||
+      this._disabled.peek()
     )
       return
 
