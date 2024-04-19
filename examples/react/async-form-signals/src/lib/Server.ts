@@ -40,8 +40,8 @@ export async function createUser(user: Omit<User, 'id'>) {
   }
   if (currentUsers.some((u) => u.name === user.name)) {
     return {
-      path: "name",
-      message: "User with this name already exists"
+      path: 'name',
+      message: 'User with this name already exists',
     }
   }
 
@@ -63,8 +63,8 @@ export async function updateUser(id: number, user: Omit<Partial<User>, 'id'>) {
   const currentUsers = await getUsers()
   if (currentUsers.some((u) => u.name === user.name)) {
     return {
-      path: "name",
-      message: "User with this name already exists"
+      path: 'name',
+      message: 'User with this name already exists',
     }
   }
 

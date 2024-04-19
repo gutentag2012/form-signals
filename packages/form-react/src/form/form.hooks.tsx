@@ -25,7 +25,10 @@ export function useForm<
   options?: FormLogicOptions<TData, TAdapter>,
 ): FormContextType<TData, TAdapter> {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a form once, and we have to update the options in a layout effect to avoid setting state during render
-  const form = React.useMemo(() => formLogicToFormContext(new FormLogic(options)), [])
+  const form = React.useMemo(
+    () => formLogicToFormContext(new FormLogic(options)),
+    [],
+  )
 
   useIsomorphicLayoutEffect(() => {
     form.mount()
@@ -36,9 +39,9 @@ export function useForm<
 
   useIsomorphicLayoutEffect(() => {
     // That way we can make sure to not update the options for the first render
-    if(!form.isMounted.peek()) return
+    if (!form.isMounted.peek()) return
     form.updateOptions(options)
-  }, [form, options]);
+  }, [form, options])
 
   return form
 }

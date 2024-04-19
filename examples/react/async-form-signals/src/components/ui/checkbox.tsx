@@ -3,7 +3,7 @@ import { CheckIcon } from '@radix-ui/react-icons'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
-import {Signal} from "@preact/signals-react";
+import type { Signal } from '@preact/signals-react'
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
@@ -26,14 +26,20 @@ const Checkbox = React.forwardRef<
 ))
 Checkbox.displayName = CheckboxPrimitive.Root.displayName
 
-interface CheckboxSignalProps extends Omit<React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>, "value" | "onCheckedChange"> {
+interface CheckboxSignalProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>,
+    'value' | 'onCheckedChange'
+  > {
   value: Signal<boolean>
 }
-const CheckboxSignal = ({value, ...props}: CheckboxSignalProps) => {
+const CheckboxSignal = ({ value, ...props }: CheckboxSignalProps) => {
   return (
     <Checkbox
       checked={value.value}
-      onCheckedChange={(newValue) => value.value = !!newValue.valueOf()}
+      onCheckedChange={(newValue) => {
+        value.value = !!newValue.valueOf()
+      }}
       {...props}
     />
   )

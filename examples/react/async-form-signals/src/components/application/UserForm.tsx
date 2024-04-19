@@ -1,3 +1,5 @@
+import { ErrorText } from '@/components/form/ErrorText.tsx'
+import { ErrorTextForm } from '@/components/form/ErrorTextForm.tsx'
 import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { InputSignal } from '@/components/ui/input.tsx'
@@ -10,14 +12,12 @@ import {
 } from '@/lib/Server.ts'
 import { SelectedUser } from '@/signals.ts'
 import type { User } from '@/types.ts'
+import { FormDevTools } from '@formsignals/dev-tools-react'
 import { useForm } from '@formsignals/form-react'
+import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2Icon } from 'lucide-react'
-import { FormDevTools } from '@formsignals/dev-tools-react'
-import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { z } from 'zod'
-import { ErrorText } from '@/components/form/ErrorText.tsx'
-import {ErrorTextForm} from "@/components/form/ErrorTextForm.tsx";
 
 export function UserForm() {
   const selectedUser = SelectedUser.value
@@ -48,7 +48,7 @@ export function UserForm() {
       onSubmit(values).then((error) => {
         if (error) {
           addErrors({
-            [error.path]: error.message
+            [error.path]: error.message,
           })
           return
         }
@@ -75,10 +75,7 @@ export function UserForm() {
             return form.handleSubmit()
           }}
         >
-          <form.FieldProvider
-            name="name"
-            validator={z.string().min(1)}
-          >
+          <form.FieldProvider name="name" validator={z.string().min(1)}>
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Name</Label>
@@ -120,10 +117,7 @@ export function UserForm() {
               </div>
             )}
           </form.FieldProvider>
-          <form.FieldProvider
-            name="dob"
-            validator={z.date().max(new Date())}
-          >
+          <form.FieldProvider name="dob" validator={z.date().max(new Date())}>
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Date of Birth</Label>
