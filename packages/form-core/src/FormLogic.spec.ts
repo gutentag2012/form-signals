@@ -46,6 +46,7 @@ describe('FormLogic', () => {
     expect(form.isMounted.value).toBeFalsy()
     form.mount()
     expect(form.isMounted.value).toBeTruthy()
+    expect(form.disabled.value).toBe(false)
 
     expect(form.fields.value.length).toBe(0)
 
@@ -384,6 +385,12 @@ describe('FormLogic', () => {
       field.unmount()
       expect(form.canSubmit.value).toBe(false)
     })
+    it("should not can submit if the form is disabled", async () => {
+      const form = new FormLogic<{ name: string }>()
+      await form.mount()
+      form.disable()
+      expect(form.canSubmit.value).toBe(false)
+    })
     it("should can submit if a form field is invalid, unmounted and didn't preserve its value", async () => {
       const form = new FormLogic<{ name: string }>()
       await form.mount()
@@ -547,6 +554,15 @@ describe('FormLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.handleChange('name', 'value')
       expect(form.data.value.name).toBeUndefined()
+    })
+
+    it("should be possible to enable and disable the form", () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      form.disable()
+      expect(form.disabled.value).toBe(true)
+      form.enable()
+      expect(form.disabled.value).toBe(false)
     })
   })
   describe('state (fields)', () => {
@@ -1348,6 +1364,35 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.errors.value).toEqual(['error'])
     })
+    it("should be able to add a general error by passing a string to the add errors function during submission", async () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit: (_, addErrors) => {
+          addErrors('error')
+        },
+      })
+      await form.mount()
+
+      expect(form.errors.value).toEqual([])
+      await form.handleSubmit()
+      expect(form.errors.value).toEqual(['error'])
+    })
+    it("should not be able to submit if the form is disabled", async () => {
+      const onSubmit = vi.fn()
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+        onSubmit,
+      })
+      await form.mount()
+      form.disable()
+
+      await form.handleSubmit()
+      expect(onSubmit).not.toBeCalled()
+    })
   })
   describe('helperMethods', () => {
     describe('reset', () => {
@@ -1543,6 +1588,17 @@ describe('FormLogic', () => {
         form.insertValueInArray('array', 1, 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
+      it("should do nothing when trying to inser a value into a form value when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        form.disable()
+        form.insertValueInArray('array', 1, 4)
+        expect(form.json.value.array).toEqual([1, 2, 3])
+      })
       it('should touch a field when inserting a value into a form value array if a field is attached', () => {
         const form = new FormLogic({
           defaultValues: {
@@ -1607,6 +1663,15 @@ describe('FormLogic', () => {
         form.removeValueFromArray('', -1)
         expect(form.json.value).toEqual([1, 2, 3])
       })
+      it("should do nothing when trying to remove an array item when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: [1, 2, 3],
+        })
+        form.mount()
+        form.disable()
+        form.removeValueFromArray('', 1)
+        expect(form.json.value).toEqual([1, 2, 3])
+      })
       it('should not do anything when trying to remove a value from a form value that is not an array', () => {
         const form = new FormLogic({
           defaultValues: {
@@ -1660,6 +1725,17 @@ describe('FormLogic', () => {
         form.pushValueToArray('array', 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
+      it("should do nothing when trying to push a value into a form value when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        form.disable()
+        form.pushValueToArray('array', 4)
+        expect(form.json.value.array).toEqual([1, 2, 3])
+      })
       it('should touch a field when pushing a value into a form value array if a field is attached', () => {
         const form = new FormLogic({
           defaultValues: {
@@ -1692,6 +1768,17 @@ describe('FormLogic', () => {
         form.pushValueToArrayAtIndex('array', 1 as never, 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
+      it("should do nothing when trying to push a value at an index into a form value when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        form.disable()
+        form.pushValueToArrayAtIndex('array', 1, 4)
+        expect(form.json.value.array).toEqual([1, 2, 3])
+      })
       it('should touch a field when pushing a value into a form value array at an index if a field is attached', () => {
         const form = new FormLogic({
           defaultValues: {
@@ -1723,6 +1810,17 @@ describe('FormLogic', () => {
         form.mount()
         form.swapValuesInArray('array', 1 as never, 2 as never)
         expect(form.data.value.array.value).toEqual(1)
+      })
+      it("should do nothing when trying to swap two values in a form value when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        form.disable()
+        form.swapValuesInArray('array', 1, 2)
+        expect(form.json.value.array).toEqual([1, 2, 3])
       })
       it('should touch a field when swapping two values in a form value array if a field is attached', () => {
         const form = new FormLogic({
@@ -1777,6 +1875,17 @@ describe('FormLogic', () => {
         form.mount()
         form.moveValueInArray('array', 1 as never, 2 as never)
         expect(form.data.value.array.value).toEqual(1)
+      })
+      it("should do nothing when trying to move a value in a form value when disabled", () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        form.disable()
+        form.moveValueInArray('array', 1, 2)
+        expect(form.json.value.array).toEqual([1, 2, 3])
       })
       it('should touch a field when moving a value in a form value array if a field is attached', () => {
         const form = new FormLogic({
@@ -1908,6 +2017,20 @@ describe('FormLogic', () => {
         form.setValueInObject('date', 'new' as never, 2 as never)
         expect(fn).toHaveBeenCalledTimes(0)
       })
+      it("should do nothing when trying to add a new key to an object when disabled", () => {
+        const form = new FormLogic<{ deep: { [key: string]: number } }>({
+          defaultValues: {
+            deep: {
+              value: 1,
+            },
+          },
+        })
+        form.mount()
+        form.disable()
+
+        form.setValueInObject('deep', 'new', 2)
+        expect(form.data.value.deep.value.new).toBeUndefined()
+      })
       it('should remove a key to an object', () => {
         const form = new FormLogic<{ deep: { value?: number } }>({
           defaultValues: {
@@ -1997,6 +2120,20 @@ describe('FormLogic', () => {
 
         form.removeValueInObject('deep', 'new' as never)
         expect(fn).toHaveBeenCalledTimes(0)
+      })
+      it("should do nothing when trying to remove a key from an object when disabled", () => {
+        const form = new FormLogic<{ deep: { value?: number } }>({
+          defaultValues: {
+            deep: {
+              value: 1,
+            },
+          },
+        })
+        form.mount()
+        form.disable()
+
+        form.removeValueInObject('deep', 'value')
+        expect(form.data.value.deep.value).toBeDefined()
       })
     })
 
