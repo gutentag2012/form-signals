@@ -18,14 +18,11 @@ import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { z } from 'zod'
 import { ErrorText } from '@/components/form/ErrorText.tsx'
 import {ErrorTextForm} from "@/components/form/ErrorTextForm.tsx";
-import {useRef} from "react";
 
-// TODO Add support for proper field disabled states (when loading)
 // TODO Add a partial async state once partial data is enabled
 
 export function UserForm() {
   const selectedUser = SelectedUser.value
-  const lastSelectedUser = useRef(selectedUser)
   const queryClient = useQueryClient()
 
   const user = useQuery({
