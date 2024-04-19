@@ -88,7 +88,10 @@ export default defineConfig({
             text: 'Dev Tools React',
             collapsed: true,
             items: [
-              { text: 'FormDevTools', link: '/reference/dev-tools-react/FormDevTools' },
+              {
+                text: 'FormDevTools',
+                link: '/reference/dev-tools-react/FormDevTools',
+              },
             ],
           },
         ],
