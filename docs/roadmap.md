@@ -10,6 +10,10 @@ We are open to feedback and suggestions.
 
 Any points marked down here are added to arbitrary versions and might get moved around or discarded.
 
+::: info
+The versions do not match the versions where the features were added.
+:::
+
 ## Version 0.1.0
 
 - :white_check_mark: <LibraryChip library="form-core" /> Add FieldLogic to handle form fields state and validation
