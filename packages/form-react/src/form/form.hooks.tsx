@@ -31,17 +31,17 @@ export function useForm<
   )
 
   useIsomorphicLayoutEffect(() => {
+    // That way we can make sure to not update the options for the first render
+    if (!form.isMounted.peek()) return
+    form.updateOptions(options)
+  }, [form, options])
+
+  useIsomorphicLayoutEffect(() => {
     form.mount()
     return () => {
       form.unmount()
     }
   }, [form])
-
-  useIsomorphicLayoutEffect(() => {
-    // That way we can make sure to not update the options for the first render
-    if (!form.isMounted.peek()) return
-    form.updateOptions(options)
-  }, [form, options])
 
   return form
 }
