@@ -88,7 +88,7 @@ export type FormLogicOptions<
    */
   onSubmit?: (
     data: TData,
-    addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void,
+    addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>> | ValidationError) => void,
   ) => void | Promise<void>
 }
 
@@ -562,7 +562,14 @@ export class FormLogic<
 
     try {
       await currentOptions.onSubmit(this._jsonData.peek(), (errors) => {
-        for (const [path, error] of Object.entries(errors)) {
+        if(typeof errors === 'string') {
+          this.setErrors({
+            async: errors,
+            asyncErrorEvent: 'server',
+          })
+          return
+        }
+        for (const [path, error] of Object.entries(errors as object)) {
           if (!path) {
             this.setErrors({
               async: error,
@@ -1191,10 +1198,8 @@ export class FormLogic<
    * This will both the state and values of the form and all fields.
    */
   public reset(): void {
-    batch(() => {
-      this.resetValues()
-      this.resetState()
-    })
+    this.resetValues()
+    this.resetState()
   }
   //endregion
 
