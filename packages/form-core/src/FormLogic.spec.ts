@@ -385,7 +385,7 @@ describe('FormLogic', () => {
       field.unmount()
       expect(form.canSubmit.value).toBe(false)
     })
-    it("should not can submit if the form is disabled", async () => {
+    it('should not can submit if the form is disabled', async () => {
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       form.disable()
@@ -556,7 +556,7 @@ describe('FormLogic', () => {
       expect(form.data.value.name).toBeUndefined()
     })
 
-    it("should be possible to enable and disable the form", () => {
+    it('should be possible to enable and disable the form', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       form.disable()
@@ -1364,7 +1364,7 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.errors.value).toEqual(['error'])
     })
-    it("should be able to add a general error by passing a string to the add errors function during submission", async () => {
+    it('should be able to add a general error by passing a string to the add errors function during submission', async () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'test',
@@ -1379,7 +1379,7 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.errors.value).toEqual(['error'])
     })
-    it("should not be able to submit if the form is disabled", async () => {
+    it('should not be able to submit if the form is disabled', async () => {
       const onSubmit = vi.fn()
       const form = new FormLogic({
         defaultValues: {
@@ -1588,7 +1588,7 @@ describe('FormLogic', () => {
         form.insertValueInArray('array', 1, 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
-      it("should do nothing when trying to inser a value into a form value when disabled", () => {
+      it('should do nothing when trying to inser a value into a form value when disabled', () => {
         const form = new FormLogic({
           defaultValues: {
             array: [1, 2, 3],
@@ -1663,7 +1663,7 @@ describe('FormLogic', () => {
         form.removeValueFromArray('', -1)
         expect(form.json.value).toEqual([1, 2, 3])
       })
-      it("should do nothing when trying to remove an array item when disabled", () => {
+      it('should do nothing when trying to remove an array item when disabled', () => {
         const form = new FormLogic({
           defaultValues: [1, 2, 3],
         })
@@ -1725,7 +1725,7 @@ describe('FormLogic', () => {
         form.pushValueToArray('array', 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
-      it("should do nothing when trying to push a value into a form value when disabled", () => {
+      it('should do nothing when trying to push a value into a form value when disabled', () => {
         const form = new FormLogic({
           defaultValues: {
             array: [1, 2, 3],
@@ -1768,7 +1768,7 @@ describe('FormLogic', () => {
         form.pushValueToArrayAtIndex('array', 1 as never, 4 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
-      it("should do nothing when trying to push a value at an index into a form value when disabled", () => {
+      it('should do nothing when trying to push a value at an index into a form value when disabled', () => {
         const form = new FormLogic({
           defaultValues: {
             array: [1, 2, 3],
@@ -1811,7 +1811,7 @@ describe('FormLogic', () => {
         form.swapValuesInArray('array', 1 as never, 2 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
-      it("should do nothing when trying to swap two values in a form value when disabled", () => {
+      it('should do nothing when trying to swap two values in a form value when disabled', () => {
         const form = new FormLogic({
           defaultValues: {
             array: [1, 2, 3],
@@ -1876,7 +1876,7 @@ describe('FormLogic', () => {
         form.moveValueInArray('array', 1 as never, 2 as never)
         expect(form.data.value.array.value).toEqual(1)
       })
-      it("should do nothing when trying to move a value in a form value when disabled", () => {
+      it('should do nothing when trying to move a value in a form value when disabled', () => {
         const form = new FormLogic({
           defaultValues: {
             array: [1, 2, 3],
@@ -2017,7 +2017,7 @@ describe('FormLogic', () => {
         form.setValueInObject('date', 'new' as never, 2 as never)
         expect(fn).toHaveBeenCalledTimes(0)
       })
-      it("should do nothing when trying to add a new key to an object when disabled", () => {
+      it('should do nothing when trying to add a new key to an object when disabled', () => {
         const form = new FormLogic<{ deep: { [key: string]: number } }>({
           defaultValues: {
             deep: {
@@ -2121,7 +2121,7 @@ describe('FormLogic', () => {
         form.removeValueInObject('deep', 'new' as never)
         expect(fn).toHaveBeenCalledTimes(0)
       })
-      it("should do nothing when trying to remove a key from an object when disabled", () => {
+      it('should do nothing when trying to remove a key from an object when disabled', () => {
         const form = new FormLogic<{ deep: { value?: number } }>({
           defaultValues: {
             deep: {
