@@ -39,6 +39,7 @@ describe('FormDevTools', () => {
 
     const [
       mountedValue,
+      disabledValue,
       touchedValue,
       dirtyValue,
       validValue,
@@ -63,6 +64,11 @@ describe('FormDevTools', () => {
       mountedValue
         .querySelector('div')
         ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      disabledValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
     ).toBeTruthy()
     expect(
       touchedValue
@@ -199,6 +205,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue,
+      _disabledValue,
       _touchedValue,
       _dirtyValue,
       validValue,
@@ -276,7 +283,13 @@ describe('FormDevTools', () => {
     const textValues = screen.container.querySelectorAll('.fs-text-display')
     if (!textValues.length) throw new Error('textValues is empty')
 
-    const [_mountedValue, _touchedValue, _dirtyValue, validValue] = boolValues
+    const [
+      _mountedValue,
+      _disabledValue,
+      _touchedValue,
+      _dirtyValue,
+      validValue,
+    ] = boolValues
     const [_dirtyFieldsValue, formErrorsValue] = textValues
 
     expect(
@@ -329,6 +342,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValueAfterChange,
+      _disabledValueAfterChange,
       _touchedValueAfterChange,
       _dirtyValueAfterChange,
       validValueAfterChange,
@@ -423,6 +437,7 @@ describe('FormDevTools', () => {
 
     const [
       validValue,
+      _disabled,
       mountedValue,
       touchedValue,
       dirtyValue,
@@ -530,6 +545,7 @@ describe('FormDevTools', () => {
     if (!fieldTextValues.length) throw new Error('fieldTextValues is empty')
 
     const [
+      disabledValue,
       validValue,
       mountedValue,
       touchedValue,
@@ -538,6 +554,11 @@ describe('FormDevTools', () => {
     ] = fieldBooleanValues
     const [errorsValue] = fieldTextValues
 
+    expect(
+      disabledValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
     expect(
       validValue
         .querySelector('div')
@@ -681,6 +702,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue,
+      _disabledValue,
       _touchedValue,
       _dirtyValue,
       _validValue,
@@ -724,6 +746,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue2,
+      _disabledValue2,
       _touchedValue2,
       _dirtyValue2,
       _validValue2,
@@ -766,6 +789,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue3,
+      _disabledValue3,
       _touchedValue3,
       _dirtyValue3,
       _validValue3,
@@ -811,6 +835,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue4,
+      _disabledValue4,
       _touchedValue4,
       _dirtyValue4,
       _validValue4,
@@ -854,6 +879,7 @@ describe('FormDevTools', () => {
 
     const [
       _mountedValue5,
+      _disabledValue5,
       _touchedValue5,
       _dirtyValue5,
       _validValue5,
