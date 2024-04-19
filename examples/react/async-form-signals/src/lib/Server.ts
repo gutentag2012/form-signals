@@ -38,6 +38,12 @@ export async function createUser(user: Omit<User, 'id'>) {
   if (currentUsers.some((u) => u.email === user.email)) {
     throw new Error('Email already exists')
   }
+  if (currentUsers.some((u) => u.name === user.name)) {
+    return {
+      path: "name",
+      message: "User with this name already exists"
+    }
+  }
 
   await serverDelay()
   const newUser = { ...user, id: ++idCounter }
@@ -54,7 +60,19 @@ export async function updateUser(id: number, user: Omit<Partial<User>, 'id'>) {
   if (!currentUser) {
     throw new Error('User not found')
   }
+  const currentUsers = await getUsers()
+  if (currentUsers.some((u) => u.name === user.name)) {
+    return {
+      path: "name",
+      message: "User with this name already exists"
+    }
+  }
 
   await serverDelay()
   Object.assign(currentUser, user)
+}
+
+export async function isEmailTaken(email: string) {
+  await serverDelay()
+  return users.some((u) => u.email === email)
 }

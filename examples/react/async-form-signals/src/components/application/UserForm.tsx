@@ -2,15 +2,24 @@ import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { InputSignal } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
-import {createUser, getUserById, updateUser} from '@/lib/Server.ts'
+import {
+  createUser,
+  getUserById,
+  isEmailTaken,
+  updateUser,
+} from '@/lib/Server.ts'
 import { SelectedUser } from '@/signals.ts'
 import type { User } from '@/types.ts'
-import {useForm} from '@formsignals/form-react'
-import {useQuery, useQueryClient} from '@tanstack/react-query'
+import { useForm } from '@formsignals/form-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2Icon } from 'lucide-react'
+import { FormDevTools } from '@formsignals/dev-tools-react'
+import { ZodAdapter } from '@formsignals/validation-adapter-zod'
+import { z } from 'zod'
+import { ErrorText } from '@/components/form/ErrorText.tsx'
+import {ErrorTextForm} from "@/components/form/ErrorTextForm.tsx";
 
 // TODO Add support for proper field disabled states (when loading)
-// TODO Add tests for everything that was fixed
 // TODO Add a partial async state once partial data is enabled
 
 export function UserForm() {
@@ -30,20 +39,32 @@ export function UserForm() {
     return createUser(values)
   }
 
-  const form = useForm<Omit<User, 'id'>>({
-    onSubmit: (values) => onSubmit(values).then(() => {
-      SelectedUser.value = undefined
-      form.reset()
-      queryClient.invalidateQueries({
-        queryKey: ['users'],
-      })
-    }),
+  const form = useForm<Omit<User, 'id'>, typeof ZodAdapter>({
+    validatorAdapter: ZodAdapter,
+    onSubmit: (values, addErrors) =>
+      onSubmit(values).then((error) => {
+        if (error) {
+          addErrors({
+            [error.path]: error.message
+          })
+          return
+        }
+
+        SelectedUser.value = undefined
+        form.reset()
+        queryClient.invalidateQueries({
+          queryKey: ['users'],
+        })
+      }),
   })
 
   return (
     <div className="flex flex-col gap-1">
-      {(user.isFetching || form.isSubmitting.value) && <Loader2Icon className="h-6 w-6 animate-spin" />}
+      {(user.isFetching || form.isSubmitting.value) && (
+        <Loader2Icon className="h-6 w-6 animate-spin" />
+      )}
       <form.FormProvider>
+        <FormDevTools position="bottom-left" />
         <form
           className="flex flex-col gap-2"
           onSubmit={(e) => {
@@ -51,7 +72,11 @@ export function UserForm() {
             return form.handleSubmit()
           }}
         >
-          <form.FieldProvider name="name" defaultValue={user.data?.name ?? ""}>
+          <form.FieldProvider
+            name="name"
+            defaultValue={user.data?.name ?? ''}
+            validator={z.string().min(1)}
+          >
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Name</Label>
@@ -61,12 +86,22 @@ export function UserForm() {
                   onBlur={field.handleBlur}
                   placeholder="Name"
                 />
+                <ErrorText />
               </div>
             )}
           </form.FieldProvider>
           <form.FieldProvider
             name="email"
-            defaultValue={user.data?.email ?? ""}
+            defaultValue={user.data?.email ?? ''}
+            validator={z.string().email()}
+            validatorAsync={async (value) => {
+              const isTaken = await isEmailTaken(value)
+              return isTaken ? 'Email is already taken' : undefined
+            }}
+            validatorAsyncOptions={{
+              validateOnChangeIfTouched: true,
+              debounceMs: 700,
+            }}
           >
             {(field) => (
               <div>
@@ -78,11 +113,15 @@ export function UserForm() {
                   placeholder="Email"
                   type="email"
                 />
+                <ErrorText />
               </div>
             )}
           </form.FieldProvider>
-          {/* TODO Allow null as a valid default value */}
-          <form.FieldProvider name="dob" defaultValue={user.data?.dob ?? null as unknown as Date}>
+          <form.FieldProvider
+            name="dob"
+            defaultValue={user.data?.dob ?? (null as unknown as Date)}
+            validator={z.date().max(new Date())}
+          >
             {(field) => (
               <div>
                 <Label htmlFor={field.name}>Date of Birth</Label>
@@ -94,12 +133,19 @@ export function UserForm() {
                   variant="outline"
                   className="w-full"
                 />
+                <ErrorText />
               </div>
             )}
           </form.FieldProvider>
 
+          <ErrorTextForm />
+
           <div className="flex flex-row gap-1">
-            <Button type="submit" className="ml-auto" disabled={!form.canSubmit.value || !form.isDirty.value}>
+            <Button
+              type="submit"
+              className="ml-auto"
+              disabled={!form.canSubmit.value || !form.isDirty.value}
+            >
               Submit
             </Button>
             <Button

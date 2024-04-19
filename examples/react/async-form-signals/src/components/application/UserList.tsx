@@ -14,7 +14,11 @@ import {
 
 export function UserList() {
   // For some reason, I have to destructure isFetching to _ to be able to get the newest data
-  const {isLoading, data, isFetching: _} = useQuery({
+  const {
+    isLoading,
+    data,
+    isFetching: _,
+  } = useQuery({
     queryKey: ['users'],
     queryFn: getUsers,
   })
@@ -38,31 +42,31 @@ export function UserList() {
               </TableCell>
             </TableRow>
           )}
-          {data && data.map((user) => (
-              <TableRow key={user.id.toString()}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  {user.dob.toLocaleDateString('en-US', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      SelectedUser.value =
-                        SelectedUser.peek() === user.id ? undefined : user.id
-                    }}
-                  >
-                    <EditIcon size={16} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+          {data?.map((user) => (
+            <TableRow key={user.id.toString()}>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                {user.dob.toLocaleDateString('en-US', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    SelectedUser.value =
+                      SelectedUser.peek() === user.id ? undefined : user.id
+                  }}
+                >
+                  <EditIcon size={16} />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
