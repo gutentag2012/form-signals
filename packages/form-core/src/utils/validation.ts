@@ -394,18 +394,18 @@ export const clearSubmitEventErrors = (
   const newValue = { ...errorMap.peek() }
 
   if (
-    newValue.syncErrorEvent !== 'onSubmit' &&
-    newValue.asyncErrorEvent !== 'onSubmit' &&
+    !newValue.syncErrorEvent &&
+    !newValue.asyncErrorEvent &&
     !newValue.general
   ) {
     return
   }
 
-  if (newValue.syncErrorEvent === 'onSubmit') {
+  if (newValue.syncErrorEvent) {
     newValue.sync = undefined
     newValue.syncErrorEvent = undefined
   }
-  if (newValue.asyncErrorEvent === 'onSubmit') {
+  if (newValue.asyncErrorEvent) {
     newValue.async = undefined
     newValue.asyncErrorEvent = undefined
   }
