@@ -16,18 +16,20 @@ export function FieldStates() {
         <Collapsible
           key={field.name}
           title={field.name}
-          endAttachment={<div className="fs-utils--flex fs-utils--gap-lg">
-            <BooleanDisplay
-              label="Disabled"
-              value={field.disabled}
-              tooltip="Is the field disabled?"
-            />
-            <BooleanDisplay
-              label="Valid"
-              value={field.isValid}
-              tooltip="Is the field valid?"
-            />
-          </div>}
+          endAttachment={
+            <div className="fs-utils--flex fs-utils--gap-lg">
+              <BooleanDisplay
+                label="Disabled"
+                value={field.disabled}
+                tooltip="Is the field disabled?"
+              />
+              <BooleanDisplay
+                label="Valid"
+                value={field.isValid}
+                tooltip="Is the field valid?"
+              />
+            </div>
+          }
         >
           <FieldState fieldName={field.name} />
         </Collapsible>
