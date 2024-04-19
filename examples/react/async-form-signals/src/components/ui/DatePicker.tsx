@@ -10,11 +10,12 @@ import {type Signal, useComputed} from '@preact/signals-react'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
-interface DatePickerProps extends Omit<ButtonProps, 'value' | 'onChange'> {
+interface DatePickerProps extends Omit<ButtonProps, 'value' | 'onChange' | "disabled"> {
   value: Signal<Date | undefined>
+  disabled?: Signal<boolean>
 }
 
-export const DatePicker = ({ className, value, ...props }: DatePickerProps) => {
+export const DatePicker = ({ className, value, disabled, ...props }: DatePickerProps) => {
   const selected = useComputed(() => value.value ? format(value.value, 'PPP') : <span>Pick a date</span>)
   return (
     <Popover>
@@ -25,6 +26,7 @@ export const DatePicker = ({ className, value, ...props }: DatePickerProps) => {
             !value.value && 'text-muted-foreground',
             className,
           )}
+          disabled={disabled?.value}
           {...props}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />

@@ -18,12 +18,14 @@ import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { z } from 'zod'
 import { ErrorText } from '@/components/form/ErrorText.tsx'
 import {ErrorTextForm} from "@/components/form/ErrorTextForm.tsx";
+import {useRef} from "react";
 
 // TODO Add support for proper field disabled states (when loading)
 // TODO Add a partial async state once partial data is enabled
 
 export function UserForm() {
   const selectedUser = SelectedUser.value
+  const lastSelectedUser = useRef(selectedUser)
   const queryClient = useQueryClient()
 
   const user = useQuery({
@@ -40,7 +42,13 @@ export function UserForm() {
   }
 
   const form = useForm<Omit<User, 'id'>, typeof ZodAdapter>({
+    disabled: user.isFetching,
     validatorAdapter: ZodAdapter,
+    defaultValues: {
+      name: user?.data?.name ?? '',
+      email: user?.data?.email ?? '',
+      dob: user?.data?.dob ?? (null as unknown as Date),
+    },
     onSubmit: (values, addErrors) =>
       onSubmit(values).then((error) => {
         if (error) {
@@ -74,7 +82,6 @@ export function UserForm() {
         >
           <form.FieldProvider
             name="name"
-            defaultValue={user.data?.name ?? ''}
             validator={z.string().min(1)}
           >
             {(field) => (
@@ -85,6 +92,7 @@ export function UserForm() {
                   value={field.data}
                   onBlur={field.handleBlur}
                   placeholder="Name"
+                  disabled={field.disabled}
                 />
                 <ErrorText />
               </div>
@@ -92,7 +100,6 @@ export function UserForm() {
           </form.FieldProvider>
           <form.FieldProvider
             name="email"
-            defaultValue={user.data?.email ?? ''}
             validator={z.string().email()}
             validatorAsync={async (value) => {
               const isTaken = await isEmailTaken(value)
@@ -112,6 +119,7 @@ export function UserForm() {
                   onBlur={field.handleBlur}
                   placeholder="Email"
                   type="email"
+                  disabled={field.disabled}
                 />
                 <ErrorText />
               </div>
@@ -119,7 +127,6 @@ export function UserForm() {
           </form.FieldProvider>
           <form.FieldProvider
             name="dob"
-            defaultValue={user.data?.dob ?? (null as unknown as Date)}
             validator={z.date().max(new Date())}
           >
             {(field) => (
@@ -132,6 +139,7 @@ export function UserForm() {
                   onBlur={field.handleBlur}
                   variant="outline"
                   className="w-full"
+                  disabled={field.disabled}
                 />
                 <ErrorText />
               </div>

@@ -23,14 +23,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 )
 Input.displayName = 'Input'
 
-export interface InputSignalProps extends Omit<InputProps, 'value'> {
+export interface InputSignalProps extends Omit<InputProps, 'value' | "disabled"> {
   value?: Signal<string>
+  disabled?: Signal<boolean>
 }
 
-const InputSignal = ({ value, onChange, ...props }: InputSignalProps) => {
+const InputSignal = ({ value, onChange, disabled, ...props }: InputSignalProps) => {
   return (
     <Input
       {...props}
+      disabled={disabled?.value}
       value={value?.value}
       onChange={
         onChange ??
