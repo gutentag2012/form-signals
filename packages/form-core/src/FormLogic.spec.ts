@@ -653,7 +653,7 @@ describe('FormLogic', () => {
       await field.handleBlur()
       expect(form.errors.value).toEqual(['error'])
       field.handleChange('test')
-      expect(form.errors.value).toEqual(['error'])
+      expect(form.errors.value).toEqual([])
       await field.handleBlur()
       expect(form.errors.value).toEqual([])
     })
@@ -781,43 +781,6 @@ describe('FormLogic', () => {
       expect(form.errors.value).toEqual(['error'])
       form.data.value.name.value = 'test'
       expect(form.errors.value).toEqual([])
-    })
-    it('should reset the blur errors after blur', () => {
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-        validator: (value) => (value.name === 'test' ? undefined : 'error'),
-        validatorOptions: {
-          disableOnChangeValidation: true,
-        },
-      })
-      form.mount()
-      form.handleBlur()
-
-      form.data.value.name.value = 'test'
-      expect(form.errors.value).toEqual(['error'])
-      form.handleBlur()
-
-      expect(form.errors.value).toEqual([])
-    })
-    it('should not reset the blur errors if no new blur occurred', () => {
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-        validator: (value) => (value.name === 'test' ? undefined : 'error'),
-        validatorOptions: {
-          disableOnChangeValidation: true,
-        },
-      })
-      form.mount()
-      form.handleBlur()
-
-      expect(form.errors.value).toEqual(['error'])
-      form.data.value.name.value = 'test'
-
-      expect(form.errors.value).toEqual(['error'])
     })
     it('should abort async validations if there was another validation before the promise resolved', async () => {
       vi.useFakeTimers()

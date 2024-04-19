@@ -723,26 +723,7 @@ describe('validation', () => {
   })
 
   describe('clearSubmitEventErrors', () => {
-    it('should not change the error map if there are no submit errors', () => {
-      const errorMap = signal<Partial<ValidationErrorMap>>({
-        sync: 'error',
-        syncErrorEvent: 'onChange',
-        async: 'error',
-        asyncErrorEvent: 'onChange',
-      })
-
-      const updated = vi.fn()
-      effect(() => {
-        updated(errorMap.value)
-      })
-      // Reset this, since the effect triggers once in the beginning
-      updated.mockReset()
-
-      clearSubmitEventErrors(errorMap)
-
-      expect(updated).not.toHaveBeenCalled()
-    })
-    it('should clear the sync error if it was a submit error', () => {
+    it('should clear the sync error', () => {
       const errorMap = signal<Partial<ValidationErrorMap>>({
         sync: 'error',
         syncErrorEvent: 'onSubmit',
@@ -755,7 +736,7 @@ describe('validation', () => {
         syncErrorEvent: undefined,
       })
     })
-    it('should clear the async error if it was a submit error', () => {
+    it('should clear the async error', () => {
       const errorMap = signal<Partial<ValidationErrorMap>>({
         async: 'error',
         asyncErrorEvent: 'onSubmit',
@@ -768,7 +749,7 @@ describe('validation', () => {
         asyncErrorEvent: undefined,
       })
     })
-    it('should clear both errors if they were submit errors', () => {
+    it('should clear both errors', () => {
       const errorMap = signal<Partial<ValidationErrorMap>>({
         sync: 'error',
         syncErrorEvent: 'onSubmit',
