@@ -60,6 +60,11 @@ export type FieldLogicOptions<
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > = {
   /**
+   * Whether the field is disabled.
+   * If true, the field will not run validations and not accept any changes to its value through its handlers.
+   */
+  disabled?: boolean
+  /**
    * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
    */
   validatorAdapter?: TAdapter
@@ -198,7 +203,7 @@ export class FieldLogic<
 
   private _unsubscribeFromChangeEffect?: () => void
 
-  private skipValidation = false
+  private _skipValidation = false
   //endregion
 
   //region State
@@ -206,20 +211,17 @@ export class FieldLogic<
   private readonly _isTouched = signal(false)
   private readonly _errorMap = signal<Partial<ValidationErrorMap>>({})
   private readonly _isValidating = signal(false)
+  private readonly _disabled = signal(false)
   //endregion
 
   //region Computed State
-  private readonly _defaultValue = computed(() => {
-    const def = getValueAtPath<TData, TName>(
-      this._form.defaultValues.value,
-      this._name,
-    )
-    return def
-  })
+  private readonly _defaultValue = computed(() =>
+    getValueAtPath<TData, TName>(this._form.defaultValues.value, this._name),
+  )
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
       !isEqualDeep(
-        this._defaultValue.value,
+        this.defaultValue.value,
         unSignalifyValueSubscribed(this.data),
       ),
   )
@@ -237,6 +239,9 @@ export class FieldLogic<
   private readonly _isTouchedReadOnly = computed(() => this._isTouched.value)
   private readonly _isValidatingReadOnly = computed(
     () => this._isValidating.value,
+  )
+  private readonly _disabledReadOnly = computed(
+    () => this._disabled.value || this._form.disabled.value,
   )
   //endregion
 
@@ -370,6 +375,10 @@ export class FieldLogic<
     return this._isDirty
   }
 
+  public get disabled(): ReadonlySignal<boolean> {
+    return this._disabledReadOnly
+  }
+
   public get defaultValue(): ReadonlySignal<
     ValueAtPath<TData, TName> | undefined
   > {
@@ -408,27 +417,34 @@ export class FieldLogic<
       TMixin
     >,
   ): void {
-    const isDirty = this._isDirty.peek()
-    this._options.value = options
+    batch(() => {
+      const isDirty = this._isDirty.peek()
+      this._options.value = options
 
-    if (options?.defaultState?.isTouched) {
-      this._isTouched.value = true
-    }
-    // We should only set the errors, if they are set, the field is not yet touched or dirty, and the field is valid
-    if (
-      options?.defaultState?.errors &&
-      !this._isTouched.peek() &&
-      !this._isDirty.value &&
-      this._isValid.peek()
-    ) {
-      this._errorMap.value = options.defaultState.errors
-    }
+      if (options?.defaultState?.isTouched) {
+        this._isTouched.value = true
+      }
 
-    if (isDirty) return
+      if (options && 'disabled' in options) {
+        this._disabled.value = !!options.disabled
+      }
 
-    if (options?.defaultValue !== undefined) {
-      setSignalValuesFromObject(this.data, options.defaultValue)
-    }
+      // We should only set the errors, if they are set, the field is not yet touched or dirty, and the field is valid
+      if (
+        options?.defaultState?.errors &&
+        !this._isTouched.peek() &&
+        !this._isDirty.value &&
+        this._isValid.peek()
+      ) {
+        this._errorMap.value = options.defaultState.errors
+      }
+
+      if (isDirty) return
+
+      if (options && 'defaultValue' in options) {
+        setSignalValuesFromObject(this.data, options.defaultValue)
+      }
+    })
   }
 
   /**
@@ -552,7 +568,7 @@ export class FieldLogic<
     newValue: ValueAtPath<TData, TName>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (!this._isMounted.peek()) return
+    if (!this._isMounted.peek() || this.disabled.peek()) return
     this._form.handleChange(this._name, newValue, options)
   }
 
@@ -585,7 +601,7 @@ export class FieldLogic<
     options?: { shouldTouch?: boolean },
   ): void {
     const transform = this._options.peek()?.transformFromBinding
-    if (!this._isMounted.peek() || !transform) return
+    if (!this._isMounted.peek() || !transform || this.disabled.peek()) return
     batch(() => {
       setSignalValuesFromObject(this.data, transform(newValue))
       if (options?.shouldTouch) {
@@ -595,7 +611,7 @@ export class FieldLogic<
   }
 
   public async handleBlur(): Promise<void> {
-    if (!this._isMounted.peek()) return
+    if (!this._isMounted.peek() || this.disabled.peek()) return
     this.handleTouched()
     await this.validateForEvent('onBlur')
     await this._form.handleBlur()
@@ -606,7 +622,16 @@ export class FieldLogic<
   }
 
   public handleTouched(): void {
+    if (this.disabled.peek()) return
     this._isTouched.value = true
+  }
+
+  public disable() {
+    this._disabled.value = true
+  }
+
+  public enable() {
+    this._disabled.value = false
   }
   //endregion
 
@@ -626,6 +651,7 @@ export class FieldLogic<
     value: ValueAtPath<TData, ConnectPath<TName, TKey>>,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.setValueInObject(this._name, key, value, options)
   }
 
@@ -639,6 +665,7 @@ export class FieldLogic<
     key: KeepOptionalKeys<ValueAtPath<TData, TName>, TKey>,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.removeValueInObject(this._name, key, options)
   }
   //endregion
@@ -663,6 +690,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
@@ -678,6 +706,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.pushValueToArray(this._name, value, options)
   }
 
@@ -698,6 +727,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.pushValueToArrayAtIndex(this._name, index, value, options)
   }
 
@@ -711,6 +741,7 @@ export class FieldLogic<
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.removeValueFromArray(this._name, index, options)
   }
 
@@ -720,6 +751,7 @@ export class FieldLogic<
    * @param options - Options for the change.
    */
   public removeSelfFromArray(options?: { shouldTouch?: boolean }): void {
+    if (this.disabled.peek()) return
     this._form.removeValueFromArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -760,6 +792,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
@@ -782,6 +815,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.swapValuesInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -820,6 +854,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.moveValueInArray(this._name, indexA, indexB, options)
   }
 
@@ -842,6 +877,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
+    if (this.disabled.peek()) return
     this._form.moveValueInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -873,9 +909,9 @@ export class FieldLogic<
    * No validation will be run when resetting the value.
    */
   public resetValue(): void {
-    this.skipValidation = true
+    this._skipValidation = true
     setSignalValuesFromObject(this.data, this.defaultValue.peek())
-    this.skipValidation = false
+    this._skipValidation = false
   }
 
   /**
@@ -935,7 +971,14 @@ export class FieldLogic<
     checkValue?: ValueAtPath<TData, TName>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (!this._isMounted.peek() || !this.data || this.skipValidation) return
+    if (
+      !this._isMounted.peek() ||
+      !this.data ||
+      this._skipValidation ||
+      this._form.skipValidation ||
+      this.disabled.peek()
+    )
+      return
     const value = checkValue ?? unSignalifyValue(this.data)
     const mixinValues =
       mixins ??

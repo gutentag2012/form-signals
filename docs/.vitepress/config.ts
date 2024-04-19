@@ -21,7 +21,6 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Introduction',
-        collapsed: false,
         items: [
           { text: 'What are Signals?', link: '/guide/what-are-signals' },
           {
@@ -42,12 +41,6 @@ export default defineConfig({
             link: '/guide/basic-usage',
             items: [{ text: 'React', link: '/guide/react/basic-usage' }],
           },
-          // TODO Add async usage implementation, examples and docs
-          // {
-          //   text: 'Async Usage',
-          //   link: '/guide/async-usage',
-          //   items: [{ text: 'React', link: '/guide/react/async-usage' }],
-          // },
           { text: 'Validation', link: '/guide/validation' },
           {
             text: 'Array Fields',
@@ -56,6 +49,11 @@ export default defineConfig({
           {
             text: 'Dynamic Objects',
             link: '/guide/dynamic-objects',
+          },
+          {
+            text: 'Async Usage',
+            link: '/guide/async-data',
+            items: [{ text: 'React', link: '/guide/react/async-data' }],
           },
         ],
       },
@@ -84,6 +82,16 @@ export default defineConfig({
               { text: 'FieldContext', link: '/reference/react/FieldContext' },
               { text: 'FieldProvider', link: '/reference/react/FieldProvider' },
               { text: 'useField', link: '/reference/react/useField' },
+            ],
+          },
+          {
+            text: 'Dev Tools React',
+            collapsed: true,
+            items: [
+              {
+                text: 'FormDevTools',
+                link: '/reference/dev-tools-react/FormDevTools',
+              },
             ],
           },
         ],

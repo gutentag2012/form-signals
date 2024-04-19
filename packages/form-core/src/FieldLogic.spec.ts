@@ -177,6 +177,26 @@ describe('FieldLogic', () => {
 
       expect(field.form).toBe(form)
     })
+    it('should return the fields disabled state', () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        disabled: true,
+      })
+      field.mount()
+
+      expect(field.disabled.value).toBe(true)
+    })
+    it('should be disabled if the form is disabled', () => {
+      const form = new FormLogic<{ name: string }>({
+        disabled: true,
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(field.disabled.value).toBe(true)
+    })
   })
   describe('value', () => {
     it('should return the value from the form', () => {
@@ -418,6 +438,22 @@ describe('FieldLogic', () => {
 
       expect(field.data.value).toBe(1)
     })
+    it('should do nothing when trying to insert a value into a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.insertValueInArray(1, 2)
+
+      expect(field.data.value[1].data.value).toBe(2)
+    })
     it('should do nothing when trying to push a value into a non-array field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -433,6 +469,39 @@ describe('FieldLogic', () => {
       field.pushValueToArray(1 as never)
 
       expect(field.data.value).toBe(1)
+    })
+    it('should do nothing when trying to push a value into a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.pushValueToArray(4)
+
+      expect(field.data.value[3]).toBeUndefined()
+    })
+    it('should do nothing when trying to push a value at an index into a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.pushValueToArrayAtIndex(1, 4)
+
+      expect(field.data.value[1].data.value).toBe(2)
+      expect(field.data.value[2].data.value).toBe(3)
     })
     it('should do nothing when trying to remove a value from a non-array field', () => {
       const form = new FormLogic({
@@ -450,6 +519,22 @@ describe('FieldLogic', () => {
 
       expect(field.data.value).toBe(1)
     })
+    it('should do nothing when trying to remove a value from a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.removeValueFromArray(1)
+
+      expect(form.data.value.array.value.length).toBe(3)
+    })
     it('should do nothing when trying to remove itself from a non-array-item field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -465,6 +550,22 @@ describe('FieldLogic', () => {
       field.removeSelfFromArray()
 
       expect(field.data.value).toBe(1)
+    })
+    it('should do nothing when trying to remove itself from a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.1' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.removeSelfFromArray()
+
+      expect(form.data.value.array.value.length).toBe(3)
     })
     it('should do nothing when trying to remove a non existing index', () => {
       const form = new FormLogic({
@@ -498,6 +599,23 @@ describe('FieldLogic', () => {
 
       expect(field.data.value).toBe(1)
     })
+    it('should do nothing when trying to swap values in a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.swapValuesInArray(1, 2)
+
+      expect(field.data.value[1].data.value).toBe(2)
+      expect(field.data.value[2].data.value).toBe(3)
+    })
     it('should do nothing when trying to swap itself in a non-array-item field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -513,6 +631,23 @@ describe('FieldLogic', () => {
       field.swapSelfInArray(0 as never)
 
       expect(field.data.value).toBe(1)
+    })
+    it('should do nothing when trying to swap itself in a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.1' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.swapSelfInArray(0)
+
+      expect(form.data.value.array.value[0].data.value).toBe(1)
+      expect(form.data.value.array.value[1].data.value).toBe(2)
     })
     it('should do nothing when trying to swap to a non existing index', () => {
       const form = new FormLogic({
@@ -546,6 +681,23 @@ describe('FieldLogic', () => {
 
       expect(field.data.value).toBe(1)
     })
+    it('should do nothing when trying to move value in a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.moveValueInArray(1, 2)
+
+      expect(field.data.value[1].data.value).toBe(2)
+      expect(field.data.value[2].data.value).toBe(3)
+    })
     it('should do nothing when trying to move itself in a non-array-item field', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -562,6 +714,23 @@ describe('FieldLogic', () => {
 
       expect(field.data.value).toBe(1)
     })
+    it('should do nothing when trying to move itself in a disabled field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'array.1' as const, {
+        disabled: true,
+      })
+      field.mount()
+      field.moveSelfInArray(2)
+
+      expect(form.data.value.array.value[0].data.value).toBe(1)
+      expect(form.data.value.array.value[1].data.value).toBe(2)
+    })
     it('should do nothing when trying to move to a non existing index', () => {
       const form = new FormLogic({
         defaultValues: {
@@ -577,6 +746,42 @@ describe('FieldLogic', () => {
 
       expect(field.data.value[0].data.value).toBe(1)
       expect(field.data.value[1].data.value).toBe(2)
+    })
+    it('should do nothing when trying to remove a value in an object for a disabled field', () => {
+      const form = new FormLogic<{ obj: { value?: number } }>({
+        defaultValues: {
+          obj: {
+            value: 1,
+          },
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'obj', {
+        disabled: true,
+      })
+      field.mount()
+      field.removeValueInObject('value')
+
+      expect(field.data.value.value?.value).toBe(1)
+    })
+    it('should do nothing when trying to set a value in an object for a disabled field', () => {
+      const form = new FormLogic<{ obj: { value?: number } }>({
+        defaultValues: {
+          obj: {
+            value: 1,
+          },
+        },
+      })
+      form.mount()
+
+      const field = new FieldLogic(form, 'obj', {
+        disabled: true,
+      })
+      field.mount()
+      field.setValueInObject('value', 2)
+
+      expect(field.data.value.value?.value).toBe(1)
     })
   })
   describe('validation', () => {
@@ -1716,6 +1921,37 @@ describe('FieldLogic', () => {
       expect(field.data.value.last).toBeDefined()
       field.removeValueInObject('last')
       expect(field.data.value.last).toBeUndefined()
+    })
+    it('should be possible to disable and enable a fields', () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(field.disabled.value).toBe(false)
+      field.disable()
+      expect(field.disabled.value).toBe(true)
+      field.enable()
+      expect(field.disabled.value).toBe(false)
+    })
+    it('should not be possible to change state through the handlers if disabled', () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name', {
+        transformToBinding: (value) => `${value}!`,
+        transformFromBinding: (value) => value.replace('!', ''),
+      })
+      field.mount()
+      field.disable()
+
+      expect(field.data.value).toBeUndefined()
+      field.handleChange('test')
+      expect(field.data.value).toBeUndefined()
+      field.handleBlur()
+      field.handleTouched()
+      expect(field.isTouched.value).toBe(false)
+      field.handleChangeBound('test!')
+      expect(field.data.value).toBeUndefined()
     })
   })
   describe('transform', () => {

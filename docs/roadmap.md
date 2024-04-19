@@ -10,6 +10,10 @@ We are open to feedback and suggestions.
 
 Any points marked down here are added to arbitrary versions and might get moved around or discarded.
 
+::: info
+The versions do not match the versions where the features were added.
+:::
+
 ## Version 0.1.0
 
 - :white_check_mark: <LibraryChip library="form-core" /> Add FieldLogic to handle form fields state and validation
@@ -34,42 +38,36 @@ Any points marked down here are added to arbitrary versions and might get moved 
 
 ## Version 0.2.0
 
-- <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
-- <LibraryChip library="form-core" /> Add support for addons
-- <LibraryChip library="form-core" /> Add support for readonly derived fields
-- <LibraryChip library="form-core" /> Add support for either or fields
-- <LibraryChip library="form-core" /> Add support for async default values
-- <LibraryChip library="form-core" /> Add support for async form setup
-- <LibraryChip library="form-core" /> Add support for dependent fields
-- <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
-- <LibraryChip library="form-react" /> Add example for readonly derived fields + either or fields (NetPrice, GrossPrice, TaxRate -> Net or Gross is calculated depending on which is entered in the other two fields and disabled)
-- <LibraryChip library="form-react" /> Add example for StepWizard
-- <LibraryChip library="form-react" /> Add example for async default values
-- <LibraryChip library="form-react" /> Add example for async form setup
-- <LibraryChip library="form-react" /> Add example for table sorting
-- <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
-- <LibraryChip library="form-react" /> Allow usage of form outside of react components + example
-- <LibraryChip library="form-react-native" /> Add example for react-native
+- :white_check_mark: <LibraryChip library="debugger-react" /> Add debugger component for react forms
+- :white_check_mark: <LibraryChip library="form-react" /> Add example for async form setup
+- :white_check_mark: <LibraryChip library="form-core" /> Add support for disabled fields
+- :white_check_mark: <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
+- :x: <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
+- :x: <LibraryChip library="form-core" /> Add support for readonly derived fields
+- :x: <LibraryChip library="form-react" /> Add example for readonly derived fields + either or fields (NetPrice, GrossPrice, TaxRate -> Net or Gross is calculated depending on which is entered in the other two fields and disabled)
+- :x: <LibraryChip library="form-react" /> Add example for StepWizard
+- :x: <LibraryChip library="form-react" /> Add example for table sorting
+- :x: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
+- :x: <LibraryChip library="form-react" /> Allow usage of form outside of react components + example
+- :x: <LibraryChip library="form-react-native" /> Add example for react-native
 
 ## Version 0.3.0
 
-- <LibraryChip library="debugger-react" /> Add debugger component for react forms
-- <LibraryChip library="form-core" /> Add support for server side validation
-- <LibraryChip library="addon-storage-persistence" /> Add addon to persist form state in browser storage (session or local)
+- :x: <LibraryChip library="form-core" /> Add support for server side validation
+- :x: <LibraryChip library="form-core" /> Add support for addons
+- :x: <LibraryChip library="addon-storage-persistence" /> Add addon to persist form state in browser storage (session or local)
 
 ## Version 0.4.0
 
-- <LibraryChip library="form-react" /> Measure performance and optimize with `React.memo` and `useMemo`
-- <LibraryChip library="form-core" /> Add support for bracket syntax for field names
-- <LibraryChip library="form-core" /> Add type support for partial default values
-- <LibraryChip library="form-core" /> Add support for typed default values
-- <LibraryChip library="form-core" /> Add support for wildcards in validation mixins
+- :x: <LibraryChip library="form-react" /> Measure performance and optimize with `React.memo` and `useMemo`
+- :x: <LibraryChip library="form-core" /> Add support for bracket syntax for field names
+- :x: <LibraryChip library="form-core" /> Add support for typed default values
 
 ## Version 1.0.0
 
-- <LibraryChip library="form-core" /> Reach stable API
-- <LibraryChip library="form-react" /> Reach stable API
-- <LibraryChip library="form-react-native" /> Reach stable API
-- <LibraryChip library="validation-adapter-zod" /> Reach stable API
-- <LibraryChip library="addon-storage-persistence" /> Reach stable API
-- <LibraryChip library="debugger-react" /> Reach stable API
+- :x: <LibraryChip library="form-core" /> Reach stable API
+- :x: <LibraryChip library="form-react" /> Reach stable API
+- :x: <LibraryChip library="form-react-native" /> Reach stable API
+- :x: <LibraryChip library="validation-adapter-zod" /> Reach stable API
+- :x: <LibraryChip library="addon-storage-persistence" /> Reach stable API
+- :x: <LibraryChip library="debugger-react" /> Reach stable API

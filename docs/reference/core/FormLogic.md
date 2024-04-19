@@ -43,6 +43,8 @@ export type FormLogicOptions<
   TData,
   TAdapter extends ValidatorAdapter | undefined = undefined,
 > = {
+  disabled?: boolean
+
   validatorAdapter?: TAdapter
 
   validator?: TAdapter extends undefined
@@ -57,12 +59,13 @@ export type FormLogicOptions<
 
   defaultValues?: TData
 
-  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError>>) => void) => void | Promise<void>
+  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError> | ValidationError>) => void) => void | Promise<void>
 }
 ```
 
 | Option                  | Description                                                                                                                                                                                                                                                 |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `disabled`              | If the form is disabled, it will not validate or submit.                                                                                                                                                                                                    |
 | `validatorAdapter`      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
 | `validator`             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
 | `validatorOptions`      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
@@ -124,6 +127,8 @@ interface FormLogic<
 
   get canSubmit(): ReadonlySignal<boolean>
 
+  get disabled(): ReadonlySignal<boolean>
+
   get options(): ReadonlySignal<FormLogicOptions<TData, TAdapter> | undefined>
 }
 ```
@@ -151,7 +156,8 @@ interface FormLogic<
 | `isValidating`            | Is the form currently validating fields or the form?                                                                                                               |
 | `isSubmitting`            | Is the form currently submitting?                                                                                                                                  |
 | `isSubmitted`             | Has the form been submitted?                                                                                                                                       |
-| `canSubmit`               | Can the form be submitted? It can only be submitted, if the form is not currently submitting, is valid and not currently validating.                               |
+| `canSubmit`               | Can the form be submitted? It can only be submitted, if the form is not currently submitting, is valid, not currently validating and not disabled.                 |
+| `disabled`                | Is the form disabled? When disabled the form will not validate or submit.                                                                                          |
 | `options`                 | The options passed to the form. If the options get updated, this also reflects here.                                                                               |
 
 ## Form Lifecycle Methods
@@ -170,6 +176,10 @@ interface FormLogic<
   unmount(): void
 
   setErrors(errors: Partial<ValidationErrorMap>): void
+
+  disable(): void
+
+  enable(): void
 }
 ```
 
@@ -179,6 +189,8 @@ interface FormLogic<
 | `mount`         | -               | Mount the form. This is necessary to start the validation and submit the form.                                                                        |
 | `unmount`       | -               | Unmount the form. This is necessary to stop the validation and submit the form.                                                                       |
 | `setErrors`     | The new errors  | Set errors to the form. This can be used to add errors to the form that are not part of the validation. Existing errors will stay unless overwritten. |
+| `disable`       | -               | Disable the form.                                                                                                                                     |
+| `enable`        | -               | Enable the form.                                                                                                                                      |
 
 ::: info
 When using `updateOptions` to update the form default values,
