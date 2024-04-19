@@ -43,14 +43,20 @@ features:
       light: /arrow-left-right.svg
       dark: /arrow-left-right-dark.svg
       alt: Transformations
-#  Keep this commented out until there is an event number of features again
-#  - title: Arrays + Dynamic Objects
-#    details: Make use of arrays and dynamic objects within your forms.
-#    link: /guide/array-fields
-#    icon:
-#      light: /brackets.svg
-#      dark: /brackets-dark.svg
-#      alt: Arrays + Objects
+  - title: Async Data
+    details: Integrate async data sources with ease.
+    link: /guide/async-data
+    icon:
+      light: /list-restart.svg
+      dark: /list-restart-dark.svg
+      alt: Async Data
+  - title: Arrays + Dynamic Objects
+    details: Make use of arrays and dynamic objects within your forms.
+    link: /guide/array-fields
+    icon:
+      light: /brackets.svg
+      dark: /brackets-dark.svg
+      alt: Arrays + Objects
   - title: Devtools
     details: Debug your form state with the included devtools.
     link: /guide/devtools
