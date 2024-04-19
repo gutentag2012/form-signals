@@ -1,15 +1,15 @@
+import {batch, computed, effect, type ReadonlySignal, type Signal, signal,} from '@preact/signals-core'
+import type {FormLogic} from './FormLogic'
 import {
-  type ReadonlySignal,
-  type Signal,
-  batch,
-  computed,
-  effect,
-  signal,
-} from '@preact/signals-core'
-import type { FormLogic } from './FormLogic'
-import {
+  deepSignalifyValue,
+  getValueAtPath,
+  isEqualDeep,
   type Paths,
+  pathToParts,
+  setSignalValuesFromObject,
   type SignalifiedData,
+  unSignalifyValue,
+  unSignalifyValueSubscribed,
   type ValidationError,
   type ValidationErrorMap,
   type ValidatorAdapter,
@@ -20,27 +20,10 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
-  deepSignalifyValue,
-  getValueAtPath,
-  isEqualDeep,
-  pathToParts,
-  setSignalValuesFromObject,
-  unSignalifyValue,
-  unSignalifyValueSubscribed,
 } from './utils'
-import { Truthy } from './utils/internal.utils'
-import type {
-  ConnectPath,
-  KeepOptionalKeys,
-  LastPath,
-  ParentPath,
-  ValueAtPathForTuple,
-} from './utils/types'
-import {
-  clearSubmitEventErrors,
-  getValidatorFromAdapter,
-  validateWithValidators,
-} from './utils/validation'
+import {Truthy} from './utils/internal.utils'
+import type {ConnectPath, KeepOptionalKeys, LastPath, ParentPath, ValueAtPathForTuple,} from './utils/types'
+import {clearSubmitEventErrors, getValidatorFromAdapter, validateWithValidators,} from './utils/validation'
 
 /**
  * Options for the field logic.
@@ -209,17 +192,15 @@ export class FieldLogic<
   //endregion
 
   //region Computed State
-  private readonly _defaultValue = computed(() => {
-    const def = getValueAtPath<TData, TName>(
+  private readonly _defaultValue = computed(() =>
+    getValueAtPath<TData, TName>(
       this._form.defaultValues.value,
       this._name,
-    )
-    return def
-  })
+    ))
   private readonly _isDirty: ReadonlySignal<boolean> = computed(
     () =>
       !isEqualDeep(
-        this._defaultValue.value,
+        this.defaultValue.value,
         unSignalifyValueSubscribed(this.data),
       ),
   )
