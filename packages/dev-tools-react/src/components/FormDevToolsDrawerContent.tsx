@@ -34,6 +34,11 @@ export function FormDevToolsDrawerContent() {
           tooltip="Is the form mounted within React?"
         />
         <BooleanDisplay
+          value={form.disabled}
+          label="Disabled"
+          tooltip="Is the form disabled?"
+        />
+        <BooleanDisplay
           value={form.isTouched}
           label="Touched"
           tooltip="Is one of the fields touched?"

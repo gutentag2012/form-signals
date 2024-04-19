@@ -93,6 +93,10 @@
   display: flex;
 }
 
+.fs-utils--gap-lg {
+  gap: 16px;
+}
+
 /*endregion*/
 
 /*region Displays*/
@@ -266,60 +270,66 @@
 #fs-drawer--header > :nth-child(2) {
   border-right-width: 1px;
   border-bottom-width: 1px;
-  grid-column: 1 / span 3;
+  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(3) {
+  border-right-width: 1px;
   border-bottom-width: 1px;
-  grid-column: 4 / span 3;
+  grid-column: 3 / span 2;
 }
 
-#fs-drawer--header > :nth-child(4) {
+#fs-drawer--header > :nth-child(43) {
+  border-bottom-width: 1px;
+  grid-column: 5 / span 2;
+}
+
+#fs-drawer--header > :nth-child(5) {
   border-right-width: 1px;
   border-bottom-width: 1px;
   grid-column: 1 / span 1;
 }
 
-#fs-drawer--header > :nth-child(5) {
+#fs-drawer--header > :nth-child(6) {
   border-bottom-width: 1px;
   grid-column: 2 / span 5;
 }
 
-#fs-drawer--header > :nth-child(13) {
+#fs-drawer--header > :nth-child(14) {
   border-bottom-width: 1px;
   grid-column: 1 / span 6;
-}
-
-#fs-drawer--header > :nth-child(15) {
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(16) {
   border-right-width: 1px;
   border-bottom-width: 1px;
-  grid-column: 3 / span 2;
+  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(17) {
-  border-bottom-width: 1px;
-  grid-column: 5 / span 2;
-}
-
-#fs-drawer--header > :nth-child(7), #fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(18) {
   border-right-width: 1px;
   border-bottom-width: 1px;
-  grid-column: 1 / span 2;
+  grid-column: 3 / span 2;
+}
+
+#fs-drawer--header > :nth-child(18) {
+  border-bottom-width: 1px;
+  grid-column: 5 / span 2;
 }
 
 #fs-drawer--header > :nth-child(8), #fs-drawer--header > :nth-child(11), #fs-drawer--header > :nth-child(19) {
   border-right-width: 1px;
   border-bottom-width: 1px;
-  grid-column: 3 / span 2;
+  grid-column: 1 / span 2;
 }
 
 #fs-drawer--header > :nth-child(9), #fs-drawer--header > :nth-child(12), #fs-drawer--header > :nth-child(20) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 3 / span 2;
+}
+
+#fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(13), #fs-drawer--header > :nth-child(21) {
   border-bottom-width: 1px;
   grid-column: 5 / span 2;
 }
