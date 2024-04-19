@@ -19,8 +19,6 @@ import { z } from 'zod'
 import { ErrorText } from '@/components/form/ErrorText.tsx'
 import {ErrorTextForm} from "@/components/form/ErrorTextForm.tsx";
 
-// TODO Add a partial async state once partial data is enabled
-
 export function UserForm() {
   const selectedUser = SelectedUser.value
   const queryClient = useQueryClient()

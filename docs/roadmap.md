@@ -34,18 +34,14 @@ Any points marked down here are added to arbitrary versions and might get moved 
 
 ## Version 0.2.0
 
-- :x: <LibraryChip library="form-core" /> Add support for async default values
-- :x: <LibraryChip library="form-core" /> Add support for async form setup
-- :x: <LibraryChip library="form-core" /> Add support for disabled fields
+- :white_check_mark: <LibraryChip library="debugger-react" /> Add debugger component for react forms
+- :white_check_mark: <LibraryChip library="form-react" /> Add example for async form setup
+- :white_check_mark: <LibraryChip library="form-core" /> Add support for disabled fields
+- :white_check_mark: <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
 - :x: <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
 - :x: <LibraryChip library="form-core" /> Add support for readonly derived fields
-- :x: <LibraryChip library="form-core" /> Add support for either or fields
-- :x: <LibraryChip library="form-core" /> Add support for dependent fields
-- :x: <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
 - :x: <LibraryChip library="form-react" /> Add example for readonly derived fields + either or fields (NetPrice, GrossPrice, TaxRate -> Net or Gross is calculated depending on which is entered in the other two fields and disabled)
 - :x: <LibraryChip library="form-react" /> Add example for StepWizard
-- :x: <LibraryChip library="form-react" /> Add example for async default values
-- :x: <LibraryChip library="form-react" /> Add example for async form setup
 - :x: <LibraryChip library="form-react" /> Add example for table sorting
 - :x: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
 - :x: <LibraryChip library="form-react" /> Allow usage of form outside of react components + example
@@ -53,8 +49,6 @@ Any points marked down here are added to arbitrary versions and might get moved 
 
 ## Version 0.3.0
 
-- :x: <LibraryChip library="form-core" /> Add type support for partial default values
-- :x: <LibraryChip library="debugger-react" /> Add debugger component for react forms
 - :x: <LibraryChip library="form-core" /> Add support for server side validation
 - :x: <LibraryChip library="form-core" /> Add support for addons
 - :x: <LibraryChip library="addon-storage-persistence" /> Add addon to persist form state in browser storage (session or local)
