@@ -143,26 +143,22 @@ describe('FieldProvider', () => {
 
       function TestComponent({ defaultValue }: { defaultValue: string }) {
         return (
-          <Field<FormValues, 'name'> name="name" defaultValue={defaultValue}>
-            {(field) => field.data.value}
-          </Field>
+          <FormContext.Provider value={form as never}>
+            <Field<FormValues, 'name'> name="name" defaultValue={defaultValue}>
+              {(field) => field.data.value}
+            </Field>
+          </FormContext.Provider>
         )
       }
 
-      const screen = render(
-        <FormContext.Provider value={form as never}>
-          <TestComponent defaultValue="default" />
-        </FormContext.Provider>,
-      )
+      const screen = render(<TestComponent defaultValue="default" />)
 
       expect(screen.getByText('default')).toBeDefined()
-      expect(form.fields.value.length).toBe(1)
 
-      screen.rerender(
-        <FormContext.Provider value={form as never}>
-          <TestComponent defaultValue="new" />
-        </FormContext.Provider>,
-      )
+      expect(form.fields.value.length).toBe(1)
+      screen.rerender(<TestComponent defaultValue="new" />)
+      // We have to do a second rerender here because signals do not update the dom properly with this testing library, so after the options are updated (with the first rerender) there is no new update triggered
+      screen.rerender(<TestComponent defaultValue="new" />)
 
       expect(screen.getByText('new')).toBeDefined()
       expect(form.fields.value.length).toBe(1)
@@ -289,37 +285,33 @@ describe('FieldProvider', () => {
 
       function TestComponent({ defaultValue }: { defaultValue: string }) {
         return (
-          <SubField<
-            FormValues,
-            'name',
-            never,
-            FormValues['name'],
-            'first',
-            never
-          >
-            parentField={parentFieldContext}
-            name="first"
-            defaultValue={defaultValue}
-          >
-            {(field) => field.data.value}
-          </SubField>
+          <FormContext.Provider value={form as never}>
+            <SubField<
+              FormValues,
+              'name',
+              never,
+              FormValues['name'],
+              'first',
+              never
+            >
+              parentField={parentFieldContext}
+              name="first"
+              defaultValue={defaultValue}
+            >
+              {(field) => field.data.value}
+            </SubField>
+          </FormContext.Provider>
         )
       }
 
-      const screen = render(
-        <FormContext.Provider value={form as never}>
-          <TestComponent defaultValue="default" />
-        </FormContext.Provider>,
-      )
+      const screen = render(<TestComponent defaultValue="default" />)
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(2)
 
-      screen.rerender(
-        <FormContext.Provider value={form as never}>
-          <TestComponent defaultValue="new" />
-        </FormContext.Provider>,
-      )
+      screen.rerender(<TestComponent defaultValue="new" />)
+      // We have to do a second rerender here because signals do not update the dom properly with this testing library, so after the options are updated (with the first rerender) there is no new update triggered
+      screen.rerender(<TestComponent defaultValue="new" />)
 
       expect(screen.getByText('new')).toBeDefined()
       expect(form.fields.value.length).toBe(2)

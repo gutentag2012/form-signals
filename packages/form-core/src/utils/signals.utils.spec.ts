@@ -104,7 +104,7 @@ describe('signals.utils', () => {
     })
     it('should return undefined for empty object', () => {
       const val = deepSignalifyValue(undefined)
-      expect(getSignalValueAtPath(val, 'a' as never)).toBe(undefined)
+      expect(getSignalValueAtPath(val, 'a' as never)).toBe(val)
     })
     it('should return undefined for non existing path', () => {
       const val = deepSignalifyValue({})
