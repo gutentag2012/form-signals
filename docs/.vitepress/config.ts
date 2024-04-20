@@ -1,8 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
-console.log('ALGOLIA_APP_ID', process.env.ALGOLIA_APP_ID?.slice(0, 5))
-
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   base: '/form-signals/',
