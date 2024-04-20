@@ -1,5 +1,8 @@
+import { loadEnv } from 'vite'
 import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
+
+const env = loadEnv('development', process.cwd())
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -8,12 +11,21 @@ export default defineConfig({
   description:
     'Reactive and fully type-safe form state management/validation library',
   head: [['link', { rel: 'icon', href: '/form-signals/logo-bg.ico' }]],
+  sitemap: {
+    hostname: 'https://gutentag2012.github.io/',
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo-no-bg.svg',
 
     search: {
-      provider: "local"
+      provider: 'algolia',
+      options: {
+        appId: process.env.ALGOLIA_APP_ID ?? env.VITE_ALGOLIA_APP_ID,
+        apiKey: process.env.ALGOLIA_SEARCH_KEY ?? env.VITE_ALGOLIA_SEARCH_KEY,
+        indexName:
+          process.env.ALGOLIA_INDEX_NAME ?? env.VITE_ALGOLIA_INDEX_NAME,
+      },
     },
 
     nav: [
