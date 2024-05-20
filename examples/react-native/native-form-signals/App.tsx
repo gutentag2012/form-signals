@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar'
-import {StyleSheet, Text, View} from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { UserForm } from './src/UserForm'
 
 export default function App() {

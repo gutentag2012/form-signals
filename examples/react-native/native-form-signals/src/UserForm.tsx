@@ -1,8 +1,8 @@
-import { z } from 'zod'
-import { Button, StyleSheet, Text } from 'react-native'
-import { FormInput } from './FormInput'
 import { useForm } from '@formsignals/form-react'
 import { ZodAdapter } from '@formsignals/validation-adapter-zod'
+import { Button, StyleSheet, Text } from 'react-native'
+import { z } from 'zod'
+import { FormInput } from './FormInput'
 import { IsUsernameTaken } from './server'
 
 export function UserForm() {

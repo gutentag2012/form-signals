@@ -1,6 +1,5 @@
 import { useFieldContext } from '@formsignals/form-react'
 import { Text, TextInput, type TextInputProps, View } from 'react-native'
-import {useComputed} from "@preact/signals-react";
 
 interface FormInputProps
   extends Omit<TextInputProps, 'value' | 'onChangeText'> {}
