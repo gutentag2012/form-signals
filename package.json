@@ -23,6 +23,7 @@
     "example:react:complex:form-signals": "nx dev complex-product-details-form-signals-react",
     "example:react:complex:react-hook-form": "nx dev complex-product-details-react-hook-form-react",
     "example:react:complex:tanstack-form": "nx dev complex-product-details-tanstack-form-react",
+    "example:react-native:form-signals": "nx start native-form-signals",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
