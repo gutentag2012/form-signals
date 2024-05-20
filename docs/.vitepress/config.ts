@@ -38,7 +38,10 @@ export default defineConfig({
           {
             text: 'Quickstart',
             link: '/guide/quickstart',
-            items: [{ text: 'React', link: '/guide/react/quickstart' }, { text: 'React Native', link: '/guide/react-native/quickstart' }],
+            items: [
+              { text: 'React', link: '/guide/react/quickstart' },
+              { text: 'React Native', link: '/guide/react-native/quickstart' },
+            ],
           },
           { text: 'Concepts', link: '/guide/concepts' },
           { text: 'Devtools', link: '/guide/devtools' },
