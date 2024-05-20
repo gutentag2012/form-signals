@@ -70,6 +70,7 @@ export function formLogicToFormContext<
 
   castedLogic.handleSubmitOnEnter = handleSubmitOnEnterForForm(castedLogic)
 
+  castedLogic.handleSubmit = castedLogic.handleSubmit.bind(castedLogic)
   castedLogic.handleBlur = castedLogic.handleBlur.bind(castedLogic)
   castedLogic.handleChange = castedLogic.handleChange.bind(castedLogic)
 
