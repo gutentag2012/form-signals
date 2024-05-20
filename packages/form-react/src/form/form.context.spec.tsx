@@ -2,7 +2,7 @@ import { FormLogic } from '@formsignals/form-core'
 import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { formLogicToFormContext, useFormContext } from './form.context'
 
 describe('Form Context', () => {
@@ -76,6 +76,30 @@ describe('Form Context', () => {
       )
 
       expect(screen.getByText('default')).toBeDefined()
+
+      cleanup()
+    })
+    it('should bind submit handler', async () => {
+      const submitHandler = vi.fn()
+      const formLogic = new FormLogic({
+        onSubmit: submitHandler,
+      })
+      await formLogic.mount()
+      const formContext = formLogicToFormContext(formLogic)
+
+      const screen = render(
+        <formContext.FormProvider>
+          <button type="button" onClick={formContext.handleSubmit}>
+            Submit
+          </button>
+        </formContext.FormProvider>,
+      )
+
+      screen.getByText('Submit').click()
+
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(submitHandler).toHaveBeenCalled()
 
       cleanup()
     })
