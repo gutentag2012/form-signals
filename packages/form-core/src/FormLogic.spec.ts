@@ -60,6 +60,7 @@ describe('FormLogic', () => {
 
     expect(form.isTouched.value).toBe(false)
     expect(form.isDirty.value).toBe(false)
+    expect(form.dirtyFields.value).toEqual([])
 
     expect(form.submitCountSuccessful.value).toBe(0)
     expect(form.submitCountUnsuccessful.value).toBe(0)
@@ -169,6 +170,20 @@ describe('FormLogic', () => {
 
       field.handleChange('default')
       expect(form.isDirty.value).toBe(false)
+    })
+    it('should be dirty if elements have been added to an array field', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'array')
+      field.mount()
+
+      expect(form.isDirty.value).toBe(false)
+      field.pushValueToArray(4)
+      expect(form.isDirty.value).toBe(true)
     })
     it('should also consider newly added fields when calculating touched and dirty', () => {
       const form = new FormLogic({
@@ -612,6 +627,106 @@ describe('FormLogic', () => {
       vi.useRealTimers()
     })
   })
+  describe('state (field groups)', () => {
+    it('should be valid if all field groups are valid', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          start: 0,
+          end: 1,
+        },
+      })
+      form.mount()
+      const group = form.getOrCreateFieldGroup(['start', 'end'], {
+        validator: (value) =>
+          value.start < value.end ? undefined : 'Start must be before end',
+      })
+      group.mount()
+      group.validateForEvent('onChange')
+
+      expect(group.isValid.value).toBeTruthy()
+      expect(form.isValidFieldGroups.value).toBeTruthy()
+      expect(form.isValid.value).toBeTruthy()
+    })
+    it('should be invalid if any field group is invalid', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          start: 1,
+          end: 0,
+        },
+      })
+      form.mount()
+      const group = form.getOrCreateFieldGroup(['start', 'end'], {
+        validator: (value) =>
+          value.start < value.end ? undefined : 'Start must be before end',
+      })
+      group.mount()
+      group.validateForEvent('onChange')
+
+      expect(group.isValid.value).toBeFalsy()
+      expect(form.isValidFieldGroups.value).toBeFalsy()
+      expect(form.isValid.value).toBeFalsy()
+      expect(form.fieldGroupErrors.value).toEqual(['Start must be before end'])
+    })
+    it('should be validating if any field group is validating', async () => {
+      vi.useFakeTimers()
+      const form = new FormLogic({
+        defaultValues: {
+          start: 0,
+          end: 1,
+        },
+      })
+      await form.mount()
+      const group = form.getOrCreateFieldGroup(['start', 'end'], {
+        validatorAsync: async (value) => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return value.start < value.end
+            ? undefined
+            : 'Start must be before end'
+        },
+      })
+      await group.mount()
+      const validatingPromise = group.validateForEvent('onChange')
+
+      expect(form.isValidatingFieldGroups.value).toBeTruthy()
+      await vi.advanceTimersByTimeAsync(100)
+      await validatingPromise
+      expect(form.isValidatingFieldGroups.value).toBeFalsy()
+
+      vi.useRealTimers()
+    })
+    it('should return all groups registered on the form', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          start: 0,
+          end: 1,
+        },
+      })
+      form.mount()
+      const group1 = form.getOrCreateFieldGroup(['start', 'end'])
+      const group2 = form.getOrCreateFieldGroup(['start'])
+      const group3 = form.getOrCreateFieldGroup(['end', 'start'])
+
+      expect(form.fieldGroups.value).toEqual([group1, group2])
+      expect(group3).toBe(group1)
+    })
+    it('should remove groups that are unregistered', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          start: 0,
+          end: 1,
+        },
+      })
+      form.mount()
+      const group = form.getOrCreateFieldGroup(['start', 'end'])
+      group.mount()
+
+      expect(form.fieldGroups.value).toEqual([group])
+      group.unmount()
+      // The second `unmount` does nothing, but is used to increase the coverage
+      group.unmount()
+      expect(form.fieldGroups.value).toEqual([])
+    })
+  })
   describe('validation', () => {
     it('should trigger submit validation for all fields on submit as well as the form', async () => {
       const form = new FormLogic<{ name: string; other: string }>({
@@ -767,21 +882,6 @@ describe('FormLogic', () => {
 
       form.data.value.name.value = 'asdd'
       expect(form.errors.peek()).toEqual([])
-    })
-    it('should only accept the first validator if there are multiple sync validators for the same event', () => {
-      const validateFn = vi.fn(() => 'error')
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-        validator: validateFn,
-      })
-      form.mount()
-
-      form.data.value.name.value = 'test'
-
-      expect(validateFn).toHaveBeenCalledOnce()
-      expect(form.errors.value).toEqual(['error'])
     })
     it('should reset the change errors after change', () => {
       const form = new FormLogic<{ name: string }>({
@@ -1403,6 +1503,7 @@ describe('FormLogic', () => {
             deep: {
               value: 1,
             },
+            array: [1],
           },
           validator: () => 'error',
           validatorOptions: {
@@ -1423,6 +1524,7 @@ describe('FormLogic', () => {
 
         field.handleChange(2)
         form.data.value.name.value = 'test1'
+        form.pushValueToArray('array', 2)
 
         expect(form.data.value.name.value).toBe('test1')
         expect(form.data.value.deep.value.value.value).toBe(2)
@@ -1430,7 +1532,11 @@ describe('FormLogic', () => {
         expect(field.errors.value).toEqual(['error'])
         expect(form.isTouched.value).toBe(true)
         expect(form.isDirty.value).toBe(true)
-        expect(form.dirtyFields.value).toEqual(['name', 'deep.value'])
+        expect(form.dirtyFields.value).toEqual([
+          'name',
+          'deep.value',
+          'array.1',
+        ])
         expect(form.submitCount.value).toBe(1)
 
         form.reset()

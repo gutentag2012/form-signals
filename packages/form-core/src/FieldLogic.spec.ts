@@ -197,6 +197,18 @@ describe('FieldLogic', () => {
 
       expect(field.disabled.value).toBe(true)
     })
+    it('should be disabled if the group is disabled', () => {
+      const form = new FormLogic<{ name: string }>()
+      form.mount()
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+      const group = form.getOrCreateFieldGroup(['name'], { disabled: true })
+      group.mount()
+
+      expect(field.disabled.value).toBe(true)
+      group.enable()
+      expect(field.disabled.value).toBe(false)
+    })
   })
   describe('value', () => {
     it('should return the value from the form', () => {
@@ -1279,6 +1291,49 @@ describe('FieldLogic', () => {
 
       vi.useRealTimers()
     })
+    it('should work with the form adapter', () => {
+      const form = new FormLogic({
+        validatorAdapter: adapter,
+        defaultValues: {
+          v: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'v', {
+        validator: 5 as never,
+      })
+      field.mount()
+
+      field.handleChange(6)
+      expect(field.errors.value).toEqual([
+        'Value must be less than or equal to 5',
+      ])
+      field.handleChange(4)
+      expect(field.errors.value).toEqual([])
+    })
+    it('should work with the group adapter', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          v: 0,
+        },
+      })
+      form.mount()
+      const group = form.getOrCreateFieldGroup(['v'], {
+        validatorAdapter: adapter,
+      })
+      group.mount()
+      const field = new FieldLogic(form, 'v', {
+        validator: 5 as never,
+      })
+      field.mount()
+
+      field.handleChange(6)
+      expect(field.errors.value).toEqual([
+        'Value must be less than or equal to 5',
+      ])
+      field.handleChange(4)
+      expect(field.errors.value).toEqual([])
+    })
     it('should throw an error if non-function validator is given without an adapter for sync validation', async () => {
       const form = new FormLogic<{ name: number }>()
       form.mount()
@@ -1952,6 +2007,16 @@ describe('FieldLogic', () => {
       expect(field.isTouched.value).toBe(false)
       field.handleChangeBound('test!')
       expect(field.data.value).toBeUndefined()
+    })
+    it('should return all groups that contain the field', () => {
+      const form = new FormLogic<{ name: string; age: string }>()
+      const group1 = form.getOrCreateFieldGroup(['name'])
+      form.getOrCreateFieldGroup(['age'])
+      const group3 = form.getOrCreateFieldGroup(['name', 'age'])
+
+      const field = form.getOrCreateField('name')
+
+      expect(field.fieldGroups.value).toEqual([group1, group3])
     })
   })
   describe('transform', () => {
