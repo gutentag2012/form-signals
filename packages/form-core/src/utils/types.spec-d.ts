@@ -1,10 +1,13 @@
-import { describe, expectTypeOf, it } from 'vitest'
+import { assertType, describe, expectTypeOf, it } from 'vitest'
 import type {
   ConnectPath,
+  ExcludeAll,
   KeepOptionalKeys,
   LastPath,
   MakeOptionalIfNotExistInCheck,
   ParentPath,
+  PartialForPath,
+  PartialForPaths,
   Paths,
   ValueAtPath,
   ValueAtPathForTuple,
@@ -189,6 +192,7 @@ describe('types', () => {
     expectTypeOf<ValueAtPath<Date, ''>>().toEqualTypeOf<Date>()
   })
   //endregion
+  //region ValueAtPathForTuple
   it('should return an array of values for given paths', () => {
     type Obj = {
       name: string
@@ -206,7 +210,49 @@ describe('types', () => {
       (string | number)[]
     >()
   })
-  //region ValueAtPathForTuple
+  //endregion
+  //region PartialForPath
+  it('should return the type of the path as partial', () => {
+    const obj = { name: 'John', age: 39, password: 'secret' }
+    type Obj = typeof obj
+    expectTypeOf<PartialForPath<Obj, 'name'>>().toEqualTypeOf<{
+      name: string
+    }>()
+  })
+  //endregion
+  //region PartialForPaths
+  it('should return the type of the paths as partial', () => {
+    const obj = { name: 'John', age: 39, password: 'secret' }
+    type Obj = typeof obj
+    expectTypeOf<PartialForPaths<Obj, ['name', 'age']>>().toEqualTypeOf<
+      { name: string } & { age: number }
+    >()
+    assertType<PartialForPaths<Obj, ['name', 'age']>>({
+      name: 'name',
+      age: 134,
+    })
+  })
+  it('should return the type of the paths as partial if given a union array', () => {
+    const obj = { name: 'John', age: 39, password: 'secret' }
+    type Obj = typeof obj
+    expectTypeOf<PartialForPaths<Obj, ('name' | 'age')[]>>().toEqualTypeOf<
+      { name: string } & { age: number }
+    >()
+    assertType<PartialForPaths<Obj, ('name' | 'age')[]>>({
+      name: 'name',
+      age: 134,
+    })
+  })
+  //endregion
+  //region ExcludeAll
+  it('should exclude all values from a union', () => {
+    type Union = 'name' | 'age' | 'salary'
+    expectTypeOf<ExcludeAll<Union, ['name', 'unknown']>>().toEqualTypeOf<
+      'salary' | 'age'
+    >()
+    expectTypeOf<ExcludeAll<Union, ['name', 'age']>>().toEqualTypeOf<'salary'>()
+    expectTypeOf<ExcludeAll<Union, ['name', 'age', 'salary']>>().toBeNever()
+  })
   //endregion
   //region MakeOptionalIfNotExistInCheck
   it('should keep base values if the exist in the check object', () => {
