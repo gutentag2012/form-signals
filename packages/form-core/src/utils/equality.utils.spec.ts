@@ -58,7 +58,7 @@ describe('equality.utils', () => {
       [{ a: 1 }, { a: 1 }],
       [
         { a: 1, b: { c: 2 } },
-        { a: 1, b: { c: 2 } },
+        { a: 1, b: { c: 2, d: 3 } },
       ],
       [
         { nestedArray: [1, undefined, null, new Date(0)] },
