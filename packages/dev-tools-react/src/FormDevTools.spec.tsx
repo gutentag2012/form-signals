@@ -43,11 +43,13 @@ describe('FormDevTools', () => {
       touchedValue,
       dirtyValue,
       validValue,
-      validFormValue,
-      validFieldsValue,
       validatingValue,
+      validFormValue,
       validatingFormValue,
+      validFieldsValue,
       validatingFieldsValue,
+      validFieldGroupsValue,
+      validatingFieldGroupsValue,
       canSubmitValue,
       submittedValue,
       submittingValue,
@@ -96,6 +98,11 @@ describe('FormDevTools', () => {
         ?.classList?.contains('fs-utils--bg-success'),
     ).toBeTruthy()
     expect(
+      validFieldGroupsValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
       validatingValue
         .querySelector('div')
         ?.classList?.contains('fs-utils--bg-error'),
@@ -107,6 +114,11 @@ describe('FormDevTools', () => {
     ).toBeTruthy()
     expect(
       validatingFieldsValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      validatingFieldGroupsValue
         .querySelector('div')
         ?.classList?.contains('fs-utils--bg-error'),
     ).toBeTruthy()
@@ -134,10 +146,10 @@ describe('FormDevTools', () => {
       submittedCountValue?.textContent?.replace('Submission Count ', ''),
     ).toBe('0')
     expect(
-      submittedCountSuccessValue?.textContent?.replace('Successful Count ', ''),
+      submittedCountSuccessValue?.textContent?.replace('Successful ', ''),
     ).toBe('0')
     expect(
-      submittedCountErrorValue?.textContent?.replace('Unsuccessful Count ', ''),
+      submittedCountErrorValue?.textContent?.replace('Unsuccessful ', ''),
     ).toBe('0')
 
     const defaultValues = screen.getByText('Default Values')
@@ -209,11 +221,13 @@ describe('FormDevTools', () => {
       _touchedValue,
       _dirtyValue,
       validValue,
-      validFormValue,
-      validFieldsValue,
       _validatingValue,
+      validFormValue,
       _validatingFormValue,
+      validFieldsValue,
       _validatingFieldsValue,
+      _validFieldGroupsValue,
+      _validatingFieldGroupsValue,
       canSubmitValue,
     ] = boolValues
     const [_dirtyFieldsValue, formErrorsValue] = textValues
@@ -489,6 +503,196 @@ describe('FormDevTools', () => {
 
     cleanup()
   })
+  it('should display validation field group states', async () => {
+    // The z is added to make sure the fields are sorted correctly
+    const date = new Date()
+    const obj = { a: 0 }
+    const form = new FormLogic({
+      defaultValues: {
+        name: "default",
+        zage: 21,
+        zzdob: date,
+        zzzobj: obj
+      }
+    })
+    const formContext = formLogicToFormContext(form)
+    await formContext.mount()
+
+    const field = form.getOrCreateFieldGroup(['name'])
+    await field.mount()
+
+    const field2 = form.getOrCreateFieldGroup(['zage'])
+    await field2.mount()
+
+    const field3 = form.getOrCreateFieldGroup(['zzdob'])
+    await field3.mount()
+
+    const field4 = form.getOrCreateFieldGroup(['zzzobj'])
+    await field4.mount()
+
+    form.data.value.name.value = 'John'
+
+    function TestComponent() {
+      return (
+        <formContext.FormProvider>
+          <FormDevTools />
+        </formContext.FormProvider>
+      )
+    }
+
+    const screen = render(<TestComponent />)
+
+    const openButton = screen.getByRole('button')
+    expect(openButton).toBeDefined()
+    if (!openButton) throw new Error('openButton is not defined')
+    await fireEvent.click(openButton)
+
+    const fieldContainer = screen.container.querySelectorAll(
+      '.fs-drawer--field-states',
+    )[1]
+    expect(fieldContainer).toBeDefined()
+    if (!fieldContainer) throw new Error('fieldContainer is not defined')
+    expect(fieldContainer.children.length).toBe(4)
+
+    await fireEvent.click(fieldContainer.children[0].querySelector('button')!)
+    await fireEvent.click(fieldContainer.children[1].querySelector('button')!)
+    await fireEvent.click(fieldContainer.children[2].querySelector('button')!)
+    await fireEvent.click(fieldContainer.children[3].querySelector('button')!)
+
+    const boolValues = fieldContainer.querySelectorAll('.fs-boolean-display')
+    if (!boolValues.length) throw new Error('boolValues is empty')
+
+    const textValues = fieldContainer.querySelectorAll('.fs-text-display')
+    if (!textValues.length) throw new Error('textValues is empty')
+
+    const [
+      disabledValue,
+      validValue,
+      mountedValue,
+      _disabledValue,
+      dirtyValue,
+      _validValue,
+      validatingValue,
+      validFieldGroupValue,
+      validatingFieldGroupValue,
+      validFieldsValue,
+      validatingFieldsValue,
+      canSubmitValue,
+      submittedValue,
+      submittingValue,
+    ] = boolValues
+    const [
+      dirtyFieldsValue,
+      formErrorsValue,
+      submittedCountValue,
+      submittedCountSuccessValue,
+      submittedCountErrorValue,
+    ] = textValues
+
+    expect(
+      mountedValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      disabledValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      dirtyValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      validValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      validatingValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      validFieldGroupValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      validFieldsValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      validatingFieldGroupValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      validatingFieldsValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      canSubmitValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-success'),
+    ).toBeTruthy()
+    expect(
+      submittedValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+    expect(
+      submittingValue
+        .querySelector('div')
+        ?.classList?.contains('fs-utils--bg-error'),
+    ).toBeTruthy()
+
+    expect(dirtyFieldsValue?.textContent?.replace('Dirty Fields ', '')).toBe(
+      'name',
+    )
+    expect(formErrorsValue?.textContent?.replace('Form Errors ', '')).toBe('-')
+    expect(
+      submittedCountValue?.textContent?.replace('Submission Count ', ''),
+    ).toBe('0')
+    expect(
+      submittedCountSuccessValue?.textContent?.replace('Successful ', ''),
+    ).toBe('0')
+    expect(
+      submittedCountErrorValue?.textContent?.replace('Unsuccessful ', ''),
+    ).toBe('0')
+
+    const elements =
+      screen.container.querySelectorAll('.collapsible')
+
+    await fireEvent.click(elements[3].querySelector("button")!)
+    expect(JSON.parse(elements[3].querySelector("pre")!.textContent!).name).toBe('John')
+
+    await fireEvent.click(elements[5].querySelector("button")!)
+    expect(JSON.parse(elements[5].querySelector("pre")!.textContent!).zage).toBe(21)
+
+    await fireEvent.click(elements[7].querySelector("button")!)
+    expect(JSON.parse(elements[7].querySelector("pre")!.textContent!).zzdob).toBe(date.toISOString())
+
+    await fireEvent.click(elements[9].querySelector("button")!)
+    expect(JSON.parse(elements[9].querySelector("pre")!.textContent!).zzzobj).toEqual(obj)
+
+    const resetButton = fieldContainer.querySelector(
+      '.fs-drawer--action-buttons button',
+    )
+    await fireEvent.click(resetButton!)
+
+    screen.rerender(<TestComponent />)
+
+    const elements1 =
+      screen.container.querySelectorAll('.collapsible')
+
+    expect(JSON.parse(elements1[3].querySelector("pre")!.textContent!).name).toBe('default')
+
+    cleanup()
+  })
   it('should be possible to reset the field state', async () => {
     const form = new FormLogic<{ name: string }>()
     const formContext = formLogicToFormContext(form)
@@ -706,11 +910,13 @@ describe('FormDevTools', () => {
       _touchedValue,
       _dirtyValue,
       _validValue,
-      _validFormValue,
-      _validFieldsValue,
       validatingValue,
+      _validFormValue,
       validatingFormValue,
+      _validFieldsValue,
       validatingFieldsValue,
+      _validFieldGroupsValue,
+      _validatingFieldGroupsValue,
       _canSubmitValue,
       _submittedValue,
       submittingValue,
@@ -750,11 +956,13 @@ describe('FormDevTools', () => {
       _touchedValue2,
       _dirtyValue2,
       _validValue2,
-      _validFormValue2,
-      _validFieldsValue2,
       validatingValue2,
+      _validFormValue2,
       validatingFormValue2,
+      _validFieldsValue2,
       validatingFieldsValue2,
+      _validFieldGroupsValue2,
+      _validatingFieldGroupsValue2,
       _canSubmitValue2,
       _submittedValue2,
       submittingValue2,
@@ -793,11 +1001,13 @@ describe('FormDevTools', () => {
       _touchedValue3,
       _dirtyValue3,
       _validValue3,
-      _validFormValue3,
-      _validFieldsValue3,
       validatingValue3,
+      _validFormValue3,
       validatingFormValue3,
+      _validFieldsValue3,
       validatingFieldsValue3,
+      _validFieldGroupsValue3,
+      _validatingFieldGroupsValue3,
       _canSubmitValue3,
       _submittedValue3,
       submittingValue3,
@@ -839,11 +1049,13 @@ describe('FormDevTools', () => {
       _touchedValue4,
       _dirtyValue4,
       _validValue4,
-      _validFormValue4,
-      _validFieldsValue4,
       validatingValue4,
+      _validFormValue4,
       validatingFormValue4,
+      _validFieldsValue4,
       validatingFieldsValue4,
+      _validFieldGroupsValue4,
+      _validatingFieldGroupsValue4,
       _canSubmitValue4,
       _submittedValue4,
       submittingValue4,
@@ -883,11 +1095,13 @@ describe('FormDevTools', () => {
       _touchedValue5,
       _dirtyValue5,
       _validValue5,
-      _validFormValue5,
-      _validFieldsValue5,
       validatingValue5,
+      _validFormValue5,
       validatingFormValue5,
+      _validFieldsValue5,
       validatingFieldsValue5,
+      _validFieldGroupsValue5,
+      _validatingFieldGroupsValue5,
       _canSubmitValue5,
       _submittedValue5,
       submittingValue5,
