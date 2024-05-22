@@ -651,7 +651,7 @@ export class FieldLogic<
     value: ValueAtPath<TData, ConnectPath<TName, TKey>>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.setValueInObject(this._name, key, value, options)
   }
 
@@ -665,7 +665,7 @@ export class FieldLogic<
     key: KeepOptionalKeys<ValueAtPath<TData, TName>, TKey>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueInObject(this._name, key, options)
   }
   //endregion
@@ -690,7 +690,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
@@ -706,7 +706,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.pushValueToArray(this._name, value, options)
   }
 
@@ -727,7 +727,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.pushValueToArrayAtIndex(this._name, index, value, options)
   }
 
@@ -741,7 +741,7 @@ export class FieldLogic<
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueFromArray(this._name, index, options)
   }
 
@@ -751,7 +751,7 @@ export class FieldLogic<
    * @param options - Options for the change.
    */
   public removeSelfFromArray(options?: { shouldTouch?: boolean }): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueFromArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -792,7 +792,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
@@ -815,7 +815,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.swapValuesInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -854,7 +854,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.moveValueInArray(this._name, indexA, indexB, options)
   }
 
@@ -877,7 +877,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.moveValueInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
