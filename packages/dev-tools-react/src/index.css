@@ -1,7 +1,7 @@
 #fs-dev-tools--container {
   position: fixed;
   z-index: 1000;
-  --fs-max-width: clamp(550px, 30vw, 650px);
+  --fs-max-width: clamp(600px, 30vw, 700px);
   --fs-bg-color: #1c1917;
   --fs-bg-secondary-color: #44403c;
   --fs-text-color: #fafaf9;
@@ -195,7 +195,7 @@
   color: var(--fs-text-color);
 }
 
-#fs-drawer--header {
+#fs-drawer--header, #fs-drawer--field-group-states--header {
   display: grid;
   max-width: calc(var(--fs-max-width) - 16px);
   grid-template-columns: repeat(6, 1fr);
@@ -246,7 +246,7 @@
 }
 /*endregion*/
 
-#fs-drawer--header > * {
+#fs-drawer--header > *, #fs-drawer--field-group-states--header > * {
   border-style: solid;
   border-color: var(--fs-bg-secondary-color);
   padding-inline: 8px;
@@ -279,7 +279,7 @@
   grid-column: 3 / span 2;
 }
 
-#fs-drawer--header > :nth-child(43) {
+#fs-drawer--header > :nth-child(4) {
   border-bottom-width: 1px;
   grid-column: 5 / span 2;
 }
@@ -295,41 +295,127 @@
   grid-column: 2 / span 5;
 }
 
-#fs-drawer--header > :nth-child(14) {
+#fs-drawer--header > :nth-child(16) {
   border-bottom-width: 1px;
   grid-column: 1 / span 6;
 }
 
-#fs-drawer--header > :nth-child(16) {
+#fs-drawer--header > :nth-child(18) {
   border-right-width: 1px;
   border-bottom-width: 1px;
   grid-column: 1 / span 2;
 }
 
-#fs-drawer--header > :nth-child(17) {
+#fs-drawer--header > :nth-child(19) {
   border-right-width: 1px;
   border-bottom-width: 1px;
   grid-column: 3 / span 2;
 }
 
-#fs-drawer--header > :nth-child(18) {
+#fs-drawer--header > :nth-child(20) {
   border-bottom-width: 1px;
   grid-column: 5 / span 2;
 }
 
-#fs-drawer--header > :nth-child(8), #fs-drawer--header > :nth-child(11), #fs-drawer--header > :nth-child(19) {
+#fs-drawer--header > :nth-child(8), #fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(12), #fs-drawer--header > :nth-child(14) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 3;
+}
+
+#fs-drawer--header > :nth-child(9), #fs-drawer--header > :nth-child(11), #fs-drawer--header > :nth-child(13), #fs-drawer--header > :nth-child(15) {
+  border-bottom-width: 1px;
+  grid-column: 4 / span 3;
+}
+
+#fs-drawer--header > :nth-child(21) {
   border-right-width: 1px;
   border-bottom-width: 1px;
   grid-column: 1 / span 2;
 }
 
-#fs-drawer--header > :nth-child(9), #fs-drawer--header > :nth-child(12), #fs-drawer--header > :nth-child(20) {
+#fs-drawer--header > :nth-child(22) {
   border-right-width: 1px;
   border-bottom-width: 1px;
   grid-column: 3 / span 2;
 }
 
-#fs-drawer--header > :nth-child(10), #fs-drawer--header > :nth-child(13), #fs-drawer--header > :nth-child(21) {
+#fs-drawer--header > :nth-child(23) {
+  border-bottom-width: 1px;
+  grid-column: 5 / span 2;
+}
+
+/*endregion*/
+
+/*region Field Group State Header Sections*/
+#fs-drawer--field-group-states--header > :nth-child(2) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 3;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(3) {
+  border-bottom-width: 1px;
+  grid-column: 4 / span 3;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(4) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 1;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(5) {
+  border-bottom-width: 1px;
+  grid-column: 2 / span 5;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(13) {
+  border-bottom-width: 1px;
+  grid-column: 1 / span 6;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(15) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 2;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(16) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 3 / span 2;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(17) {
+  border-bottom-width: 1px;
+  grid-column: 5 / span 2;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(7), #fs-drawer--field-group-states--header > :nth-child(9), #fs-drawer--field-group-states--header > :nth-child(11) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 3;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(8), #fs-drawer--field-group-states--header > :nth-child(10), #fs-drawer--field-group-states--header > :nth-child(12) {
+  border-bottom-width: 1px;
+  grid-column: 4 / span 3;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(18) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 1 / span 2;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(19) {
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  grid-column: 3 / span 2;
+}
+
+#fs-drawer--field-group-states--header > :nth-child(20) {
   border-bottom-width: 1px;
   grid-column: 5 / span 2;
 }

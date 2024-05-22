@@ -4,6 +4,7 @@ import { useComputed } from '@preact/signals-react'
 import React from 'react'
 import { BooleanDisplay } from './BooleanDisplay'
 import { Collapsible } from './Collapsible'
+import { FieldGroupStates } from './FieldGroupStates'
 import { FieldStates } from './FieldStates'
 import { TextDisplay } from './TextDisplay'
 
@@ -63,30 +64,42 @@ export function FormDevToolsDrawerContent() {
           tooltip="Is the form and all its fields valid?"
         />
         <BooleanDisplay
-          value={form.isValidForm}
-          label="Valid Form"
-          tooltip="Is the form valid?"
-        />
-        <BooleanDisplay
-          value={form.isValidFields}
-          label="Valid Fields"
-          tooltip="Are all fields valid?"
-        />
-
-        <BooleanDisplay
           value={form.isValidating}
           label="Validating"
           tooltip="Is the form or any of its fields validating?"
+        />
+
+        <BooleanDisplay
+          value={form.isValidForm}
+          label="Valid Form"
+          tooltip="Is the form valid?"
         />
         <BooleanDisplay
           value={form.isValidatingForm}
           label="Validating Form"
           tooltip="Is the form currently validating?"
         />
+
+        <BooleanDisplay
+          value={form.isValidFields}
+          label="Valid Fields"
+          tooltip="Are all fields valid?"
+        />
         <BooleanDisplay
           value={form.isValidatingFields}
           label="Validating Fields"
           tooltip="Are any of the fields validating?"
+        />
+
+        <BooleanDisplay
+          value={form.isValidFieldGroups}
+          label="Valid Field Groups"
+          tooltip="Are all field groups valid?"
+        />
+        <BooleanDisplay
+          value={form.isValidatingFieldGroups}
+          label="Validating Field Groups"
+          tooltip="Are any of the field groups validating?"
         />
 
         <TextDisplay
@@ -120,12 +133,12 @@ export function FormDevToolsDrawerContent() {
         />
         <TextDisplay
           value={form.submitCountSuccessful}
-          label="Successful Count"
+          label="Successful"
           tooltip="How often has the form been submitted successfully?"
         />
         <TextDisplay
           value={form.submitCountUnsuccessful}
-          label="Unsuccessful Count"
+          label="Unsuccessful"
           tooltip="How often has the form been submitted unsuccessfully?"
         />
       </div>
@@ -145,6 +158,9 @@ export function FormDevToolsDrawerContent() {
 
       <h6 className="fs-drawer--section-title">Field States</h6>
       <FieldStates />
+
+      <h6 className="fs-drawer--section-title">Field Group States</h6>
+      <FieldGroupStates />
     </div>
   )
 }
