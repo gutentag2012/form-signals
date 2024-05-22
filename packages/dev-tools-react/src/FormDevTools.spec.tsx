@@ -509,11 +509,11 @@ describe('FormDevTools', () => {
     const obj = { a: 0 }
     const form = new FormLogic({
       defaultValues: {
-        name: "default",
+        name: 'default',
         zage: 21,
         zzdob: date,
-        zzzobj: obj
-      }
+        zzzobj: obj,
+      },
     })
     const formContext = formLogicToFormContext(form)
     await formContext.mount()
@@ -664,20 +664,27 @@ describe('FormDevTools', () => {
       submittedCountErrorValue?.textContent?.replace('Unsuccessful ', ''),
     ).toBe('0')
 
-    const elements =
-      screen.container.querySelectorAll('.collapsible')
+    const elements = screen.container.querySelectorAll('.collapsible')
 
-    await fireEvent.click(elements[3].querySelector("button")!)
-    expect(JSON.parse(elements[3].querySelector("pre")!.textContent!).name).toBe('John')
+    await fireEvent.click(elements[3].querySelector('button')!)
+    expect(
+      JSON.parse(elements[3].querySelector('pre')!.textContent!).name,
+    ).toBe('John')
 
-    await fireEvent.click(elements[5].querySelector("button")!)
-    expect(JSON.parse(elements[5].querySelector("pre")!.textContent!).zage).toBe(21)
+    await fireEvent.click(elements[5].querySelector('button')!)
+    expect(
+      JSON.parse(elements[5].querySelector('pre')!.textContent!).zage,
+    ).toBe(21)
 
-    await fireEvent.click(elements[7].querySelector("button")!)
-    expect(JSON.parse(elements[7].querySelector("pre")!.textContent!).zzdob).toBe(date.toISOString())
+    await fireEvent.click(elements[7].querySelector('button')!)
+    expect(
+      JSON.parse(elements[7].querySelector('pre')!.textContent!).zzdob,
+    ).toBe(date.toISOString())
 
-    await fireEvent.click(elements[9].querySelector("button")!)
-    expect(JSON.parse(elements[9].querySelector("pre")!.textContent!).zzzobj).toEqual(obj)
+    await fireEvent.click(elements[9].querySelector('button')!)
+    expect(
+      JSON.parse(elements[9].querySelector('pre')!.textContent!).zzzobj,
+    ).toEqual(obj)
 
     const resetButton = fieldContainer.querySelector(
       '.fs-drawer--action-buttons button',
@@ -686,10 +693,11 @@ describe('FormDevTools', () => {
 
     screen.rerender(<TestComponent />)
 
-    const elements1 =
-      screen.container.querySelectorAll('.collapsible')
+    const elements1 = screen.container.querySelectorAll('.collapsible')
 
-    expect(JSON.parse(elements1[3].querySelector("pre")!.textContent!).name).toBe('default')
+    expect(
+      JSON.parse(elements1[3].querySelector('pre')!.textContent!).name,
+    ).toBe('default')
 
     cleanup()
   })

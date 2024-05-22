@@ -15,7 +15,9 @@ export function FieldGroupState({ members }: { members: string[] }) {
     () => form.dirtyFields.value.join(', ') || '-',
   )
   const errors = useComputed(() => group.errors.value.join(', ') || '-')
-  const currentValueString = useComputed(() => JSON.stringify(group.data.value, null, 2))
+  const currentValueString = useComputed(() =>
+    JSON.stringify(group.data.value, null, 2),
+  )
 
   return (
     <div className="fs-drawer--field-state">
