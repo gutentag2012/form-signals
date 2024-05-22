@@ -1,9 +1,14 @@
-import {ExcludeAll, FormLogic, Paths, ValidatorAdapter} from '@formsignals/form-core'
+import type {
+  ExcludeAll,
+  FormLogic,
+  Paths,
+  ValidatorAdapter,
+} from '@formsignals/form-core'
 import React, { type PropsWithChildren, type ReactNode } from 'react'
 import { type FieldProps, FieldWithForm } from '../field'
+import { type FieldGroupProps, FieldGroupWithForm } from '../field-group'
 import { FormProvider } from './form.provider'
 import { handleSubmitOnEnterForForm } from './form.utils'
-import {FieldGroupProps, FieldGroupWithForm} from "../field-group";
 
 /**
  * The context object that is used to provide the form logic to the form components.
@@ -46,7 +51,10 @@ export interface FormContextType<
   FieldGroupProvider: <
     TMembers extends Paths<TData>[],
     TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
-    TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+    TFieldGroupMixin extends readonly ExcludeAll<
+      Paths<TData>,
+      TMembers
+    >[] = never[],
   >(
     props: FieldGroupProps<
       TData,

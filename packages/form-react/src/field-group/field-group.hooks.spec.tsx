@@ -3,14 +3,14 @@ import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import {useFieldGroup, useFieldGroupWithComponents} from './field-group.hooks'
+import { useFieldGroup, useFieldGroupWithComponents } from './field-group.hooks'
 
 describe('Field Group hooks', () => {
   describe('useFieldGroup', () => {
     it('should create a new field group within the given form with the provided options', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: 'John'
+          name: 'John',
         },
       })
 
@@ -29,7 +29,7 @@ describe('Field Group hooks', () => {
     it("should mount and unmount the field group with component's lifecycle", () => {
       const form = new FormLogic({
         defaultValues: {
-          name: 'John'
+          name: 'John',
         },
       })
 
@@ -54,7 +54,7 @@ describe('Field Group hooks', () => {
 
       function MyComponent({ disabled }: { disabled: boolean }) {
         const field = useFieldGroup(form, ['name'], {
-          disabled
+          disabled,
         })
         return <div>{JSON.stringify(field.disabled.value)}</div>
       }
@@ -69,16 +69,12 @@ describe('Field Group hooks', () => {
     })
     it('should create a new field if the members changes', () => {
       const form = new FormLogic({
-        defaultValues: { name: "name", otherName: "otherName" }
+        defaultValues: { name: 'name', otherName: 'otherName' },
       })
 
       function MyComponent({ members }: { members: 'name' | 'otherName' }) {
         const group = useFieldGroup(form, [members])
-        return (
-          <p>
-            {(group.data.value as any)[members]}
-          </p>
-        )
+        return <p>{(group.data.value as any)[members]}</p>
       }
 
       const screen = render(<MyComponent members={'name'} />)
@@ -96,8 +92,8 @@ describe('Field Group hooks', () => {
     it('should return the field group context from the provided field group logic', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
-          name: ''
-        }
+          name: '',
+        },
       })
       const group = form.getOrCreateFieldGroup(['name'])
 
@@ -114,7 +110,9 @@ describe('Field Group hooks', () => {
               Has FieldGroupProvider:{' '}
               {JSON.stringify(!!fieldWithComponents.FieldGroupProvider)}
             </p>
-            <p>Has Value: {JSON.stringify(fieldWithComponents.data?.value?.name)}</p>
+            <p>
+              Has Value: {JSON.stringify(fieldWithComponents.data?.value?.name)}
+            </p>
           </div>
         )
       }

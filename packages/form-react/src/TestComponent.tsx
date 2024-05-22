@@ -3,13 +3,11 @@ import { type Signal, useComputed } from '@preact/signals-react'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { useFieldContext } from './field'
+import { useFieldGroupContext } from './field-group'
 import { useForm } from './form'
-import {useFieldGroupContext} from "./field-group";
 
 function SignalText({ signal }: { signal: Signal<any> }) {
-  const text = useComputed(() =>
-    JSON.stringify(signal.value, null, 2),
-  )
+  const text = useComputed(() => JSON.stringify(signal.value, null, 2))
   return <pre>{text}</pre>
 }
 
@@ -92,7 +90,7 @@ function TestApp() {
   })
   return (
     <form.FormProvider>
-      <form.FieldGroupProvider members={["array"]}>
+      <form.FieldGroupProvider members={['array']}>
         <form.FieldProvider name="array">
           <Debug />
           <List />

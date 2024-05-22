@@ -23,7 +23,10 @@ describe('Form Context', () => {
           <div>
             <p>Has FormProvider: {JSON.stringify(!!context.FormProvider)}</p>
             <p>Has FieldProvider: {JSON.stringify(!!context.FieldProvider)}</p>
-            <p>Has FieldGroupProvider: {JSON.stringify(!!context.FieldGroupProvider)}</p>
+            <p>
+              Has FieldGroupProvider:{' '}
+              {JSON.stringify(!!context.FieldGroupProvider)}
+            </p>
             <p>
               Has handleSubmitOnEnter:{' '}
               {JSON.stringify(!!context.handleSubmitOnEnter)}

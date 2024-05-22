@@ -3,7 +3,10 @@ import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import {fieldGroupLogicToFieldGroupContext, useFieldGroupContext} from "./field-group.context";
+import {
+  fieldGroupLogicToFieldGroupContext,
+  useFieldGroupContext,
+} from './field-group.context'
 
 describe('Field Group Context', () => {
   describe('fieldGroupLogicToFieldGroupContext', () => {
@@ -22,7 +25,8 @@ describe('Field Group Context', () => {
           <div>
             <p>Has Provider: {JSON.stringify(!!context.FieldProvider)}</p>
             <p>
-              Has FieldGroupProvider: {JSON.stringify(!!context.FieldGroupProvider)}
+              Has FieldGroupProvider:{' '}
+              {JSON.stringify(!!context.FieldGroupProvider)}
             </p>
             <p>Value: {context.data.value.v}</p>
           </div>
@@ -33,7 +37,7 @@ describe('Field Group Context', () => {
           v: 'default',
         },
       })
-      const groupLogic = form.getOrCreateFieldGroup(["v"])
+      const groupLogic = form.getOrCreateFieldGroup(['v'])
       const groupContext = fieldGroupLogicToFieldGroupContext(groupLogic)
 
       const screen = render(
@@ -57,7 +61,9 @@ describe('Field Group Context', () => {
       }
       expect(() => {
         render(<ContextConsumer />)
-      }).toThrowError('useFieldGroupContext must be used within a FieldGroupProvider')
+      }).toThrowError(
+        'useFieldGroupContext must be used within a FieldGroupProvider',
+      )
     })
     it('should return the field group context when used within a FieldGroupProvider', () => {
       function ContextConsumer() {
@@ -69,7 +75,7 @@ describe('Field Group Context', () => {
         )
       }
       const form = new FormLogic<{ name: string }>()
-      const groupLogic = form.getOrCreateFieldGroup(["name"])
+      const groupLogic = form.getOrCreateFieldGroup(['name'])
       const groupContext = fieldGroupLogicToFieldGroupContext(groupLogic)
 
       const screen = render(

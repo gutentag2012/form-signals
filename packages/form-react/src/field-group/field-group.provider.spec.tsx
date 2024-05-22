@@ -3,17 +3,17 @@ import { cleanup, render } from '@testing-library/react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 import { describe, expect, it } from 'vitest'
+import { useFieldContext } from '../field'
 import { FormContext, formLogicToFormContext } from '../form/form.context'
 import {
   fieldGroupLogicToFieldGroupContext,
-  useFieldGroupContext
+  useFieldGroupContext,
 } from './field-group.context'
 import {
   FieldGroup,
   FieldGroupProvider,
   FieldGroupWithForm,
 } from './field-group.provider'
-import {useFieldContext} from "../field";
 
 describe('FieldGroupProvider', () => {
   describe('FieldGroupProvider', () => {
@@ -22,7 +22,7 @@ describe('FieldGroupProvider', () => {
       const group = form.getOrCreateFieldGroup(['name'])
 
       function ContextConsumer() {
-        const field = useFieldGroupContext<{name: string}, ["name"]>()
+        const field = useFieldGroupContext<{ name: string }, ['name']>()
         return field.data.value.name as any
       }
 
@@ -64,7 +64,7 @@ describe('FieldGroupProvider', () => {
       const group = form.getOrCreateFieldGroup(['name'])
 
       function ContextConsumer() {
-        const group = useFieldGroupContext<{name: string}, ["name"]>()
+        const group = useFieldGroupContext<{ name: string }, ['name']>()
         return group.data.value.name as any
       }
 
@@ -87,12 +87,12 @@ describe('FieldGroupProvider', () => {
 
       cleanup()
     })
-    it("should create a new field through the passed FieldProvider", () => {
+    it('should create a new field through the passed FieldProvider', () => {
       const form = new FormLogic({ defaultValues: { name: 'John' } })
       const group = form.getOrCreateFieldGroup(['name'])
 
       function ContextConsumer() {
-        const group = useFieldContext<{name: string}, "name">()
+        const group = useFieldContext<{ name: string }, 'name'>()
         return group.data.value as any
       }
 
@@ -124,7 +124,7 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <FieldGroup<FormValues, ['name']> members={["name"]}>
+          <FieldGroup<FormValues, ['name']> members={['name']}>
             {(field) => field.data.value.name}
           </FieldGroup>
         )
@@ -144,7 +144,7 @@ describe('FieldGroupProvider', () => {
     it('should create a new field group if the value of the name prop changes', () => {
       type FormValues = { name: string; other: string }
       const form = new FormLogic<FormValues>({
-        defaultValues: { name: "name", other: "other" }
+        defaultValues: { name: 'name', other: 'other' },
       })
 
       function TestComponent({ name }: { name: 'name' | 'other' }) {
@@ -188,7 +188,7 @@ describe('FieldGroupProvider', () => {
         return (
           <FieldGroupWithForm<FormValues, ['name']>
             form={formContext}
-            members={["name"]}
+            members={['name']}
           >
             {(field) => field.data.value.name}
           </FieldGroupWithForm>
@@ -211,9 +211,7 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <formContext.FieldGroupProvider
-            members={["name"]}
-          >
+          <formContext.FieldGroupProvider members={['name']}>
             {(field) => field.data.value.name}
           </formContext.FieldGroupProvider>
         )

@@ -1,4 +1,4 @@
-import {
+import type {
   ExcludeAll,
   FieldGroupLogicOptions,
   Paths,
@@ -7,15 +7,21 @@ import {
 // biome-ignore lint/style/useImportType: This is the React import
 import React from 'react'
 import { type FormContextType, useFormContext } from '../form'
-import {FieldGroupContext, FieldGroupContextType} from './field-group.context'
-import {useFieldGroup} from './field-group.hooks'
+import {
+  FieldGroupContext,
+  type FieldGroupContextType,
+} from './field-group.context'
+import { useFieldGroup } from './field-group.hooks'
 
 export type FieldGroupChildren<
   TData,
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 > =
   | ((
       group: FieldGroupContextType<
@@ -33,7 +39,10 @@ function useUnwrappedChildren<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >(
   children: FieldGroupChildren<
     TData,
@@ -62,7 +71,10 @@ export interface FieldGroupProviderProps<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 > {
   group: FieldGroupContextType<
     TData,
@@ -85,7 +97,10 @@ export function FieldGroupProvider<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >(
   props: FieldGroupProviderProps<
     TData,
@@ -107,8 +122,17 @@ export interface FieldGroupWithFormProps<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
-> extends FieldGroupProps<TData, TMembers, TFieldGroupAdapter, TFormAdapter, TFieldGroupMixin> {
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
+> extends FieldGroupProps<
+    TData,
+    TMembers,
+    TFieldGroupAdapter,
+    TFormAdapter,
+    TFieldGroupMixin
+  > {
   form: FormContextType<TData, TFormAdapter>
 }
 
@@ -117,13 +141,16 @@ export function FieldGroupWithForm<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >({
-    form,
-    members,
-    children,
-    ...props
-  }: FieldGroupWithFormProps<
+  form,
+  members,
+  children,
+  ...props
+}: FieldGroupWithFormProps<
   TData,
   TMembers,
   TFieldGroupAdapter,
@@ -143,20 +170,23 @@ export interface FieldGroupProps<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 > extends FieldGroupLogicOptions<
-  TData,
-  TMembers,
-  TFieldGroupAdapter extends undefined ? TFormAdapter : TFieldGroupAdapter,
-  TFieldGroupMixin
-> {
+    TData,
+    TMembers,
+    TFieldGroupAdapter extends undefined ? TFormAdapter : TFieldGroupAdapter,
+    TFieldGroupMixin
+  > {
   children: FieldGroupChildren<
     TData,
     TMembers,
     TFieldGroupAdapter,
     TFormAdapter,
     TFieldGroupMixin
-  >,
+  >
   members: TMembers
 }
 
@@ -172,7 +202,10 @@ export function FieldGroup<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >({
   members,
   children,

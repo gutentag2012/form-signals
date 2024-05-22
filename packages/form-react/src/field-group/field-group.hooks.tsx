@@ -1,5 +1,6 @@
-import {
-  ExcludeAll, FieldGroupLogic,
+import type {
+  ExcludeAll,
+  FieldGroupLogic,
   FieldGroupLogicOptions,
   FormLogic,
   Paths,
@@ -18,7 +19,10 @@ export function useFieldGroup<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >(
   form: FormContextType<TData, TFormAdapter> | FormLogic<TData, TFormAdapter>,
   members: TMembers,
@@ -28,10 +32,19 @@ export function useFieldGroup<
     TFieldGroupAdapter extends undefined ? TFormAdapter : TFieldGroupAdapter,
     TFieldGroupMixin
   >,
-): FieldGroupContextType<TData, TMembers, TFieldGroupAdapter, TFormAdapter, TFieldGroupMixin> {
+): FieldGroupContextType<
+  TData,
+  TMembers,
+  TFieldGroupAdapter,
+  TFormAdapter,
+  TFieldGroupMixin
+> {
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a field once, and we have to update the options in a layout effect to avoid setting state during render
   const group = React.useMemo(
-    () => fieldGroupLogicToFieldGroupContext(form.getOrCreateFieldGroup(members, options)),
+    () =>
+      fieldGroupLogicToFieldGroupContext(
+        form.getOrCreateFieldGroup(members, options),
+      ),
     [form, members],
   )
 
@@ -56,9 +69,24 @@ export function useFieldGroupWithComponents<
   TMembers extends Paths<TData>[],
   TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
   TFormAdapter extends ValidatorAdapter | undefined = undefined,
-  TFieldGroupMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  TFieldGroupMixin extends readonly ExcludeAll<
+    Paths<TData>,
+    TMembers
+  >[] = never[],
 >(
-  field: FieldGroupLogic<TData, TMembers, TFieldGroupAdapter, TFormAdapter, TFieldGroupMixin>,
-): FieldGroupContextType<TData, TMembers, TFieldGroupAdapter, TFormAdapter, TFieldGroupMixin> {
+  field: FieldGroupLogic<
+    TData,
+    TMembers,
+    TFieldGroupAdapter,
+    TFormAdapter,
+    TFieldGroupMixin
+  >,
+): FieldGroupContextType<
+  TData,
+  TMembers,
+  TFieldGroupAdapter,
+  TFormAdapter,
+  TFieldGroupMixin
+> {
   return React.useMemo(() => fieldGroupLogicToFieldGroupContext(field), [field])
 }
