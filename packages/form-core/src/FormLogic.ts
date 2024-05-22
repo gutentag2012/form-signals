@@ -6,6 +6,7 @@ import {
   effect,
   signal,
 } from '@preact/signals-core'
+import { FieldGroupLogic, type FieldGroupLogicOptions } from './FieldGroupLogic'
 import { FieldLogic, type FieldLogicOptions } from './FieldLogic'
 import {
   type Paths,
@@ -34,7 +35,7 @@ import {
   unSignalifyValueSubscribed,
 } from './utils'
 import { Truthy } from './utils/internal.utils'
-import type { ConnectPath, KeepOptionalKeys } from './utils/types'
+import type { ConnectPath, ExcludeAll, KeepOptionalKeys } from './utils/types'
 import {
   clearSubmitEventErrors,
   getValidatorFromAdapter,
@@ -130,7 +131,7 @@ export class FormLogic<
   private _skipValidation = false
   //endregion
 
-  //region Fields
+  //region Fields & Groups
   // This is used to determine if a form is currently registering a field, if so we want to skip the next change event, since we expect a default value there
   private _currentlyRegisteringFields = 0
 
@@ -143,6 +144,13 @@ export class FormLogic<
     fields.sort((a, b) => (a.name as string).localeCompare(b.name))
     return fields
   })
+
+  private readonly _fieldGroups: Signal<
+    Map<string, FieldGroupLogic<TData, any>>
+  > = signal(new Map())
+  private readonly _fieldGroupsArray = computed(() =>
+    Array.from(this._fieldGroups.value.values()),
+  )
   //endregion
 
   //region State
@@ -172,14 +180,25 @@ export class FormLogic<
     )
     return unmountedFields.flatMap((field) => field.errors.value).filter(Truthy)
   })
+  private readonly _fieldGroupErrors = computed(() => {
+    return this._fieldGroupsArray.value
+      .flatMap((group) => group.errors.value)
+      .filter(Truthy)
+  })
   //endregion
 
   //region Computed Valid State
+  private readonly _isValidating = computed(
+    () =>
+      this._isValidatingForm.value ||
+      this._isValidatingFields.value ||
+      this._isValidatingFieldGroups.value,
+  )
   private readonly _isValidatingFields = computed(() =>
     this._fieldsArray.value.some((field) => field.isValidating.value),
   )
-  private readonly _isValidating = computed(
-    () => this._isValidatingForm.value || this._isValidatingFields.value,
+  private readonly _isValidatingFieldGroups = computed(() =>
+    this._fieldGroupsArray.value.some((group) => group.isValidating.value),
   )
   private readonly _isValidForm = computed(
     () => !this._errors.value.filter(Boolean).length,
@@ -187,8 +206,14 @@ export class FormLogic<
   private readonly _isValidFields = computed(() =>
     this._fieldsArray.value.every((field) => field.isValid.value),
   )
+  private readonly _isValidFieldGroups = computed(() =>
+    this._fieldGroupsArray.value.every((group) => group.isValid.value),
+  )
   private readonly _isValid = computed(
-    () => this._isValidForm.value && this._isValidFields.value,
+    () =>
+      this._isValidForm.value &&
+      this._isValidFields.value &&
+      this._isValidFieldGroups.value,
   )
   //endregion
 
@@ -222,14 +247,15 @@ export class FormLogic<
   private readonly _isSubmitted = computed(() => {
     return !this._isSubmitting.value && this._submitCount.value > 0
   })
+  // In this case we cannot simply check `this._dirtyField.value.length > 0` since not all fields in the form might be registered, so this could only check registered fields
   private readonly _isDirty = computed(
     () => !isEqualDeep(this._combinedDefaultValues.value, this._jsonData.value),
   )
   private readonly _dirtyFields = computed(
     () =>
       getLeftUnequalPaths(
-        this._combinedDefaultValues.value,
         this._jsonData.value,
+        this._combinedDefaultValues.value,
       ) as Paths<TData>[],
   )
   private readonly _canSubmit = computed(() => {
@@ -319,11 +345,24 @@ export class FormLogic<
     return this._unmountedFieldErrors
   }
 
+  public get fieldGroupErrors(): ReadonlySignal<Array<ValidationError>> {
+    return this._fieldGroupErrors
+  }
+
   /**
    * All fields that have been registered to the form, both mounted and unmounted (only if they have {@link FieldLogicOptions#preserveValueOnUnmount}).
    */
-  public get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>> {
+  public get fields(): ReadonlySignal<
+    Array<FieldLogic<TData, Paths<TData>, any>>
+  > {
     return this._fieldsArray
+  }
+
+  /**
+   * All field groups that have been registered to the form.
+   */
+  public get fieldGroups(): ReadonlySignal<Array<FieldGroupLogic<TData, any>>> {
+    return this._fieldGroupsArray
   }
 
   public get isValidForm(): ReadonlySignal<boolean> {
@@ -332,6 +371,10 @@ export class FormLogic<
 
   public get isValidFields(): ReadonlySignal<boolean> {
     return this._isValidFields
+  }
+
+  public get isValidFieldGroups(): ReadonlySignal<boolean> {
+    return this._isValidFieldGroups
   }
 
   public get isValid(): ReadonlySignal<boolean> {
@@ -346,6 +389,11 @@ export class FormLogic<
     return this._isDirty
   }
 
+  /**
+   * Returns an array of paths that are unequal to the default values.
+   * That also includes paths that are not registered as fields.
+   * @note If a field is removed from the values but is present in the default values, it will NOT be included in this list.
+   */
   public get dirtyFields(): ReadonlySignal<Paths<TData>[]> {
     return this._dirtyFields
   }
@@ -362,16 +410,19 @@ export class FormLogic<
     return this._submitCount
   }
 
-  public get isValidatingFields(): ReadonlySignal<boolean> {
-    return this._isValidatingFields
+  public get isValidating(): ReadonlySignal<boolean> {
+    return this._isValidating
   }
-
   public get isValidatingForm(): ReadonlySignal<boolean> {
     return this._isValidatingFormReadOnly
   }
 
-  public get isValidating(): ReadonlySignal<boolean> {
-    return this._isValidating
+  public get isValidatingFields(): ReadonlySignal<boolean> {
+    return this._isValidatingFields
+  }
+
+  public get isValidatingFieldGroups(): ReadonlySignal<boolean> {
+    return this._isValidatingFieldGroups
   }
 
   public get isSubmitting(): ReadonlySignal<boolean> {
@@ -644,7 +695,7 @@ export class FormLogic<
   }
   //endregion
 
-  //region Field Helpers
+  //region Field & Group Helpers
   /**
    * Get or create a field for the form.
    *
@@ -729,6 +780,67 @@ export class FormLogic<
 
     if (defaultValues === undefined) return
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
+  }
+
+  public getOrCreateFieldGroup<
+    TMembers extends Paths<TData>[],
+    TGroupAdapter extends ValidatorAdapter | undefined,
+    TMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  >(
+    members: TMembers,
+    options?: FieldGroupLogicOptions<
+      TData,
+      TMembers,
+      TGroupAdapter extends undefined ? TAdapter : TGroupAdapter,
+      TMixin
+    >,
+  ): FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin> {
+    const groupKey = members.sort().join('-')
+    const existingGroup = this._fieldGroups.value.get(groupKey) as
+      | FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin>
+      | undefined
+
+    if (existingGroup) {
+      existingGroup.updateOptions(options)
+      return existingGroup
+    }
+
+    const group = new FieldGroupLogic<
+      TData,
+      TMembers,
+      TGroupAdapter,
+      TAdapter,
+      TMixin
+    >(this, members, options)
+    this.registerFieldGroup(members, group)
+    return group
+  }
+
+  public registerFieldGroup<
+    TMembers extends Paths<TData>[],
+    TGroupAdapter extends ValidatorAdapter | undefined,
+    TMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  >(
+    members: TMembers,
+    group: FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin>,
+  ): void {
+    const groupKey = members.sort().join('-')
+    if (this._fieldGroups.peek().has(groupKey)) return
+
+    const newMap = new Map(this._fieldGroups.peek())
+    newMap.set(groupKey, group as any)
+    this._fieldGroups.value = newMap
+  }
+
+  public unregisterFieldGroup<TMembers extends Paths<TData>[]>(
+    members: TMembers,
+  ): void {
+    const groupKey = members.sort().join('-')
+    if (!this._fieldGroups.peek().has(groupKey)) return
+
+    const newMap = new Map(this._fieldGroups.peek())
+    newMap.delete(groupKey)
+    this._fieldGroups.value = newMap
   }
 
   /**

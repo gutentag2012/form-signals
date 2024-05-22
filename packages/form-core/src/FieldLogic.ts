@@ -163,7 +163,6 @@ export type FieldLogicOptions<
   transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
 }
 
-// TODO Add core method to get a subfield
 /**
  * Logic for a field in the form.
  *
@@ -232,6 +231,10 @@ export class FieldLogic<
   private readonly _isValid = computed(
     () => !this._errors.value.filter(Truthy).length,
   )
+  private readonly _fieldGroups = computed(() => {
+    const formGroups = this._form.fieldGroups.value
+    return formGroups.filter((group) => group.members.includes(this._name))
+  })
   //endregion
 
   //region Readonly State
@@ -241,7 +244,10 @@ export class FieldLogic<
     () => this._isValidating.value,
   )
   private readonly _disabledReadOnly = computed(
-    () => this._disabled.value || this._form.disabled.value,
+    () =>
+      this._disabled.value ||
+      this._form.disabled.value ||
+      this._fieldGroups.value.some((group) => group.disabled.value),
   )
   //endregion
 
@@ -307,6 +313,10 @@ export class FieldLogic<
    */
   public get form(): FormLogic<TData, TFormAdapter> {
     return this._form
+  }
+
+  public get fieldGroups(): ReadonlySignal<Array<any>> {
+    return this._fieldGroups
   }
 
   /**
@@ -991,6 +1001,10 @@ export class FieldLogic<
 
     const adapter =
       this._options.peek()?.validatorAdapter ??
+      this._fieldGroups
+        .peek()
+        .map((group) => group.options.peek()?.validatorAdapter)
+        .find((adapter) => !!adapter) ??
       this.form.options.peek()?.validatorAdapter
     const syncValidator = getValidatorFromAdapter(
       adapter,
