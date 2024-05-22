@@ -16,7 +16,7 @@ export {
   setSignalValuesFromObject,
   makeArrayEntry,
 } from './signals.utils'
-export type { ValueAtPath, Paths } from './types'
+export type { ValueAtPath, Paths, PartialForPaths, ExcludeAll } from './types'
 export {
   type ValidatorAdapter,
   type ValidatorSchemaType,
