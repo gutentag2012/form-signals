@@ -7,21 +7,23 @@ import { formLogicToFormContext, useFormContext } from './form.context'
 
 describe('Form Context', () => {
   describe('formLogicToFormContext', () => {
-    it('should add FormProvider, FieldProvider and handleSubmitOnEnter to the logic', () => {
+    it('should add FormProvider, FieldProvider, FieldGroupProvider and handleSubmitOnEnter to the logic', () => {
       const formLogic = new FormLogic()
       const formContext = formLogicToFormContext(formLogic)
 
       expect(formContext.FormProvider).toBeDefined()
       expect(formContext.FieldProvider).toBeDefined()
+      expect(formContext.FieldGroupProvider).toBeDefined()
       expect(formContext.handleSubmitOnEnter).toBeDefined()
     })
-    it('should provide the logic with the FormProvider, FieldProvider and handleSubmitOnEnter with the FormProvider', () => {
+    it('should provide the logic with the FormProvider, FieldProvider, FieldGroupProvider and handleSubmitOnEnter with the FormProvider', () => {
       function ContextConsumer() {
         const context = useFormContext()
         return (
           <div>
             <p>Has FormProvider: {JSON.stringify(!!context.FormProvider)}</p>
             <p>Has FieldProvider: {JSON.stringify(!!context.FieldProvider)}</p>
+            <p>Has FieldGroupProvider: {JSON.stringify(!!context.FieldGroupProvider)}</p>
             <p>
               Has handleSubmitOnEnter:{' '}
               {JSON.stringify(!!context.handleSubmitOnEnter)}
@@ -45,6 +47,7 @@ describe('Form Context', () => {
 
       expect(screen.getByText('Has FormProvider: true')).toBeDefined()
       expect(screen.getByText('Has FieldProvider: true')).toBeDefined()
+      expect(screen.getByText('Has FieldGroupProvider: true')).toBeDefined()
       expect(screen.getByText('Has handleSubmitOnEnter: true')).toBeDefined()
       expect(screen.getByText('Has Value: true')).toBeDefined()
 

@@ -1,21 +1,21 @@
-import { unSignalifyValue } from '@formsignals/form-core'
 import { type Signal, useComputed } from '@preact/signals-react'
 // biome-ignore lint/correctness/noUnusedImports: This is the React import
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { useFieldContext } from './field'
 import { useForm } from './form'
+import {useFieldGroupContext} from "./field-group";
 
-function SignalText({ signal }: { data: Signal<any> }) {
+function SignalText({ signal }: { signal: Signal<any> }) {
   const text = useComputed(() =>
-    JSON.stringify(unSignalifyValue(signal.value), null, 2),
+    JSON.stringify(signal.value, null, 2),
   )
   return <pre>{text}</pre>
 }
 
 function Debug() {
-  const field = useFieldContext()
-  return <SignalText signal={field.data} />
+  const group = useFieldGroupContext()
+  return <SignalText signal={group.data} />
 }
 
 function ListItem() {
@@ -92,10 +92,12 @@ function TestApp() {
   })
   return (
     <form.FormProvider>
-      <form.FieldProvider name="array">
-        <Debug />
-        <List />
-      </form.FieldProvider>
+      <form.FieldGroupProvider members={["array"]}>
+        <form.FieldProvider name="array">
+          <Debug />
+          <List />
+        </form.FieldProvider>
+      </form.FieldGroupProvider>
     </form.FormProvider>
   )
 }
