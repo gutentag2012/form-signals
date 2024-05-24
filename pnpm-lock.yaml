@@ -513,7 +513,7 @@ importers:
   packages/dev-tools-react:
     dependencies:
       '@formsignals/form-react':
-        specifier: ^0.2.0
+        specifier: ^0.2.1
         version: link:../form-react
       '@preact/signals-react':
         specifier: ^2.0.0
