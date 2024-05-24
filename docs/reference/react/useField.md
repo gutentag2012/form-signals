@@ -4,7 +4,6 @@ The following references can be used to create a `FieldLogic` instance in the Re
 
 ## useField
 
-This is the main entry point for the React bindings.
 It creates a new Field based on the provided options.
 It takes the same options as `FieldLogic`.
 
@@ -72,7 +71,7 @@ declare function useFieldWithComponents<
 An example of the usage:
 
 ```tsx
-import { useField, FieldLogic, FormLogic } from '@formsignals/form-react';
+import { useFieldWithComponents, FieldLogic, FormLogic } from '@formsignals/form-react';
 
 const form = new FormLogic()
 const logic = new FieldLogic(form, "name", {

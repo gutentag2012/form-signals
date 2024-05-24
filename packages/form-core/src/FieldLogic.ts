@@ -51,6 +51,7 @@ import {
  * @template TName - The path to the field.
  * @template TBoundValue - The type of the value that the field is bound to.
  * @template TAdapter - The type of the validator adapter.
+ * @template TMixin - The paths of the values that should be mixed into the validation.
  */
 export type FieldLogicOptions<
   TData,
@@ -66,6 +67,7 @@ export type FieldLogicOptions<
   disabled?: boolean
   /**
    * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+   * @note Fields will inherit the adapter from the form if they have no own adapter.
    */
   validatorAdapter?: TAdapter
   /**
@@ -163,7 +165,6 @@ export type FieldLogicOptions<
   transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
 }
 
-// TODO Add core method to get a subfield
 /**
  * Logic for a field in the form.
  *
@@ -232,6 +233,10 @@ export class FieldLogic<
   private readonly _isValid = computed(
     () => !this._errors.value.filter(Truthy).length,
   )
+  private readonly _fieldGroups = computed(() => {
+    const formGroups = this._form.fieldGroups.value
+    return formGroups.filter((group) => group.members.includes(this._name))
+  })
   //endregion
 
   //region Readonly State
@@ -241,7 +246,10 @@ export class FieldLogic<
     () => this._isValidating.value,
   )
   private readonly _disabledReadOnly = computed(
-    () => this._disabled.value || this._form.disabled.value,
+    () =>
+      this._disabled.value ||
+      this._form.disabled.value ||
+      this._fieldGroups.value.some((group) => group.disabled.value),
   )
   //endregion
 
@@ -307,6 +315,10 @@ export class FieldLogic<
    */
   public get form(): FormLogic<TData, TFormAdapter> {
     return this._form
+  }
+
+  public get fieldGroups(): ReadonlySignal<Array<any>> {
+    return this._fieldGroups
   }
 
   /**
@@ -651,7 +663,7 @@ export class FieldLogic<
     value: ValueAtPath<TData, ConnectPath<TName, TKey>>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.setValueInObject(this._name, key, value, options)
   }
 
@@ -665,7 +677,7 @@ export class FieldLogic<
     key: KeepOptionalKeys<ValueAtPath<TData, TName>, TKey>,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueInObject(this._name, key, options)
   }
   //endregion
@@ -690,7 +702,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.insertValueInArray(this._name, index, value, options)
   }
 
@@ -706,7 +718,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.pushValueToArray(this._name, value, options)
   }
 
@@ -727,7 +739,7 @@ export class FieldLogic<
       : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.pushValueToArrayAtIndex(this._name, index, value, options)
   }
 
@@ -741,7 +753,7 @@ export class FieldLogic<
     index: ValueAtPath<TData, TName> extends any[] ? number : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueFromArray(this._name, index, options)
   }
 
@@ -751,7 +763,7 @@ export class FieldLogic<
    * @param options - Options for the change.
    */
   public removeSelfFromArray(options?: { shouldTouch?: boolean }): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.removeValueFromArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -792,7 +804,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.swapValuesInArray(this._name, indexA, indexB, options)
   }
 
@@ -815,7 +827,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.swapValuesInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -854,7 +866,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.moveValueInArray(this._name, indexA, indexB, options)
   }
 
@@ -877,7 +889,7 @@ export class FieldLogic<
         : never,
     options?: { shouldTouch?: boolean },
   ): void {
-    if (this.disabled.peek()) return
+    if (this.disabled.peek() || !this.isMounted.peek()) return
     this._form.moveValueInArray(
       this.getParentNamePart,
       this.currentNamePart as never,
@@ -991,6 +1003,10 @@ export class FieldLogic<
 
     const adapter =
       this._options.peek()?.validatorAdapter ??
+      this._fieldGroups
+        .peek()
+        .map((group) => group.options.peek()?.validatorAdapter)
+        .find((adapter) => !!adapter) ??
       this.form.options.peek()?.validatorAdapter
     const syncValidator = getValidatorFromAdapter(
       adapter,

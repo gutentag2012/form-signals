@@ -30,15 +30,32 @@ interface FormContextType<
       TMixin
     >,
   ) => ReactNode
+  FieldGroupProvider: <
+    TMembers extends Paths<TData>[],
+    TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
+    TFieldGroupMixin extends readonly ExcludeAll<
+      Paths<TData>,
+      TMembers
+    >[] = never[],
+  >(
+    props: FieldGroupProps<
+      TData,
+      TMembers,
+      TFieldGroupAdapter,
+      TAdapter,
+      TFieldGroupMixin
+    >,
+  ) => ReactNode
   handleSubmitOnEnter: ReturnType<typeof handleSubmitOnEnterForForm>
 }
 ```
 
-| Property              | Description                                                                                                                                            |
-|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `FormProvider`        | A React component that provides the form to all child components.                                                                                      |
-| `FieldProvider`       | A React component that creates a new field within the form and provides it to all child components.                                                    |
-| `handleSubmitOnEnter` | A function that can be used capture the enter key press on an HTML element, stop the events propagation and run the `handleSubmit` method of the form. |
+| Property              | Description                                                                                                                                             |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FormProvider`        | A React component that provides the form to all child components.                                                                                       |
+| `FieldProvider`       | A React component that creates a new field within the form and provides it to all child components.                                                     |
+| `FieldGroupProvider`  | A React component that creates a new field group within the form and provides it to all child components.                                               |
+| `handleSubmitOnEnter` | A function that can be used capture the enter key press on an HTML element, stop the events propagation and run the `handleSubmit` method of the form.  |
 
 ::: info
 The `handleSubmitOnEnter` function can be useful for forms that lack a standard HTML form element, or for subforms within a larger HTML form. Since HTML forms cannot be nested, the browser's built-in functionality to submit on Enter won't work. To address this, use `handleSubmitOnEnter` on the container element that wraps your subform's elements.

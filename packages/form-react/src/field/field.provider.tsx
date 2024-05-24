@@ -1,5 +1,4 @@
 import type {
-  FieldLogic,
   FieldLogicOptions,
   Paths,
   ValidatorAdapter,
@@ -23,7 +22,7 @@ export type FieldChildren<
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > =
   | ((
-      field: FieldLogic<
+      field: FieldContextType<
         TData,
         TName,
         TBoundData,

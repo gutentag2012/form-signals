@@ -43,6 +43,13 @@ features:
       light: /arrow-left-right.svg
       dark: /arrow-left-right-dark.svg
       alt: Transformations
+  - title: Field Groups
+    details: Group your fields together for better organization and validation.
+    link: /guide/field-groups
+    icon:
+      light: /group.svg
+      dark: /group-dark.svg
+      alt: Async Data
   - title: Async Data
     details: Integrate async data sources with ease.
     link: /guide/async-data

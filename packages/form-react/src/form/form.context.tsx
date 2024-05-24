@@ -1,6 +1,12 @@
-import type { FormLogic, Paths, ValidatorAdapter } from '@formsignals/form-core'
+import type {
+  ExcludeAll,
+  FormLogic,
+  Paths,
+  ValidatorAdapter,
+} from '@formsignals/form-core'
 import React, { type PropsWithChildren, type ReactNode } from 'react'
 import { type FieldProps, FieldWithForm } from '../field'
+import { type FieldGroupProps, FieldGroupWithForm } from '../field-group'
 import { FormProvider } from './form.provider'
 import { handleSubmitOnEnterForForm } from './form.utils'
 
@@ -12,6 +18,7 @@ import { handleSubmitOnEnterForForm } from './form.utils'
  *
  * @property FormProvider The provider component that provides the form logic to the form components.
  * @property FieldProvider The component that creates a field logic component bound to the form.
+ * @property FieldGroupProvider The component that creates a field group logic component bound to the form.
  * @property handleSubmitOnEnter The function that handles the submit-event when the enter key is pressed.
  */
 export interface FormContextType<
@@ -42,6 +49,22 @@ export interface FormContextType<
       TMixin
     >,
   ) => ReactNode
+  FieldGroupProvider: <
+    TMembers extends Paths<TData>[],
+    TFieldGroupAdapter extends ValidatorAdapter | undefined = undefined,
+    TFieldGroupMixin extends readonly ExcludeAll<
+      Paths<TData>,
+      TMembers
+    >[] = never[],
+  >(
+    props: FieldGroupProps<
+      TData,
+      TMembers,
+      TFieldGroupAdapter,
+      TAdapter,
+      TFieldGroupMixin
+    >,
+  ) => ReactNode
   /**
    * The function that handles the submit-event when the enter key is pressed.
    * This can be passed into the `onKeyDown` event of an element.
@@ -66,6 +89,11 @@ export function formLogicToFormContext<
     <FieldWithForm form={castedLogic} {...props}>
       {children}
     </FieldWithForm>
+  )
+  castedLogic.FieldGroupProvider = ({ children, ...props }) => (
+    <FieldGroupWithForm form={castedLogic} {...props}>
+      {children}
+    </FieldGroupWithForm>
   )
 
   castedLogic.handleSubmitOnEnter = handleSubmitOnEnterForForm(castedLogic)

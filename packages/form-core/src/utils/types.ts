@@ -135,6 +135,37 @@ export type ValueAtPath<T, TProp> = T extends Record<string | number, any>
     ? T
     : never
 
+export type PartialForPath<T, TProp> = T extends Record<string | number, any>
+  ? TProp extends `${infer TBranch}.${infer TDeepProp}`
+    ? TBranch extends keyof T
+      ? TDeepProp extends keyof T[TBranch]
+        ? { [TTBranch in TBranch]: PartialForPath<T[TBranch], TDeepProp> }
+        : never
+      : never
+    : TProp extends keyof T
+      ? { [TTProp in TProp]: T[TProp] }
+      : never
+  : never
+
+export type PartialForPaths<T, TProps> = TProps extends readonly [
+  infer TProp,
+  ...infer TRest,
+]
+  ? PartialForPath<T, TProp> &
+      (TRest['length'] extends 0 ? unknown : PartialForPaths<T, TRest>)
+  : TProps extends any[]
+    ? UnionToIntersection<PartialForPath<T, TProps[number]>>
+    : unknown
+
+// Taken from https://stackoverflow.com/a/50375286
+type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
+  x: infer I,
+) => void
+  ? I
+  : never
+
+export type ExcludeAll<T, U extends string[]> = T extends U[number] ? never : T
+
 /**
  * Returns a tuple of values for the given tuple of paths.
  *
