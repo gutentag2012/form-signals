@@ -17,12 +17,22 @@
   margin: 16px;
   padding: 4px;
   border-radius: 4px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 48px;
+  height: 48px;
+
+  border: 1px solid var(--fs-bg-color);
   background: var(--fs-text-color);
 }
 
 #fs-close-button {
-  position: sticky;
   z-index: 1001;
+
+  position: sticky;
   top: 0;
   bottom: 0;
 
@@ -34,7 +44,7 @@
 
 #fs-close-button > button {
   font-size: 16px;
-  margin: 16px;
+  margin-block: 16px;
   color: var(--fs-text-color);
   border-radius: 4px;
   background: var(--fs-bg-secondary-color);
