@@ -668,10 +668,6 @@ export class FieldGroupLogic<
     )
       return
 
-    const fieldValidations = Promise.all(
-      this._fields.value.map((field) => field.validateForEvent(event)),
-    )
-
     const value = checkValue ?? this.data.peek()
     const mixinValues =
       mixins ??
@@ -695,22 +691,19 @@ export class FieldGroupLogic<
       true,
     )
 
-    return Promise.all([
-      validateWithValidators(
-        value,
-        mixinValues as any,
-        event,
-        syncValidator,
-        this._options.peek()?.validatorOptions,
-        asyncValidator,
-        this._options.peek()?.validatorAsyncOptions,
-        this._previousAbortController,
-        this._errorMap,
-        this._isValidatingFieldGroup,
-        this._isTouched.peek(),
-      ),
-      fieldValidations,
-    ]).then(([res]) => res)
+    return validateWithValidators(
+      value,
+      mixinValues as any,
+      event,
+      syncValidator,
+      this._options.peek()?.validatorOptions,
+      asyncValidator,
+      this._options.peek()?.validatorAsyncOptions,
+      this._previousAbortController,
+      this._errorMap,
+      this._isValidatingFieldGroup,
+      this._isTouched.peek(),
+    )
   }
   //endregion
 }
