@@ -156,3 +156,15 @@ export function setValueAtPath<TValue, TPath extends Paths<TValue>>(
 
   return current
 }
+
+export function deepCopy<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(deepCopy) as T
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, value]) => [key, deepCopy(value)]),
+    ) as T
+  }
+  return value
+}

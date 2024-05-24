@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  deepCopy,
   getValueAtPath,
   pathToParts,
   removeValueAtPath,
@@ -82,7 +83,6 @@ describe('access.utils', () => {
       expect(obj).toEqual({ a: { b: { c: 1 } } })
     })
   })
-
   describe('removeValueAtPath', () => {
     it('should do nothing for an undefined object', () => {
       expect(removeValueAtPath(undefined, 'a' as never)).toBe(undefined)
@@ -115,6 +115,36 @@ describe('access.utils', () => {
       const obj = { a: { b: undefined } }
       expect(removeValueAtPath(obj, 'a.b.c' as never)).toEqual(obj)
       expect(obj).toEqual({ a: { b: undefined } })
+    })
+  })
+  describe("deepCopy", () => {
+    it("should return a new object", () => {
+      const obj = { a: 1 }
+      const copy = deepCopy(obj)
+      expect(copy).toEqual(obj)
+      expect(copy).not.toBe(obj)
+    })
+    it("should return a new object with nested objects", () => {
+      const obj = { a: { b: 1 } }
+      const copy = deepCopy(obj)
+      expect(copy).toEqual(obj)
+      expect(copy).not.toBe(obj)
+      expect(copy.a).not.toBe(obj.a)
+    })
+    it("should return a new object with nested arrays", () => {
+      const obj = { a: [1] }
+      const copy = deepCopy(obj)
+      expect(copy).toEqual(obj)
+      expect(copy).not.toBe(obj)
+      expect(copy.a).not.toBe(obj.a)
+    })
+    it("should return a new object with nested arrays and objects", () => {
+      const obj = { a: [{ b: 1 }] }
+      const copy = deepCopy(obj)
+      expect(copy).toEqual(obj)
+      expect(copy).not.toBe(obj)
+      expect(copy.a).not.toBe(obj.a)
+      expect(copy.a[0]).not.toBe(obj.a[0])
     })
   })
 })
