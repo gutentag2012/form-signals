@@ -628,21 +628,21 @@ describe('FormLogic', () => {
 
       vi.useRealTimers()
     })
-    it("should not overwrite existing values in the form with a newly created field", () => {
+    it('should not overwrite existing values in the form with a newly created field', () => {
       const form = new FormLogic({
         defaultValues: {
-          name: ""
-        }
+          name: '',
+        },
       })
       form.mount()
 
-      form.data.value.name.value = "test"
-      const field = form.getOrCreateField("name", {
-        defaultValue: "default"
+      form.data.value.name.value = 'test'
+      const field = form.getOrCreateField('name', {
+        defaultValue: 'default',
       })
       field.mount()
 
-      expect(field.data.value).toBe("test")
+      expect(field.data.value).toBe('test')
     })
   })
   describe('state (field groups)', () => {

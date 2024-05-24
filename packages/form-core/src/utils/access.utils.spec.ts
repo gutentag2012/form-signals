@@ -117,28 +117,28 @@ describe('access.utils', () => {
       expect(obj).toEqual({ a: { b: undefined } })
     })
   })
-  describe("deepCopy", () => {
-    it("should return a new object", () => {
+  describe('deepCopy', () => {
+    it('should return a new object', () => {
       const obj = { a: 1 }
       const copy = deepCopy(obj)
       expect(copy).toEqual(obj)
       expect(copy).not.toBe(obj)
     })
-    it("should return a new object with nested objects", () => {
+    it('should return a new object with nested objects', () => {
       const obj = { a: { b: 1 } }
       const copy = deepCopy(obj)
       expect(copy).toEqual(obj)
       expect(copy).not.toBe(obj)
       expect(copy.a).not.toBe(obj.a)
     })
-    it("should return a new object with nested arrays", () => {
+    it('should return a new object with nested arrays', () => {
       const obj = { a: [1] }
       const copy = deepCopy(obj)
       expect(copy).toEqual(obj)
       expect(copy).not.toBe(obj)
       expect(copy.a).not.toBe(obj.a)
     })
-    it("should return a new object with nested arrays and objects", () => {
+    it('should return a new object with nested arrays and objects', () => {
       const obj = { a: [{ b: 1 }] }
       const copy = deepCopy(obj)
       expect(copy).toEqual(obj)
