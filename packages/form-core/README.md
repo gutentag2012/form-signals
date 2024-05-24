@@ -11,6 +11,8 @@ The core library for managing forms with Preact Signals.
 - **Reactivity** - Reactivity without abstractions thanks to Preact Signals.
 - **Validation** - Built-in validation support, including adapters for validation schema libraries.
 - **Transformations** - Transform values for the specific needs of your input fields.
+- **Field Groups** - Group fields together to manage parts of a form independently.
+- **Async Data** - Easily manage async initialisation, validation and submission.
 - **Arrays + Dynamic Objects** - Utilize arrays and dynamic objects within your forms.
 
 ## Install

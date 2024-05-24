@@ -21,6 +21,8 @@ Powerful form management library build on top of [Preact Signals](https://github
 - **Reactivity** - Reactivity without abstractions thanks to Preact Signals.
 - **Validation** - Built-in validation support, including adapters for validation schema libraries.
 - **Transformations** - Transform values for the specific needs of your input fields.
+- **Field Groups** - Group fields together to manage parts of a form independently.
+- **Async Data** - Easily manage async initialisation, validation and submission.
 - **Arrays + Dynamic Objects** - Utilize arrays and dynamic objects within your forms.
 - **React** - React bindings for easy integration with React.
 - **Dev Tools** - Offers a dev tools component to debug your forms.
