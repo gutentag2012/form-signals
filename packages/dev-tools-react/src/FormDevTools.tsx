@@ -4,6 +4,7 @@ import React, { type CSSProperties } from 'react'
 import { FormDevToolsDrawer } from './components/FormDevToolsDrawer'
 import { TooltipProvider } from './components/Tooltip'
 import { AppIcon } from './icons/AppIcon'
+import './css-reset.css'
 import './index.css'
 
 export type FormDevToolsProps = {

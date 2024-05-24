@@ -1,0 +1,38 @@
+#fs-dev-tools--container {
+  line-height: 1.5;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+#fs-dev-tools--container * {
+  border-width: 0;
+  border-style: solid;
+}
+
+#fs-dev-tools--container pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1em;
+}
+
+#fs-dev-tools--container button {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  -webkit-appearance: button;
+  cursor: pointer;
+}
+
+#fs-dev-tools--container h1,
+#fs-dev-tools--container h2,
+#fs-dev-tools--container h3,
+#fs-dev-tools--container h4,
+#fs-dev-tools--container h5,
+#fs-dev-tools--container h6,
+#fs-dev-tools--container p,
+#fs-dev-tools--container pre {
+  margin: 0;
+}
+
+.collapsible button {
+  background-color: transparent;
+}
