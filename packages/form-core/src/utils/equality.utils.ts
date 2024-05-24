@@ -72,11 +72,16 @@ function getLeftUnequalPathsInternal(
   for (const key of aKeys) {
     const nextKey = currentKey ? `${currentKey}.${key}` : key
 
+    const valA = aNonNullable[key as keyof typeof aNonNullable]
+    // Undefined values are basically invisible
+    if (valA === undefined) {
+      continue
+    }
+
     if (!(key in bNonNullable)) {
       internalAcc = [...internalAcc, nextKey]
       continue
     }
-    const valA = aNonNullable[key as keyof typeof aNonNullable]
     const valB = bNonNullable[key as keyof typeof bNonNullable]
 
     internalAcc = getLeftUnequalPathsInternal(valA, valB, nextKey, internalAcc)

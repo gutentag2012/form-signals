@@ -470,7 +470,7 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
 
       // If the current part is already included in the current value, we can continue with that value
       if (
-        !!element.peek() &&
+        element.peek() !== undefined &&
         part in element.peek() &&
         nextPart !== undefined
       ) {
@@ -491,21 +491,27 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
         return current
       }
 
-      const newValue =
-        nextPart === undefined
-          ? deepSignalifyValue(value)
-          : typeof nextPart === 'number'
-            ? signal([])
-            : signal({})
-
       // If the current part is a number, then we need to set the value in an array
       if (typeof part === 'number') {
         // We know the value is not already included, so we can insert it at the part
         const arrayCopy = [...element.peek()]
-        // We need to signalify the value before inserting it
-        arrayCopy[part] = makeArrayEntry(value)
+        // The new value should not be a signal, but has to be something different depending on the next part
+        const newValue =
+          nextPart === undefined
+            ? value
+            : typeof nextPart === 'number'
+              ? []
+              : {} // We need to signalify the value before inserting it
+        arrayCopy[part] = makeArrayEntry(newValue)
         element.value = arrayCopy
       } else {
+        // The new value has to be a signal, but has to be something different depending on the next part
+        const newValue =
+          nextPart === undefined
+            ? deepSignalifyValue(value)
+            : typeof nextPart === 'number'
+              ? signal([])
+              : signal({})
         // We know the value is not already included, so we can insert it at the part
         element.value = {
           ...element.peek(),

@@ -34,6 +34,7 @@ import {
   unSignalifyValue,
   unSignalifyValueSubscribed,
 } from './utils'
+import { deepCopy } from './utils/access.utils'
 import { Truthy } from './utils/internal.utils'
 import type { ConnectPath, ExcludeAll, KeepOptionalKeys } from './utils/types'
 import {
@@ -221,6 +222,7 @@ export class FormLogic<
   private readonly _combinedDefaultValues = computed(() => {
     const defaultValues = this._options.value?.defaultValues ?? ({} as TData)
     const fields = this._fieldsArray.value
+    const combinedDefaultValues = deepCopy(defaultValues)
 
     // Get any possible default value overrides from the fields
     for (const field of fields) {
@@ -229,11 +231,19 @@ export class FormLogic<
       }
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
-      if (currentDefaultValue !== undefined) continue
-      setValueAtPath(defaultValues, field.name, fieldOptions?.defaultValue)
+      if (
+        currentDefaultValue !== undefined ||
+        fieldOptions?.defaultValue === undefined
+      )
+        continue
+      setValueAtPath(
+        combinedDefaultValues,
+        field.name,
+        fieldOptions?.defaultValue,
+      )
     }
 
-    return defaultValues
+    return combinedDefaultValues
   })
   private readonly _isTouched = computed(() =>
     this._fieldsArray.value.some((field) => field.isTouched.value),
@@ -495,7 +505,7 @@ export class FormLogic<
       setValueAtPath(
         newDefaultValues,
         dirtyField as never,
-        getSignalValueAtPath(this.data, dirtyField).peek() as any,
+        unSignalifyValue(getSignalValueAtPath(this._data, dirtyField)),
       )
     }
     setSignalValuesFromObject(this._data, newDefaultValues)
@@ -784,7 +794,8 @@ export class FormLogic<
     newMap.set(path, field as any)
     this._fields.value = newMap
 
-    if (defaultValues === undefined) return
+    const currentValue = getSignalValueAtPath(this._data, path)
+    if (defaultValues === undefined || currentValue !== undefined) return
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
 

@@ -452,10 +452,10 @@ describe('signals.utils', () => {
       expect(obj.value.a.value).toBe(1)
     })
     it('should add a value to an array path', () => {
-      const obj = deepSignalifyValue({ a: [] } as { a: number[] })
-      setSignalValueAtPath(obj, 'a.1', 1)
+      const obj = deepSignalifyValue({ a: [] } as { a: { a: number }[][] })
+      setSignalValueAtPath(obj, 'a.1.1.a', 1)
       expect(obj.value.a.value[0]).toEqual(undefined)
-      expect(obj.value.a.value[1].data.value).toEqual(1)
+      expect(obj.value.a.value[1].data.value[1].data.value.a.value).toEqual(1)
     })
     it('should add a deeply nested object path', () => {
       const obj = deepSignalifyValue({} as { a: { b: { c: number } } })
