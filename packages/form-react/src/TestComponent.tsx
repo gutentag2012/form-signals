@@ -57,11 +57,7 @@ function List() {
     <>
       <ul>
         {field.data.value.map((value, index) => (
-          <field.SubFieldProvider
-            key={value.key}
-            name={`${index}`}
-            preserveValueOnUnmount
-          >
+          <field.SubFieldProvider key={value.key} name={`${index}`}>
             <ListItem />
           </field.SubFieldProvider>
         ))}

@@ -224,11 +224,9 @@ export class FormLogic<
 
     // Get any possible default value overrides from the fields
     for (const field of fields) {
-      if (
-        !field.isMounted.value &&
-        !field.options.value?.preserveValueOnUnmount
-      )
+      if (!field.isMounted.value) {
         continue
+      }
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
       if (currentDefaultValue !== undefined) continue
@@ -350,7 +348,7 @@ export class FormLogic<
   }
 
   /**
-   * All fields that have been registered to the form, both mounted and unmounted (only if they have {@link FieldLogicOptions#preserveValueOnUnmount}).
+   * All fields that have been registered to the form, both mounted and unmounted (only if they do not have {@link FieldLogicOptions#removeValueOnUnmount}).
    */
   public get fields(): ReadonlySignal<
     Array<FieldLogic<TData, Paths<TData>, any>>
@@ -872,7 +870,7 @@ export class FormLogic<
    *
    * @param path - The path to the field.
    * @param defaultValue - The default value for the field.
-   * @param preserveValue - If true, the value will be preserved in the form data.
+   * @param removeValue - If true, the value will be removed in the form data.
    * @param resetToDefault - If true, the value will be reset to the default value.
    *
    * @note
@@ -883,23 +881,23 @@ export class FormLogic<
   public unregisterField<TPath extends Paths<TData>>(
     path: TPath,
     defaultValue?: ValueAtPath<TData, TPath>,
-    preserveValue?: boolean,
+    removeValue?: boolean,
     resetToDefault?: boolean,
   ): void {
-    if (preserveValue) return
+    if (removeValue) {
+      const newMap = new Map(this._fields.peek())
+      newMap.delete(path)
+      for (const key of newMap.keys()) {
+        if (!(key as string).startsWith(`${path}.`)) continue
+        newMap.delete(key)
+      }
+      this._fields.value = newMap
 
-    const newMap = new Map(this._fields.peek())
-    newMap.delete(path)
-    for (const key of newMap.keys()) {
-      if (!(key as string).startsWith(`${path}.`)) continue
-      newMap.delete(key)
+      removeSignalValueAtPath(this._data, path)
     }
-    this._fields.value = newMap
 
     if (resetToDefault) {
       setSignalValueAtPath(this._data, path, defaultValue)
-    } else {
-      removeSignalValueAtPath(this._data, path)
     }
   }
 

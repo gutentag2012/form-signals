@@ -116,7 +116,9 @@ describe('FieldGroupLogic', () => {
     })
     it('should loose a field once it is unmounted without preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
-      const field = new FieldLogic(form, 'name')
+      const field = new FieldLogic(form, 'name', {
+        removeValueOnUnmount: true,
+      })
       field.mount()
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)
@@ -126,9 +128,7 @@ describe('FieldGroupLogic', () => {
     })
     it('should keep a field once it is unmounted if preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
-      const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
-      })
+      const field = new FieldLogic(form, 'name')
       field.mount()
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)

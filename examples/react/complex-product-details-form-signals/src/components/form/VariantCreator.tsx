@@ -77,7 +77,6 @@ const VariantTab = ({ index }: { index: number }) => {
     <>
       <field.SubFieldProvider
         name={`${index}.name`}
-        preserveValueOnUnmount
         validator={z.string().min(1, 'Name is required')}
         validatorOptions={{
           validateOnMount: true,
@@ -110,7 +109,6 @@ const VariantTab = ({ index }: { index: number }) => {
         <div className="flex flex-col gap-1">
           <field.SubFieldProvider
             name={`${index}.options`}
-            preserveValueOnUnmount
             validator={z
               .array(z.string())
               .min(1, 'At least one option is required')}
@@ -148,11 +146,7 @@ const VariantOptionsList = ({
   const parentField = useFieldContext<Product, `variants.${number}.options`>()
 
   return parentField.data.value.map((option, optionIndex) => (
-    <parentField.SubFieldProvider
-      key={option.key}
-      name={`${optionIndex}`}
-      preserveValueOnUnmount
-    >
+    <parentField.SubFieldProvider key={option.key} name={`${optionIndex}`}>
       {(field) => (
         <InputSignal
           type="text"

@@ -151,7 +151,7 @@ export default function App() {
 }
 ```
 
-```tsx [SignalInput.tsx]
+```tsx [FormInput.tsx]
 import type {Signal} from '@preact/signals-react'
 import type {InputHTMLAttributes} from 'react'
 

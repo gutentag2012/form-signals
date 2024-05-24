@@ -214,10 +214,8 @@ export default function MyForm() {
 
 Once a field is created, it will be automatically mounted with the provided name and options.
 If the component is unmounted, so will the field.
-By default, this will also remove all the state of this field and remove the value from the form.
-
-If you want to hide the field temporarily and keep its value and state,
-you can use the `preserveValueOnUnmount` option when creating the field.
+By default, this will keep all the state of this field.
+If you want to remove the values of the field, you can use the `removeValueOnUnmount` option, which will reset the state and remove values of a field once it unmounts.
 
 ```tsx {10}
 export default function MyForm() {
@@ -229,7 +227,7 @@ export default function MyForm() {
       {showAge && (
         <form.FieldProvider
           name="age"
-          preserveValueOnUnmount
+          removeValueOnUnmount
         >
           {(field) => (
             <InputSignal value={field.data}/>
@@ -252,10 +250,7 @@ export default function MyForm() {
 
   return (
     <form.FormProvider>
-      <form.FieldProvider
-        name={fieldName}
-        preserveValueOnUnmount
-      >
+      <form.FieldProvider name={fieldName}>
         {(field) => (
           <InputSignal value={field.data}/>
         )}
@@ -267,8 +262,7 @@ export default function MyForm() {
 ```
 
 ::: warning
-If you do not use the `preserveValueOnUnmount` option,
-the value of the field will be lost when the field name is changed.
+Using the `removeValueOnUnmount` option, might cause some unexpected issues, so be careful using this.
 :::
 
 ## Tips
@@ -283,7 +277,6 @@ That way, you can avoid unnecessary re-renders of parent components.
 
 ```tsx
 import {Signal} from "@preact/signals-react";
-import ex = CSS.ex;
 
 interface InputSignalProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   value: Signal<string>;
@@ -305,7 +298,7 @@ import {useFieldContext} from "@formsignals/form-react";
 
 export function ErrorText() {
   const field = useFieldContext();
-  if (!field.isValid.value) return null;
+  if (field.isValid.value) return null;
   return <span>{field.errors.value.join(", ")}</span>
 }
 ```

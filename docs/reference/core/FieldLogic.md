@@ -94,7 +94,7 @@ type FieldLogicOptions<
     errors?: Partial<ValidationErrorMap>
   }
 
-  preserveValueOnUnmount?: boolean
+  removeValueOnUnmount?: boolean
   resetValueToDefaultOnUnmount?: boolean
 
   transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName>
@@ -102,22 +102,22 @@ type FieldLogicOptions<
 }
 ```
 
-| Option                         | Description                                                                                                                                                                                  |
-|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `disabled`                     | If set to `true`, the field will be disabled.                                                                                                                                                |
-| `validatorAdapter`             | The validation adapter to use for this field. If not set, the field falls back to the form's validation adapter. <br/>Reference the [Validation API](/reference/core/Validation#adapter).    |
-| `validator`                    | The synchronous validation function. If the field has a validation adapter, this can be a schema. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                   |
-| `validatorOptions`             | The options for the synchronous validation function. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                |
-| `validatorAsync`               | The asynchronous validation function. If the field has a validation adapter, this can be a schema. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                  |
-| `validatorAsyncOptions`        | The options for the asynchronous validation function. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                               |
-| `validateOnNestedChange`       | If set to `true`, the field will validate when a nested value changes. <br/>Reference the [Basic Usage](/guide/validation#deep-validation).                                                  |
-| `validateMixin`                | The paths of the values used for the validation mixin. <br/>Reference the [Basic Usage](/guide/validation#validation-mixins).                                                                |
-| `defaultValue`                 | The default value of the field.                                                                                                                                                              |
-| `defaultState`                 | The default state of the field. There you can set default errors and the touched state.                                                                                                      |
-| `preserveValueOnUnmount`       | If set to `true`, the value of the field will be preserved when the field is unmounted.                                                                                                      |
-| `resetValueToDefaultOnUnmount` | If set to `true`, the value of the field will be reset to the default value when the field is unmounted.                                                                                     |
-| `transformFromBinding`         | The function to transform the value from the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                                |
-| `transformToBinding`           | The function to transform the value to the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                                  |
+| Option                         | Description                                                                                                                                                                               |
+|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `disabled`                     | If set to `true`, the field will be disabled.                                                                                                                                             |
+| `validatorAdapter`             | The validation adapter to use for this field. If not set, the field falls back to the form's validation adapter. <br/>Reference the [Validation API](/reference/core/Validation#adapter). |
+| `validator`                    | The synchronous validation function. If the field has a validation adapter, this can be a schema. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                |
+| `validatorOptions`             | The options for the synchronous validation function. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                             |
+| `validatorAsync`               | The asynchronous validation function. If the field has a validation adapter, this can be a schema. <br/>Reference the [Validation API](/reference/core/Validation#adapter).               |
+| `validatorAsyncOptions`        | The options for the asynchronous validation function. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                            |
+| `validateOnNestedChange`       | If set to `true`, the field will validate when a nested value changes. <br/>Reference the [Basic Usage](/guide/validation#deep-validation).                                               |
+| `validateMixin`                | The paths of the values used for the validation mixin. <br/>Reference the [Basic Usage](/guide/validation#validation-mixins).                                                             |
+| `defaultValue`                 | The default value of the field.                                                                                                                                                           |
+| `defaultState`                 | The default state of the field. There you can set default errors and the touched state.                                                                                                   |
+| `removeValueOnUnmount`         | If set to `true`, the value of the field will be removed when the field is unmounted.                                                                                                     |
+| `resetValueToDefaultOnUnmount` | If set to `true`, the value of the field will be reset to the default value when the field is unmounted.                                                                                  |
+| `transformFromBinding`         | The function to transform the value from the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                             |
+| `transformToBinding`           | The function to transform the value to the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                               |
 
 ## Field State
 

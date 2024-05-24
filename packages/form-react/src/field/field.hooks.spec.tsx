@@ -29,6 +29,7 @@ describe('Field hooks', () => {
 
       function MyComponent() {
         const field = useField(form, 'name', {
+          removeValueOnUnmount: true,
           defaultValue: 'John',
         })
         return <div>{field.data.value}</div>
@@ -74,6 +75,7 @@ describe('Field hooks', () => {
       function MyComponent({ name }: { name: 'name' | 'otherName' }) {
         useField(form, name, {
           defaultValue: 'set',
+          removeValueOnUnmount: true,
         })
         return null
       }
