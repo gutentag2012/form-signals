@@ -628,6 +628,22 @@ describe('FormLogic', () => {
 
       vi.useRealTimers()
     })
+    it("should not overwrite existing values in the form with a newly created field", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: ""
+        }
+      })
+      form.mount()
+
+      form.data.value.name.value = "test"
+      const field = form.getOrCreateField("name", {
+        defaultValue: "default"
+      })
+      field.mount()
+
+      expect(field.data.value).toBe("test")
+    })
   })
   describe('state (field groups)', () => {
     it('should be valid if all field groups are valid', () => {

@@ -784,7 +784,8 @@ export class FormLogic<
     newMap.set(path, field as any)
     this._fields.value = newMap
 
-    if (defaultValues === undefined) return
+    const currentValue = getSignalValueAtPath(this._data, path)
+    if (defaultValues === undefined || currentValue !== undefined) return
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
 
