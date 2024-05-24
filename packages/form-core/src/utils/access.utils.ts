@@ -145,13 +145,7 @@ export function setValueAtPath<TValue, TPath extends Paths<TValue>>(
       nextPart === undefined ? value : typeof nextPart === 'number' ? [] : {}
 
     // If the current part is a number, then we need to set the value in an array
-    if (typeof part === 'number') {
-      current[part] = newValue
-    } else {
-      current[part] = newValue
-    }
-
-    current = current[part]
+    current = current[part] = newValue
   }
 
   return current
