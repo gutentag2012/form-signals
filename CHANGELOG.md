@@ -1,3 +1,22 @@
+## 0.2.0 (2024-05-24)
+
+
+### 🚀 Features
+
+- **dev-tools-react:** Show disabled state in dev tools ([d660880](https://github.com/gutentag2012/form-signals/commit/d660880))
+- **dev-tools-react:** Add field group state to dev tools ([58184ac](https://github.com/gutentag2012/form-signals/commit/58184ac))
+- **form-core:** Add ability to disable fields and form ([624e7cb](https://github.com/gutentag2012/form-signals/commit/624e7cb))
+- **form-core:** add field groups ([e193d4d](https://github.com/gutentag2012/form-signals/commit/e193d4d))
+- **form-react:** Add field groups to react bindings ([055215b](https://github.com/gutentag2012/form-signals/commit/055215b))
+
+### 🩹 Fixes
+
+- **form-core:** Reset values not taking field default values into account ([165d7c3](https://github.com/gutentag2012/form-signals/commit/165d7c3))
+- **form-core:** mounted state being ignored for field array + object helpers ([2e59628](https://github.com/gutentag2012/form-signals/commit/2e59628))
+- **form-react:** Make sure to only update form and field options within a layout effect ([e7ee994](https://github.com/gutentag2012/form-signals/commit/e7ee994))
+- **form-react:** Submit binding ([db77152](https://github.com/gutentag2012/form-signals/commit/db77152))
+- **signals:** Fix signal retrieval for empty signals ([31298b0](https://github.com/gutentag2012/form-signals/commit/31298b0))
+
 ## 0.1.3 (2024-04-18)
 
 

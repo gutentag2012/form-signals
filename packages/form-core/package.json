@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/form-core",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Core package for Signal Form including the form state and validation logic as well as the api",
   "author": "joshua.gawenda",
   "license": "MIT",

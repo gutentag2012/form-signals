@@ -514,7 +514,7 @@ importers:
     dependencies:
       '@formsignals/form-react':
         specifier: ^0.1.0
-        version: link:../form-react
+        version: 0.1.3(@preact/signals-core@1.6.0)(@preact/signals-react@2.0.1)(react-dom@18.3.1)(react@18.3.1)
       '@preact/signals-react':
         specifier: ^2.0.0
         version: 2.0.1(react@18.3.1)
@@ -556,7 +556,7 @@ importers:
   packages/form-react:
     dependencies:
       '@formsignals/form-core':
-        specifier: 0.1.3
+        specifier: 0.2.0
         version: link:../form-core
       '@preact/signals-react':
         specifier: ^2.0.0
@@ -590,7 +590,7 @@ importers:
   packages/validation-adapter-zod:
     dependencies:
       '@formsignals/form-core':
-        specifier: 0.1.3
+        specifier: 0.2.0
         version: link:../form-core
       zod:
         specifier: ^3.22.4
@@ -2536,6 +2536,29 @@ packages:
 
   /@floating-ui/utils@0.2.2:
     resolution: {integrity: sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==}
+    dev: false
+
+  /@formsignals/form-core@0.1.3(@preact/signals-core@1.6.0):
+    resolution: {integrity: sha512-i6UXAJwTD25OlM2WTeq9uAb5opim7KBX5ymgCl130F2dnNJKQalA4Fw4SZSU6Ex1uxpQT0xo6CMIAafDO26pVg==}
+    peerDependencies:
+      '@preact/signals-core': ^1.5.1
+    dependencies:
+      '@preact/signals-core': 1.6.0
+    dev: false
+
+  /@formsignals/form-react@0.1.3(@preact/signals-core@1.6.0)(@preact/signals-react@2.0.1)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-xF2j7nZROGXSMvzLrJPmO7qHGAU7ZCeIP1XyDIHvXW8U5y69a+M5PqdSOo8S56xDM+2nGktL6tSDw4Z+NTHjeQ==}
+    peerDependencies:
+      '@preact/signals-react': ^2.0.0
+      react: ^18.2.0
+      react-dom: ^18.2.0
+    dependencies:
+      '@formsignals/form-core': 0.1.3(@preact/signals-core@1.6.0)
+      '@preact/signals-react': 2.0.1(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+    transitivePeerDependencies:
+      - '@preact/signals-core'
     dev: false
 
   /@hookform/resolvers@3.4.0(react-hook-form@7.51.4):
