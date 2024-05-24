@@ -28,7 +28,7 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <FieldGroupProvider group={group as never}>
+          <FieldGroupProvider fieldGroup={group as never}>
             <ContextConsumer />
           </FieldGroupProvider>
         )
@@ -47,7 +47,7 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <FieldGroupProvider group={groupContext}>
+          <FieldGroupProvider fieldGroup={groupContext}>
             {(field) => field.data.value.name as any}
           </FieldGroupProvider>
         )
@@ -70,7 +70,9 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <FieldGroupProvider group={fieldGroupLogicToFieldGroupContext(group)}>
+          <FieldGroupProvider
+            fieldGroup={fieldGroupLogicToFieldGroupContext(group)}
+          >
             {(field) => (
               <>
                 {field.data.value.name}
@@ -98,7 +100,9 @@ describe('FieldGroupProvider', () => {
 
       function TestComponent() {
         return (
-          <FieldGroupProvider group={fieldGroupLogicToFieldGroupContext(group)}>
+          <FieldGroupProvider
+            fieldGroup={fieldGroupLogicToFieldGroupContext(group)}
+          >
             {(group) => (
               <group.FieldProvider name="name">
                 <ContextConsumer />

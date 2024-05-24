@@ -75,14 +75,8 @@ declare function fieldLogicToFieldContext<
 An example of the usage:
 
 ```tsx
-import { FieldLogic } from '@formsignals/form-react';
-
-const logic = new FieldLogic({
-  path: 'name',
+const logic = form.getOrCreateField("name", {
   defaultValue: '',
-  onSubmit: (value) => {
-    console.log(value);
-  },
 });
 
 const context = fieldLogicToFieldContext(logic);
@@ -145,4 +139,5 @@ export default function App() {
       </form.FieldProvider>
     </form.FormProvider>
   )
+}
 ```

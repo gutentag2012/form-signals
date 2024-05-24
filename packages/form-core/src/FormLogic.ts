@@ -604,6 +604,11 @@ export class FormLogic<
     await this.validateForEvent('onBlur')
   }
 
+  /**
+   * Submits the form and runs validation for its fields and groups.
+   * When there are no validation errors the {@link FormLogicOptions.onSubmit} callback will be called.
+   * @note Groups within the form will be validated for the `onSubmit` event, but will NOT be submitted.
+   */
   public async handleSubmit(): Promise<void> {
     if (
       !this._isMounted.peek() ||
@@ -631,6 +636,9 @@ export class FormLogic<
     await Promise.all([
       this.validateForEvent('onSubmit'),
       ...this._fieldsArray.peek().map((field) => field.handleSubmit()),
+      ...this._fieldGroupsArray
+        .peek()
+        .map((group) => group.validateForEvent('onSubmit')),
     ])
 
     if (!this._isValid.peek()) {

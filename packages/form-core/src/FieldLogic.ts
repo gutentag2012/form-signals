@@ -51,6 +51,7 @@ import {
  * @template TName - The path to the field.
  * @template TBoundValue - The type of the value that the field is bound to.
  * @template TAdapter - The type of the validator adapter.
+ * @template TMixin - The paths of the values that should be mixed into the validation.
  */
 export type FieldLogicOptions<
   TData,
@@ -66,6 +67,7 @@ export type FieldLogicOptions<
   disabled?: boolean
   /**
    * Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+   * @note Fields will inherit the adapter from the form if they have no own adapter.
    */
   validatorAdapter?: TAdapter
   /**

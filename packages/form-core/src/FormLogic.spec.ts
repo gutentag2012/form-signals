@@ -1493,6 +1493,25 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(onSubmit).not.toBeCalled()
     })
+    it('should validate all groups for the submit event', async () => {
+      const form = new FormLogic({
+        defaultValues: {
+          start: 1,
+          end: 0,
+        },
+      })
+      await form.mount()
+      const group = form.getOrCreateFieldGroup(['start', 'end'], {
+        validator: (value) =>
+          value.start < value.end ? undefined : 'Start must be before end',
+      })
+      await group.mount()
+
+      expect(group.errors.value).toEqual([])
+      await form.handleSubmit()
+      expect(group.errors.value).toEqual(['Start must be before end'])
+      expect(form.submitCountUnsuccessful.value).toBe(1)
+    })
   })
   describe('helperMethods', () => {
     describe('reset', () => {

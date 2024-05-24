@@ -6,7 +6,7 @@ You could create a new FieldLogic by calling the `FieldLogic` constructor,
 however, it is recommended to use the `FormLogic` to create a new FieldLogic.
 
 ```ts
-import {FormLogic} from 'formlogic';
+import {FormLogic, FieldLogic} from '@formsignals/form-core';
 
 type FormValues = {
   name: string;

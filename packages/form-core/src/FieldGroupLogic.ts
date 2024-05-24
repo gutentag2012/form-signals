@@ -39,14 +39,33 @@ import {
   validateWithValidators,
 } from './utils/validation'
 
+/**
+ * The options for the field group logic.
+ *
+ * @template TData - The data type of the form.
+ * @template TMembers - The paths of the fields in the group.
+ * @template TAdapter - The adapter for the validators.
+ * @template TMixin - The paths of the values that should be mixed into the validation.
+ */
 export type FieldGroupLogicOptions<
   TData,
   TMembers extends Paths<TData>[],
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
 > = {
+  /**
+   * Whether the field group is disabled.
+   */
   disabled?: boolean
+  /**
+   Adapter for the validator. This will be used to create the validator from the validator and validatorAsync options.
+   @note Fields in this field group will inherit the adapter from the form if they have no own adapter.
+   */
   validatorAdapter?: TAdapter
+  /**
+   * The synchronous validator for the field group.
+   * It is either a function that returns a validation error or a schema for the provided adapter that can be used to validate the data.
+   */
   validator?: TAdapter extends undefined
     ? ValidatorSync<
         PartialForPaths<TData, TMembers>,
@@ -63,7 +82,14 @@ export type FieldGroupLogicOptions<
               ValueAtPathForTuple<TData, TMixin>
             >
           >
+  /**
+   * The options for the synchronous validator.
+   */
   validatorOptions?: ValidatorOptions
+  /**
+   * The asynchronous validator for the field group.
+   * It is either a function that returns a validation error or a schema for the provided adapter that can be used to validate the data.
+   */
   validatorAsync?: TAdapter extends undefined
     ? ValidatorAsync<
         PartialForPaths<TData, TMembers>,
@@ -80,9 +106,21 @@ export type FieldGroupLogicOptions<
               ValueAtPathForTuple<TData, TMixin>
             >
           >
+  /**
+   * The options for the asynchronous validator.
+   */
   validatorAsyncOptions?: ValidatorAsyncOptions
+  /**
+   * The paths of the values that should be mixed into the validation.
+   */
   validateMixin?: TMixin
 
+  /**
+   * The function that is called when the group is submitted.
+   *
+   * @param data - The data of the group.
+   * @param addErrors - A function to add errors to the group.
+   */
   onSubmit?: (
     data: PartialForPaths<TData, TMembers>,
     addErrors: (
@@ -91,6 +129,16 @@ export type FieldGroupLogicOptions<
   ) => void | Promise<void>
 }
 
+/**
+ * The logic for a group of fields in a form.
+ * This acts as a a field in a way that it does not own any data, but has other functionalities of a form, such as validation and submission.
+ *
+ * @template TData - The data type of the form.
+ * @template TMembers - The paths of the fields in the group.
+ * @template TAdapter - The adapter for the validators.
+ * @template TFormAdapter - The adapter for the form.
+ * @template TMixin - The paths of the values that should be mixed into the validation.
+ */
 export class FieldGroupLogic<
   TData,
   TMembers extends Paths<TData>[],
@@ -117,7 +165,6 @@ export class FieldGroupLogic<
     const data = {}
     for (const field of this._members) {
       // This has to subscribe to all values since it might be possible, that the groups field is not initialized yet
-      // TODO Optimize to only update when needed
       const signalValue = unSignalifyValueSubscribed(this._form.data)
       setValueAtPath(
         data,
@@ -305,7 +352,7 @@ export class FieldGroupLogic<
   /**
    * Returns an array of paths that are unequal to the default values.
    * That also includes paths that are not registered as fields.
-   * @note If a field is removed from the values but is present in the default values, it will NOT be included in this list.
+   * @note If a path is removed from the values but is present in the default values, it will NOT be included in this list.
    */
   public get dirtyFields(): ReadonlySignal<Partial<TMembers>[]> {
     return this._dirtyFields
@@ -369,12 +416,12 @@ export class FieldGroupLogic<
   }
 
   /**
-   * Mounts the field.
+   * Mounts the field group.
    *
-   * @returns A function to unmount the field.
+   * @returns A function to unmount the field group.
    *
    * @note
-   * If the field is not mounted, the value will not be updated by the handlers and the validation will not run.
+   * If the field group is not mounted the validation will not run.
    */
   public async mount(): Promise<() => void> {
     // Once mounted, we want to listen to all changes to the value
@@ -415,10 +462,7 @@ export class FieldGroupLogic<
   }
 
   /**
-   * Unmounts the field.
-   *
-   * @note
-   * If not otherwise configured in the options, the value is removed from the form when unmounted.
+   * Unmounts the field group.
    */
   public unmount(): void {
     this._isMounted.value = false
@@ -427,29 +471,51 @@ export class FieldGroupLogic<
 
     this._form.unregisterFieldGroup(this._members)
   }
+
+  /**
+   * Adds errors to the field group.
+   *
+   * @param errors - The errors to add.
+   *
+   * @note
+   * Existing errors will be kept unless they are overwritten by the new errors.
+   */
   public setErrors(errors: Partial<ValidationErrorMap>): void {
     this._errorMap.value = {
       ...this._errorMap.value,
       ...errors,
     }
   }
+
+  public disable(): void {
+    this._disabled.value = true
+  }
+
+  public enable(): void {
+    this._disabled.value = false
+  }
   //endregion
 
   //region Handlers
   /**
-   * Validates the field for a given event.
+   * Validates the field group for a given event.
    *
    * @param event - The event to validate for.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
-   * If the field is not mounted, the form is not mounted, or the data is not set, the validation will not run.
+   * If the field group is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
   public validateForEvent(event: ValidatorEvents): void | Promise<void> {
     return this.validateForEventInternal(event)
   }
 
+  /**
+   * Submits the field group and runs the validation.
+   * Fields within the group will also run the onSubmit validation.
+   * If the validation passes, the onSubmit function will be called.
+   */
   public async handleSubmit(): Promise<void> {
     if (
       !this._isMounted.peek() ||
@@ -529,25 +595,17 @@ export class FieldGroupLogic<
       }
     }
   }
-
-  public disable(): void {
-    this._disabled.value = true
-  }
-
-  public enable(): void {
-    this._disabled.value = false
-  }
   //endregion
 
   //region Resets
   /**
-   * Reset the state of the form.
+   * Reset the state of the field group.
    *
    * @note
    * Most of the state is derived,
    * so the only state that is reset is the submit-count, the validation state, the submitting state and the error map.
    */
-  public resetStateForm(): void {
+  public resetStateFieldGroup(): void {
     this._submitCountSuccessful.value = 0
     this._submitCountUnsuccessful.value = 0
     this._isValidatingFieldGroup.value = false
@@ -556,7 +614,7 @@ export class FieldGroupLogic<
   }
 
   /**
-   * This will reset the state of all fields in the form.
+   * This will reset the state of all fields in the field group.
    */
   public resetStateFields(): void {
     for (const field of this._fields.peek()) {
@@ -565,15 +623,15 @@ export class FieldGroupLogic<
   }
 
   /**
-   * This will reset the state of the form and all fields.
+   * This will reset the state of the field group and all its fields.
    */
   public resetState(): void {
-    this.resetStateForm()
+    this.resetStateFieldGroup()
     this.resetStateFields()
   }
 
   /**
-   * This will reset the values of all fields in the form.
+   * This will reset the values of all fields in the field group.
    *
    * @note
    * No validation will be run when resetting the value.
@@ -588,7 +646,7 @@ export class FieldGroupLogic<
   }
 
   /**
-   * This will both the state and values of the form and all fields.
+   * This will both the state and values of the field group and all fields.
    */
   public reset(): void {
     this.resetValues()

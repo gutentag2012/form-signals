@@ -13,6 +13,9 @@ import {
 } from './field-group.context'
 import { useFieldGroup } from './field-group.hooks'
 
+/**
+ * The type children of the field group component can be.
+ */
 export type FieldGroupChildren<
   TData,
   TMembers extends Paths<TData>[],
@@ -24,7 +27,7 @@ export type FieldGroupChildren<
   >[] = never[],
 > =
   | ((
-      group: FieldGroupContextType<
+      fieldGroup: FieldGroupContextType<
         TData,
         TMembers,
         TFieldGroupAdapter,
@@ -66,6 +69,9 @@ function useUnwrappedChildren<
   return children
 }
 
+/**Ü
+ * The props for the field group provider.
+ */
 export interface FieldGroupProviderProps<
   TData,
   TMembers extends Paths<TData>[],
@@ -76,13 +82,19 @@ export interface FieldGroupProviderProps<
     TMembers
   >[] = never[],
 > {
-  group: FieldGroupContextType<
+  /**
+   * The field group context to provide.
+   */
+  fieldGroup: FieldGroupContextType<
     TData,
     TMembers,
     TFieldGroupAdapter,
     TFormAdapter,
     TFieldGroupMixin
   >
+  /**
+   * The children to render.
+   */
   children: FieldGroupChildren<
     TData,
     TMembers,
@@ -92,6 +104,11 @@ export interface FieldGroupProviderProps<
   >
 }
 
+/**
+ * The field group provider component.
+ *
+ * @param props - The props to pass to the field group context.
+ */
 export function FieldGroupProvider<
   TData,
   TMembers extends Paths<TData>[],
@@ -111,12 +128,15 @@ export function FieldGroupProvider<
   >,
 ): React.ReactElement {
   return (
-    <FieldGroupContext.Provider value={props.group}>
-      {useUnwrappedChildren(props.children, props.group)}
+    <FieldGroupContext.Provider value={props.fieldGroup}>
+      {useUnwrappedChildren(props.children, props.fieldGroup)}
     </FieldGroupContext.Provider>
   )
 }
 
+/**
+ * The props for the field group component.
+ */
 export interface FieldGroupWithFormProps<
   TData,
   TMembers extends Paths<TData>[],
@@ -133,9 +153,20 @@ export interface FieldGroupWithFormProps<
     TFormAdapter,
     TFieldGroupMixin
   > {
+  /**
+   * The form context to use.
+   */
   form: FormContextType<TData, TFormAdapter>
 }
 
+/**
+ * The field group component with an explicit form not taken from context.
+ *
+ * @param form - The form context to use.
+ * @param members - The members of the field group.
+ * @param children - The children to render.
+ * @param props - The props to pass to the field group logic.
+ */
 export function FieldGroupWithForm<
   TData,
   TMembers extends Paths<TData>[],
@@ -158,7 +189,7 @@ export function FieldGroupWithForm<
   TFieldGroupMixin
 >): React.ReactElement {
   const group = useFieldGroup(form, members, props)
-  return <FieldGroupProvider group={group}>{children}</FieldGroupProvider>
+  return <FieldGroupProvider fieldGroup={group}>{children}</FieldGroupProvider>
 }
 
 /**
@@ -193,9 +224,9 @@ export interface FieldGroupProps<
 /**
  * The field group component.
  *
- * @param name - The name of the field.
+ * @param members - The members of the field group.
  * @param children - The children to render.
- * @param props - The props to pass to the field logic.
+ * @param props - The props to pass to the field group logic.
  */
 export function FieldGroup<
   TData,

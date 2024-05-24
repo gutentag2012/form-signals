@@ -14,6 +14,15 @@ import {
   fieldGroupLogicToFieldGroupContext,
 } from './field-group.context'
 
+/**
+ * Creates a field group logic object and returns the field group context object.
+ *
+ * @param form - The form to create the field group for
+ * @param members - The members of the field group
+ * @param options - The options to create the field group with
+ *
+ * @returns The field group context
+ */
 export function useFieldGroup<
   TData,
   TMembers extends Paths<TData>[],
@@ -64,6 +73,13 @@ export function useFieldGroup<
   return group
 }
 
+/**
+ * Attaches the React components to the field group logic object.
+ *
+ * @param field - The field group logic object.
+ *
+ * @returns The field group context object.
+ */
 export function useFieldGroupWithComponents<
   TData,
   TMembers extends Paths<TData>[],

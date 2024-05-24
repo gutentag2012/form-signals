@@ -62,6 +62,11 @@ export default defineConfig({
             link: '/guide/array-fields',
           },
           {
+            text: 'Fields Groups',
+            link: '/guide/field-groups',
+            items: [{ text: 'React', link: '/guide/react/field-groups' }],
+          },
+          {
             text: 'Dynamic Objects',
             link: '/guide/dynamic-objects',
           },
@@ -82,6 +87,10 @@ export default defineConfig({
             items: [
               { text: 'FormLogic', link: '/reference/core/FormLogic' },
               { text: 'FieldLogic', link: '/reference/core/FieldLogic' },
+              {
+                text: 'FieldGroupLogic',
+                link: '/reference/core/FieldGroupLogic',
+              },
               { text: 'Validation', link: '/reference/core/Validation' },
               { text: 'Access', link: '/reference/core/Access' },
               { text: 'Signals', link: '/reference/core/Signals' },
@@ -97,6 +106,15 @@ export default defineConfig({
               { text: 'FieldContext', link: '/reference/react/FieldContext' },
               { text: 'FieldProvider', link: '/reference/react/FieldProvider' },
               { text: 'useField', link: '/reference/react/useField' },
+              {
+                text: 'FieldGroupContext',
+                link: '/reference/react/FieldGroupContext',
+              },
+              {
+                text: 'FieldGroupProvider',
+                link: '/reference/react/FieldGroupProvider',
+              },
+              { text: 'useFieldGroup', link: '/reference/react/useFieldGroup' },
             ],
           },
           {

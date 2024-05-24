@@ -139,7 +139,7 @@ import {Field, useForm} from '@formsignals/form-react';
 export default function App() {
   const form = useForm();
   return (
-    <Field form={form} name="name">
+    <Field name="name">
       {/* ... */}
     </Field>
   );

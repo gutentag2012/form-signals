@@ -18,6 +18,7 @@ import { handleSubmitOnEnterForForm } from './form.utils'
  *
  * @property FormProvider The provider component that provides the form logic to the form components.
  * @property FieldProvider The component that creates a field logic component bound to the form.
+ * @property FieldGroupProvider The component that creates a field group logic component bound to the form.
  * @property handleSubmitOnEnter The function that handles the submit-event when the enter key is pressed.
  */
 export interface FormContextType<
