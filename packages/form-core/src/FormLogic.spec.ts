@@ -84,7 +84,9 @@ describe('FormLogic', () => {
     })
     it('should loose a field once it is unmounted without preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
-      const field = new FieldLogic(form, 'name')
+      const field = new FieldLogic(form, 'name', {
+        removeValueOnUnmount: true,
+      })
       field.mount()
       expect(form.fields.peek().length).toBe(1)
 
@@ -93,9 +95,7 @@ describe('FormLogic', () => {
     })
     it('should keep a field once it is unmounted if preserving its value', () => {
       const form = new FormLogic<{ name: string }>()
-      const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
-      })
+      const field = new FieldLogic(form, 'name')
       field.mount()
       expect(form.fields.peek().length).toBe(1)
 
@@ -227,7 +227,9 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
 
-      const newField = new FieldLogic(form, 'other')
+      const newField = new FieldLogic(form, 'other', {
+        removeValueOnUnmount: true,
+      })
       newField.mount()
 
       newField.handleBlur()
@@ -252,9 +254,7 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
 
-      const newField = new FieldLogic(form, 'other', {
-        preserveValueOnUnmount: true,
-      })
+      const newField = new FieldLogic(form, 'other')
       newField.mount()
 
       newField.handleBlur()
@@ -280,7 +280,9 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(false)
 
-      const newField = new FieldLogic(form, 'other')
+      const newField = new FieldLogic(form, 'other', {
+        removeValueOnUnmount: true,
+      })
       newField.mount()
 
       newField.handleBlur()
@@ -389,7 +391,6 @@ describe('FormLogic', () => {
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
         validator: () => 'error',
         validatorOptions: {
           validateOnMount: true,
@@ -410,6 +411,7 @@ describe('FormLogic', () => {
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       const field = new FieldLogic(form, 'name', {
+        removeValueOnUnmount: true,
         validator: () => 'error',
         validatorOptions: {
           validateOnMount: true,
@@ -1038,7 +1040,6 @@ describe('FormLogic', () => {
       })
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
         validator: () => 'error',
       })
       field.mount()
@@ -1063,6 +1064,7 @@ describe('FormLogic', () => {
       form.mount()
       const field = new FieldLogic(form, 'name', {
         validator: () => 'error',
+        removeValueOnUnmount: true,
       })
       field.mount()
 

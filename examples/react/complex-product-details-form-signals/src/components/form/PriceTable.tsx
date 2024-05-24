@@ -96,7 +96,6 @@ export const PriceTable = () => {
           <form.FieldProvider
             name={`prices.${selectedCurrency.value}`}
             defaultValue={[]}
-            preserveValueOnUnmount
           >
             <PriceTableBody />
           </form.FieldProvider>

@@ -132,8 +132,8 @@ describe('FieldProvider', () => {
       )
 
       expect(screen.getByText('default')).toBeDefined()
-      expect(form.fields.value.length).toBe(1)
-      expect(form.json.value).toEqual({ other: 'default' })
+      expect(form.fields.value.length).toBe(2)
+      expect(form.json.value).toEqual({ name: 'default', other: 'default' })
 
       cleanup()
     })
@@ -249,6 +249,7 @@ describe('FieldProvider', () => {
             parentField={parentFieldContext}
             name={name}
             defaultValue="default"
+            removeValueOnUnmount
           >
             {(field) => field.data.value}
           </SubField>

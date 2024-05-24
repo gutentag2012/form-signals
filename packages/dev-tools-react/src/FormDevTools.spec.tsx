@@ -815,6 +815,7 @@ describe('FormDevTools', () => {
 
     const field = form.getOrCreateField('name', {
       defaultValue: 'John',
+      removeValueOnUnmount: true,
     })
     await field.mount()
     field.unmount()
@@ -850,7 +851,6 @@ describe('FormDevTools', () => {
 
     const field = form.getOrCreateField('name', {
       defaultValue: 'John',
-      preserveValueOnUnmount: true,
     })
     await field.mount()
     field.unmount()

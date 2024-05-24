@@ -140,13 +140,13 @@ export type FieldLogicOptions<
   }
 
   /**
-   * Whether the value should be preserved once the field is unmounted. <br/>
-   * If true, this field will not run validations and not accept any changes to its value through its handlers. It, however, can still be submitted and will run validations on the submit-event.
-   * @note The signal value will not be locked when unmounted, so if you change the value directly through the signal, it will be updated in the form.
+   * Whenever a field is unmounted, the value within the form is preserved unless otherwise configured.
+   * If true, the field value will be removed.
+   * @note This can cause unexpected behavior if the field is remounted.
    */
-  preserveValueOnUnmount?: boolean
+  removeValueOnUnmount?: boolean
   /**
-   * Whenever a field is unmounted, the value within the form is deleted if the value should not be preserved.
+   * Whenever a field is unmounted, the value within the form is preserved unless otherwise configured.
    * If true, the field value will set to its default value.
    */
   resetValueToDefaultOnUnmount?: boolean
@@ -469,6 +469,7 @@ export class FieldLogic<
    */
   public async mount(): Promise<() => void> {
     this.setupDataSignals()
+    this._form.registerField(this._name, this, this.defaultValue.peek())
 
     // Once mounted, we want to listen to all changes to the value
     this._unsubscribeFromChangeEffect?.()
@@ -536,7 +537,10 @@ export class FieldLogic<
     this._isMounted.value = false
     this._transformedData = undefined
 
-    if (!this._options.peek()?.preserveValueOnUnmount) {
+    if (
+      this._options.peek()?.removeValueOnUnmount ||
+      this._options.peek()?.resetValueToDefaultOnUnmount
+    ) {
       this.resetState()
     }
 
@@ -545,7 +549,7 @@ export class FieldLogic<
     this._form.unregisterField(
       this._name,
       this.defaultValue.peek(),
-      this._options.peek()?.preserveValueOnUnmount,
+      this._options.peek()?.removeValueOnUnmount,
       this._options.peek()?.resetValueToDefaultOnUnmount,
     )
   }

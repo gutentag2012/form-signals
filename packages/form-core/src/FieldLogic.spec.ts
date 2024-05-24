@@ -1199,7 +1199,6 @@ describe('FieldLogic', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
       const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
         validator: (value) => (value === 'test' ? undefined : 'error'),
       })
       field.mount()
@@ -1213,6 +1212,7 @@ describe('FieldLogic', () => {
       form.mount()
       const field = new FieldLogic(form, 'name', {
         validator: (value) => (value === 'test' ? undefined : 'error'),
+        removeValueOnUnmount: true,
       })
       field.mount()
       field.data.value = 'test'
@@ -1757,7 +1757,9 @@ describe('FieldLogic', () => {
     it('should remove child fields from form if parent is unmounted', () => {
       const form = new FormLogic<{ parent: { child: number } }>()
       form.mount()
-      const field = new FieldLogic(form, 'parent')
+      const field = new FieldLogic(form, 'parent', {
+        removeValueOnUnmount: true,
+      })
       field.mount()
       const child = new FieldLogic(form, 'parent.child')
       child.mount()
@@ -1788,7 +1790,7 @@ describe('FieldLogic', () => {
       expect(form.data.value.name.value).toBe('default')
       expect(field.isTouched.value).toBe(false)
     })
-    it('should delete field state on unmount if not otherwise configured', () => {
+    it('should delete field state on unmount if not configured', () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: 'default',
@@ -1796,7 +1798,9 @@ describe('FieldLogic', () => {
       })
       form.mount()
 
-      const field = new FieldLogic(form, 'name')
+      const field = new FieldLogic(form, 'name', {
+        removeValueOnUnmount: true,
+      })
       field.mount()
       field.handleBlur()
       field.data.value = 'value'
@@ -1816,9 +1820,7 @@ describe('FieldLogic', () => {
       })
       form.mount()
 
-      const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
-      })
+      const field = new FieldLogic(form, 'name')
       field.mount()
       field.handleBlur()
       field.handleChange('value')
@@ -1838,9 +1840,7 @@ describe('FieldLogic', () => {
       })
       form.mount()
 
-      const field = new FieldLogic(form, 'name', {
-        preserveValueOnUnmount: true,
-      })
+      const field = new FieldLogic(form, 'name')
       field.mount()
       field.handleBlur()
       field.pushValueToArray('value')
@@ -1879,7 +1879,9 @@ describe('FieldLogic', () => {
     it('should not accept value changes through its handlers when unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       form.mount()
-      const field = new FieldLogic(form, 'name')
+      const field = new FieldLogic(form, 'name', {
+        removeValueOnUnmount: true,
+      })
       field.mount()
       field.unmount()
 
