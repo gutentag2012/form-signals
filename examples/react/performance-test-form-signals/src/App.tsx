@@ -43,12 +43,22 @@ const ArrayField = () => {
           Remove 50
         </button>
         <button type="submit">Submit</button>
-        <button type="button" onClick={() => {
-          field.form.resetState()
-        }}>Reset State</button>
-        <button type="button" onClick={() => {
-          field.form.reset()
-        }}>Reset</button>
+        <button
+          type="button"
+          onClick={() => {
+            field.form.resetState()
+          }}
+        >
+          Reset State
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            field.form.reset()
+          }}
+        >
+          Reset
+        </button>
         <span>Current count: {field.data.value.length}</span>
       </div>
       <ErrorText />
