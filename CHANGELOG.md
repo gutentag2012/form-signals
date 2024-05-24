@@ -1,3 +1,10 @@
+## 0.2.1 (2024-05-24)
+
+
+### 🩹 Fixes
+
+- **dev-tools-react:** Update form-react dependency version ([93e5a31](https://github.com/gutentag2012/form-signals/commit/93e5a31))
+
 ## 0.2.0 (2024-05-24)
 
 
