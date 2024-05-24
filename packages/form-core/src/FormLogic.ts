@@ -231,11 +231,7 @@ export class FormLogic<
       }
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
-      if (
-        currentDefaultValue !== undefined ||
-        fieldOptions?.defaultValue === undefined
-      )
-        continue
+      if (currentDefaultValue !== undefined) continue
       setValueAtPath(
         combinedDefaultValues,
         field.name,
