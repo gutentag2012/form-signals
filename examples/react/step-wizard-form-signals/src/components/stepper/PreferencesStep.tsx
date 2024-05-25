@@ -53,7 +53,7 @@ export const PreferencesStep = (props: PersonalStepProps) => {
           <group.FieldProvider
             name="contact"
             validator={([value, email, phone]) => {
-              console.log("validate", value, email, phone)
+              console.log('validate', value, email, phone)
               if (value === 'email' && !email)
                 return 'Email is required for this contact method'
               if (value === 'phone' && !phone)
