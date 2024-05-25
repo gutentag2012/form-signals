@@ -477,12 +477,11 @@ export class FieldLogic<
       currentValue: ValueAtPath<TData, TName>,
       mixins: ValueAtPathForTuple<TData, TMixin>,
     ) => {
-      // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
-
       if (!this._isMounted.peek()) {
         return
       }
+      // Clear all onSubmit errors when the value changes
+      clearSubmitEventErrors(this._errorMap)
 
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEventInternal(
