@@ -240,6 +240,7 @@ interface FieldLogicHandlers<
 > {
   validateForEvent(
     event: ValidatorEvents,
+    validateIfUnmounted?: boolean,
   ): void | Promise<void>
 
   handleChange(
@@ -254,20 +255,17 @@ interface FieldLogicHandlers<
 
   handleBlur(): Promise<void>
 
-  handleSubmit(): Promise<void>
-
   handleTouched(): void
 }
 ```
 
-| Handler             | Input          | Description                                                                                                                                                     |
-|---------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `validateForEvent`  | The event type | Validate the field for a specific event. This can be used to manually trigger validation.                                                                       |
-| `handleChange`      | The new value  | Change the value of the field.                                                                                                                                  |
-| `handleChangeBound` | The new value  | Change the value of the field from the binding. The given value will run through the `transformFromBinding` function and set the data in the form to its result |
-| `handleBlur`        | -              | Trigger the blur event. This will trigger the validation and set the field to touched.                                                                          |
-| `handleSubmit`      | -              | Trigger the submit event. This will trigger the validation.                                                                                                     |
-| `handleTouched`     | -              | Set the field to touched.                                                                                                                                       |
+| Handler             | Input                                                                        | Description                                                                                                                                                     |
+|---------------------|------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `validateForEvent`  | The event type, If the field should be validated even though it is unmounted | Validate the field for a specific event. This can be used to manually trigger validation.                                                                       |
+| `handleChange`      | The new value                                                                | Change the value of the field.                                                                                                                                  |
+| `handleChangeBound` | The new value                                                                | Change the value of the field from the binding. The given value will run through the `transformFromBinding` function and set the data in the form to its result |
+| `handleBlur`        | -                                                                            | Trigger the blur event. This will trigger the validation and set the field to touched.                                                                          |
+| `handleTouched`     | -                                                                            | Set the field to touched.                                                                                                                                       |
 
 ## Field Helpers
 
