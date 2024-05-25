@@ -4,8 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "preview": "vite preview"
+    "example": "vite"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.4.2",
