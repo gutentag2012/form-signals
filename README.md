@@ -31,4 +31,5 @@ Powerful form management library build on top of [Preact Signals](https://github
 
 - **[@formsignals/form-core](./packages/form-core/README.md)** - Core form management library.
 - **[@formsignals/form-react](./packages/form-react/README.md)** - React bindings for form management.
+- **[@formsignals/dev-tools-react](./packages/dev-tools-react/README.md)** - Developer Tools for React.
 - **[@formsignals/validation-adapter-zod](./packages/validation-adapter-zod/README.md)** - Zod validation adapter.
