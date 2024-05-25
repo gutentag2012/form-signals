@@ -993,7 +993,8 @@ export class FieldLogic<
     checkValue?: ValueAtPath<TData, TName>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (      (!this._isMounted.peek() && !validateIfUnmounted) ||
+    if (
+      (!this._isMounted.peek() && !validateIfUnmounted) ||
       !this.data ||
       this._skipValidation ||
       this._form.skipValidation ||

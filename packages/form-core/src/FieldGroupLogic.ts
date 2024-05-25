@@ -670,9 +670,12 @@ export class FieldGroupLogic<
     checkValue?: PartialForPaths<TData, TMembers>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (      this._skipValidation ||
+    if (
+      this._skipValidation ||
       this._form.skipValidation ||
-      (!this._isMounted.peek() && event !== 'onSubmit' && !validateIfUnmounted) ||
+      (!this._isMounted.peek() &&
+        event !== 'onSubmit' &&
+        !validateIfUnmounted) ||
       this._disabled.peek()
     ) {
       return
