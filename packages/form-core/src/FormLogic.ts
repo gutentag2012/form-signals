@@ -233,9 +233,6 @@ export class FormLogic<
 
     // Get any possible default value overrides from the fields
     for (const field of fields) {
-      if (!field.isMounted.value) {
-        continue
-      }
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
       if (currentDefaultValue !== undefined) continue
