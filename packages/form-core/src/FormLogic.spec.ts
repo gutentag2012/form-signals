@@ -1159,6 +1159,39 @@ describe('FormLogic', () => {
         'The async validator must be a function',
       )
     })
+    it('should not validate unmounted fields onSubmit', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: () => 'error',
+      })
+      await field.mount()
+
+      field.unmount()
+      await form.handleSubmit()
+      expect(field.errors.value).toEqual([])
+    })
+    it('should validate unmounted fields onSubmit if configured', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'default',
+        },
+        validateUnmountedChildren: true,
+      })
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: () => 'error',
+      })
+      await field.mount()
+
+      field.unmount()
+      await form.handleSubmit()
+      expect(field.errors.value).toEqual(['error'])
+    })
   })
   describe('handleSubmit', () => {
     it('should not handle submit if the form is invalid', () => {

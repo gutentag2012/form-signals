@@ -485,7 +485,12 @@ export class FieldLogic<
       }
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEventInternal('onChange', currentValue, mixins)
+      await this.validateForEventInternal(
+        'onChange',
+        false,
+        currentValue,
+        mixins,
+      )
     }
     if (this._options.peek()?.validateOnNestedChange) {
       this._unsubscribeFromChangeEffect = effect(async () => {
@@ -592,14 +597,18 @@ export class FieldLogic<
    * Validates the field for a given event.
    *
    * @param event - The event to validate for.
+   * @param validateIfUnmounted - Whether the validation should run even if the field is unmounted.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
    * If the field is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
-  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
-    return this.validateForEventInternal(event)
+  public validateForEvent(
+    event: ValidatorEvents,
+    validateIfUnmounted?: boolean,
+  ): void | Promise<void> {
+    return this.validateForEventInternal(event, validateIfUnmounted)
   }
 
   /**
@@ -631,10 +640,6 @@ export class FieldLogic<
     this.handleTouched()
     await this.validateForEvent('onBlur')
     await this._form.handleBlur()
-  }
-
-  public async handleSubmit(): Promise<void> {
-    await this.validateForEvent('onSubmit')
   }
 
   public handleTouched(): void {
@@ -984,17 +989,18 @@ export class FieldLogic<
   //region Internals
   private validateForEventInternal(
     event: ValidatorEvents,
+    validateIfUnmounted?: boolean,
     checkValue?: ValueAtPath<TData, TName>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
-    if (
-      !this._isMounted.peek() ||
+    if (      (!this._isMounted.peek() && !validateIfUnmounted) ||
       !this.data ||
       this._skipValidation ||
       this._form.skipValidation ||
       this.disabled.peek()
-    )
+    ) {
       return
+    }
     const value = checkValue ?? unSignalifyValue(this.data)
     const mixinValues =
       mixins ??
