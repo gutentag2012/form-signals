@@ -982,11 +982,11 @@ describe('FieldLogic', () => {
       field.mount()
 
       field.data.value = 'test'
-      field.handleSubmit()
+      field.validateForEvent('onSubmit')
       expect(field.errors.peek()).toEqual([])
 
       field.data.value = 'asd'
-      field.handleSubmit()
+      field.validateForEvent('onSubmit')
       expect(field.errors.peek()).toEqual(['error'])
 
       field.data.value = 'asdd'
@@ -1040,9 +1040,9 @@ describe('FieldLogic', () => {
       field.mount()
 
       field.handleChange('test1')
-      const firstSubmitPromise = field.handleSubmit()
+      const firstSubmitPromise = field.validateForEvent('onSubmit')
       vi.advanceTimersByTime(50)
-      const secondSubmitPromise = field.handleSubmit()
+      const secondSubmitPromise = field.validateForEvent('onSubmit')
       vi.advanceTimersByTime(100)
 
       await Promise.all([firstSubmitPromise, secondSubmitPromise])
@@ -1115,7 +1115,7 @@ describe('FieldLogic', () => {
 
       await field.handleBlur()
       field.handleChange('test')
-      await field.handleSubmit()
+      await field.validateForEvent('onSubmit')
 
       expect(validate).toHaveBeenCalledTimes(0)
     })

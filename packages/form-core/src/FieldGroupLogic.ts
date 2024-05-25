@@ -430,15 +430,19 @@ export class FieldGroupLogic<
       currentValue: PartialForPaths<TData, TMembers>,
       mixins: ValueAtPathForTuple<TData, TMixin>,
     ) => {
-      // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
-
       if (!this._isMounted.peek()) {
         return
       }
+      // Clear all onSubmit errors when the value changes
+      clearSubmitEventErrors(this._errorMap)
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEventInternal('onChange', currentValue, mixins)
+      await this.validateForEventInternal(
+        'onChange',
+        false,
+        currentValue,
+        mixins,
+      )
     }
     this._unsubscribeFromChangeEffect = effect(async () => {
       const mixinValues =
@@ -501,14 +505,18 @@ export class FieldGroupLogic<
    * Validates the field group for a given event.
    *
    * @param event - The event to validate for.
+   * @param validateIfUnmounted - Whether to validate even if the field group is not mounted.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
    * If the field group is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
-  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
-    return this.validateForEventInternal(event)
+  public validateForEvent(
+    event: ValidatorEvents,
+    validateIfUnmounted?: boolean,
+  ): void | Promise<void> {
+    return this.validateForEventInternal(event, validateIfUnmounted)
   }
 
   /**
@@ -540,7 +548,7 @@ export class FieldGroupLogic<
     await Promise.all(this._fields.peek().map((field) => field.handleBlur()))
     await Promise.all([
       this.validateForEvent('onSubmit'),
-      ...this._fields.peek().map((field) => field.handleSubmit()),
+      ...this._fields.peek().map((field) => field.validateForEvent('onSubmit')),
     ])
 
     if (!this._isValid.peek()) {
@@ -657,16 +665,20 @@ export class FieldGroupLogic<
   //region Internals
   private validateForEventInternal(
     event: ValidatorEvents,
+    validateIfUnmounted?: boolean,
     checkValue?: PartialForPaths<TData, TMembers>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
     if (
       this._skipValidation ||
       this._form.skipValidation ||
-      (!this._isMounted.peek() && event !== 'onSubmit') ||
+      (!this._isMounted.peek() &&
+        event !== 'onSubmit' &&
+        !validateIfUnmounted) ||
       this._disabled.peek()
-    )
+    ) {
       return
+    }
 
     const value = checkValue ?? this.data.peek()
     const mixinValues =

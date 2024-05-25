@@ -250,16 +250,16 @@ interface FieldLogicHandlers<
   TAdapter extends ValidatorAdapter | undefined = undefined,
   TMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
 > {
-  validateForEvent(event: ValidatorEvents): void | Promise<void>
+  validateForEvent(event: ValidatorEvents, validateIfUnmounted?: boolean): void | Promise<void>
 
   handleSubmit(): Promise<void>
 }
 ```
 
-| Handler             | Input       | Description                                                                                                                                                                                                             |
-|---------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `validateForEvent`  | The event   | Validate the field group for a specific event. This is useful to validate the field group on specific events like `submit` or `change`.                                                                                 |
-| `handleSubmit`      | -           | Submit the field group. This is useful to submit the field group manually. This will trigger the validation and the `onSubmit` function of the field group. Its fields will also be validated for the `onSubmit` event. |
+| Handler             | Input                                                                   | Description                                                                                                                                                                                                             |
+|---------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `validateForEvent`  | The event, If the group should be validated even though it is unmounted | Validate the field group for a specific event. This is useful to validate the field group on specific events like `submit` or `change`.                                                                                 |
+| `handleSubmit`      | -                                                                       | Submit the field group. This is useful to submit the field group manually. This will trigger the validation and the `onSubmit` function of the field group. Its fields will also be validated for the `onSubmit` event. |
 
 ## Field Group Reset
 

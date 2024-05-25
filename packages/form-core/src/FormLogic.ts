@@ -84,6 +84,13 @@ export type FormLogicOptions<
   validatorAsyncOptions?: ValidatorAsyncOptions
 
   /**
+   * Whether to validate unmounted fields and groups when submitting the form.
+   * If true, all fields and groups will be validated when submitting the form, even if they are not mounted.
+   * @default false
+   */
+  validateUnmountedChildren?: boolean
+
+  /**
    * Default values for the form
    */
   defaultValues?: TData
@@ -226,9 +233,6 @@ export class FormLogic<
 
     // Get any possible default value overrides from the fields
     for (const field of fields) {
-      if (!field.isMounted.value) {
-        continue
-      }
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
       if (currentDefaultValue !== undefined) continue
@@ -614,6 +618,7 @@ export class FormLogic<
    * @note Groups within the form will be validated for the `onSubmit` event, but will NOT be submitted.
    */
   public async handleSubmit(): Promise<void> {
+    // TODO Add option to allow for force validation on fields and groups
     if (
       !this._isMounted.peek() ||
       !this.canSubmit.peek() ||
@@ -639,10 +644,22 @@ export class FormLogic<
     )
     await Promise.all([
       this.validateForEvent('onSubmit'),
-      ...this._fieldsArray.peek().map((field) => field.handleSubmit()),
+      ...this._fieldsArray
+        .peek()
+        .map((field) =>
+          field.validateForEvent(
+            'onSubmit',
+            this._options.peek()?.validateUnmountedChildren,
+          ),
+        ),
       ...this._fieldGroupsArray
         .peek()
-        .map((group) => group.validateForEvent('onSubmit')),
+        .map((group) =>
+          group.validateForEvent(
+            'onSubmit',
+            this._options.peek()?.validateUnmountedChildren,
+          ),
+        ),
     ])
 
     if (!this._isValid.peek()) {

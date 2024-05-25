@@ -43,7 +43,7 @@ The versions do not match the versions where the features were added.
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for disabled fields
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
 - :white_check_mark: <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
-- :x: <LibraryChip library="form-react" /> Add example for StepWizard
+- :white_check_mark: <LibraryChip library="form-react" /> Add example for StepWizard
 - :x: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
 - :white_check_mark: <LibraryChip library="form-react-native" /> Add example for react-native
 - :x: <LibraryChip library="chore" /> Add Use Cases & Examples section to documentation

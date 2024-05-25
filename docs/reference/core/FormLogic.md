@@ -57,22 +57,25 @@ export type FormLogicOptions<
     : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   validatorAsyncOptions?: ValidatorAsyncOptions
 
+  validateUnmountedChildren?: boolean
+
   defaultValues?: TData
 
   onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError> | ValidationError>) => void) => void | Promise<void>
 }
 ```
 
-| Option                  | Description                                                                                                                                                                                                                                                 |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `disabled`              | If the form is disabled, it will not validate or submit.                                                                                                                                                                                                    |
-| `validatorAdapter`      | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
-| `validator`             | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
-| `validatorOptions`      | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
-| `validatorAsync`        | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
-| `validatorAsyncOptions` | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
-| `defaultValues`         | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
-| `onSubmit`              | The function that is called once the form is submitted without any validation errors. This function receives the `TData` as the input as well as a function to add errors to the form or fields during validation. It can be an asynchronous function.      |
+| Option                      | Description                                                                                                                                                                                                                                                 |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `disabled`                  | If the form is disabled, it will not validate or submit.                                                                                                                                                                                                    |
+| `validatorAdapter`          | The adapter that will be used to transform a given validator schema and run the validation on it. <br/>Reference the [Validation API](/reference/core/Validation#adapter).                                                                                  |
+| `validator`                 | If no adapter is given, it is a synchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-sync).    |
+| `validatorOptions`          | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
+| `validatorAsync`            | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
+| `validatorAsyncOptions`     | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
+| `validateUnmountedChildren` | If set to `true`, the form will validate all fields and groups, even if they are not mounted.                                                                                                                                                               |
+| `defaultValues`             | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
+| `onSubmit`                  | The function that is called once the form is submitted without any validation errors. This function receives the `TData` as the input as well as a function to add errors to the form or fields during validation. It can be an asynchronous function.      |
 
 ## Form State
 
@@ -99,11 +102,15 @@ interface FormLogic<
 
   get unmountedFieldErrors(): ReadonlySignal<Array<ValidationError>>
 
-  get fields(): Signal<Array<FieldLogic<TData, Paths<TData>, any>>>
+  get fields(): ReadonlySignal<Array<FieldLogic<TData, Paths<TData>, any>>>
+
+  get fieldGroups(): ReadonlySignal<Array<FieldGroupLogic<TData, any>>>
 
   get isValidForm(): ReadonlySignal<boolean>
 
   get isValidFields(): ReadonlySignal<boolean>
+
+  get isValidFieldGroups(): ReadonlySignal<boolean>
 
   get isValid(): ReadonlySignal<boolean>
 
@@ -118,6 +125,10 @@ interface FormLogic<
   get submitCount(): ReadonlySignal<number>
 
   get isValidatingForm(): ReadonlySignal<boolean>
+
+  get isValidatingFields(): ReadonlySignal<boolean>
+
+  get isValidatingFieldGroups(): ReadonlySignal<boolean>
 
   get isValidating(): ReadonlySignal<boolean>
 
@@ -143,8 +154,10 @@ interface FormLogic<
 | `mountedFieldErrors`      | The reactive signal of all errors in the mounted fields.                                                                                                           |
 | `unmountedFieldErrors`    | The reactive signal of all errors in the unmounted fields.                                                                                                         |
 | `fields`                  | The reactive signal of all fields in the form.                                                                                                                     |
+| `groups`                  | The reactive signal of all field groups in the form.                                                                                                               |
 | `isValidForm`             | Is the form valid?                                                                                                                                                 |
 | `isValidFields`           | Are all fields valid?                                                                                                                                              |
+| `isValidFieldGroups`      | Are all field groups valid?                                                                                                                                        |
 | `isValid`                 | Is the form together with all its fields valid?                                                                                                                    |
 | `isTouched`               | Is the form touched? The form is touched if any of the fields got blurred.                                                                                         |
 | `isDirty`                 | Is the form dirty? This property is calculated based on the current value and the default values. A form is dirty if those values are unequal using deep equality. |
@@ -153,6 +166,7 @@ interface FormLogic<
 | `submitCount`             | The number of total submits.                                                                                                                                       |
 | `isValidatingFields`      | Is the form currently validating fields?                                                                                                                           |
 | `isValidatingForm`        | Is the form currently validating?                                                                                                                                  |
+| `isValidatingFieldGroups` | Is the form currently validating field groups?                                                                                                                     |
 | `isValidating`            | Is the form currently validating fields or the form?                                                                                                               |
 | `isSubmitting`            | Is the form currently submitting?                                                                                                                                  |
 | `isSubmitted`             | Has the form been submitted?                                                                                                                                       |
@@ -229,9 +243,9 @@ interface FormLogic<
 | `handleBlur`       | -                                                                                                                     | Trigger the blur event on the form.                                                                                                                                                                                             |
 | `handleSubmit`     | -                                                                                                                     | Submit the form. This will validate the form and if it is valid, call the `onSubmit` function. If the `onSubmit` function is an asynchronous function, the form will be in the submitting state until the function is resolved. |
 
-## Field Helpers
+## Field & Field Group Helpers
 
-The form offers several helpers to interact with [fields](/reference/core/FieldLogic).
+The form offers several helpers to interact with [fields](/reference/core/FieldLogic) and [field groups](/reference/core/FieldGroupLogic)
 
 ```ts
 interface FormLogic<
@@ -256,14 +270,29 @@ interface FormLogic<
   getFieldForPath<TPath extends Paths<TData>, TBoundData = never, TFieldAdapter extends ValidatorAdapter | undefined = undefined, TMixin extends readonly Exclude<Paths<TData>, TPath>[] = never[]>(
     path: TPath,
   ): FieldLogic<TData, TPath, TBoundData, TFieldAdapter, TAdapter, TMixin>
+
+  getOrCreateFieldGroup<
+    TMembers extends Paths<TData>[],
+    TGroupAdapter extends ValidatorAdapter | undefined,
+    TMixin extends readonly ExcludeAll<Paths<TData>, TMembers>[] = never[],
+  >(
+    members: TMembers,
+    options?: FieldGroupLogicOptions<
+      TData,
+      TMembers,
+      TGroupAdapter extends undefined ? TAdapter : TGroupAdapter,
+      TMixin
+    >,
+  ): FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin>
 }
 ```
 
-| Helper                   | Input                                                         | Description                                                                                                            |
-|--------------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `getOrCreateField`       | The path to the value of the field; The options for the field | Get or create a field in the form. If a field already exists, its options are getting updated with the passed options. |
-| `getDefaultValueForPath` | The path to the value of the field                            | Get the default value for a specific field in the form.                                                                |
-| `getFieldForPath`        | The path to the value of the field                            | Get a specific field in the form.                                                                                      |
+| Helper                   | Input                                                           | Description                                                                                                                        |
+|--------------------------|-----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `getOrCreateField`       | The path to the value of the field; The options for the field   | Get or create a field in the form. If a field already exists, its options are getting updated with the passed options.             |
+| `getDefaultValueForPath` | The path to the value of the field                              | Get the default value for a specific field in the form.                                                                            |
+| `getFieldForPath`        | The path to the value of the field                              | Get a specific field in the form.                                                                                                  |
+| `getOrCreateFieldGroup`  | The members of the field group; The options for the field group | Get or create a field group in the form. If a field group already exists, its options are getting updated with the passed options. |
 
 ## Form Helpers
 
