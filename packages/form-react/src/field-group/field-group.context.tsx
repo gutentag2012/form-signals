@@ -1,12 +1,11 @@
 import type {
   ExcludeAll,
   FieldGroupLogic,
-  FieldLogicOptions,
   Paths,
   ValidatorAdapter,
 } from '@formsignals/form-core'
 import React, { type ReactNode } from 'react'
-import { type FieldChildren, FieldProvider, useField } from '../field'
+import { type FieldProps, FieldProvider, useField } from '../field'
 import {
   type FieldGroupChildren,
   FieldGroupProvider,
@@ -52,24 +51,9 @@ export interface FieldGroupContextType<
     TBoundData = never,
     TAdapter extends ValidatorAdapter | undefined = undefined,
     TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
-  >(props: {
-    name: TName
-    options?: FieldLogicOptions<
-      TData,
-      TName,
-      TBoundData,
-      TAdapter extends undefined ? TFormAdapter : TAdapter,
-      TMixin
-    >
-    children: FieldChildren<
-      TData,
-      TName,
-      TBoundData,
-      TAdapter,
-      TFormAdapter,
-      TMixin
-    >
-  }) => ReactNode
+  >(
+    props: FieldProps<TData, TName, TBoundData, TAdapter, TFormAdapter, TMixin>,
+  ) => ReactNode
   /**
    * The provider component that provides the field group logic to the field group components.
    *
@@ -122,7 +106,7 @@ export function fieldGroupLogicToFieldGroupContext<
     TMixin
   >
 
-  castedLogic.FieldProvider = ({ name, options, children }) => {
+  castedLogic.FieldProvider = ({ name, children, ...options }) => {
     const field = useField(castedLogic.form, name, options)
     return <FieldProvider field={field}>{children}</FieldProvider>
   }
