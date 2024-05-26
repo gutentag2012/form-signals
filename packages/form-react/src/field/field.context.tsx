@@ -111,6 +111,7 @@ export function fieldLogicToFieldContext<
 
   castedLogic.handleBlur = castedLogic.handleBlur.bind(castedLogic)
   castedLogic.handleChange = castedLogic.handleChange.bind(castedLogic)
+  castedLogic.handleChangeBound = castedLogic.handleChangeBound.bind(castedLogic)
   castedLogic.handleTouched = castedLogic.handleTouched.bind(castedLogic)
 
   return castedLogic
