@@ -453,8 +453,11 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
   value: ValueAtPath<TValue, TPath> | undefined,
 ): SignalifiedData<ValueAtPath<TValue, TPath>> | undefined {
   return batch(() => {
-    if (!path || !obj) {
+    if (path === undefined || !obj) {
       return undefined
+    }
+    if(!path) {
+      return setSignalValuesFromObject(obj, value)
     }
     const parts = pathToParts(path as string)
 

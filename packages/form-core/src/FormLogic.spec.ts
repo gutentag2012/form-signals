@@ -2366,5 +2366,16 @@ describe('FormLogic', () => {
         expect(field.data.value).toEqual('new default')
       })
     })
+
+    it("should allow to handleChange on the data itself", () => {
+      const form = new FormLogic({
+        defaultValues: "value",
+      })
+      form.mount()
+
+      form.handleChange("", "newValue")
+
+      expect(form.data.value).toBe("newValue")
+    })
   })
 })

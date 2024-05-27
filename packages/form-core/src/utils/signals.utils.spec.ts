@@ -441,6 +441,11 @@ describe('signals.utils', () => {
       )
       expect(obj.value).toEqual({})
     })
+    it("should update the base object when given an empty path", () => {
+      const obj = deepSignalifyValue({ a: 1 })
+      setSignalValueAtPath(obj, '', { a: 2 })
+      expect(obj.value.a.value).toBe(2)
+    })
     it('should update the value of an existing path', () => {
       const obj = deepSignalifyValue({ a: 1 })
       setSignalValueAtPath(obj, 'a', 2)
