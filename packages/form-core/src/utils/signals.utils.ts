@@ -456,7 +456,7 @@ export function setSignalValueAtPath<TValue, TPath extends Paths<TValue>>(
     if (path === undefined || !obj) {
       return undefined
     }
-    if(!path) {
+    if (!path) {
       return setSignalValuesFromObject(obj, value)
     }
     const parts = pathToParts(path as string)

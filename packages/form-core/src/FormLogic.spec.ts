@@ -2367,15 +2367,15 @@ describe('FormLogic', () => {
       })
     })
 
-    it("should allow to handleChange on the data itself", () => {
+    it('should allow to handleChange on the data itself', () => {
       const form = new FormLogic({
-        defaultValues: "value",
+        defaultValues: 'value',
       })
       form.mount()
 
-      form.handleChange("", "newValue")
+      form.handleChange('', 'newValue')
 
-      expect(form.data.value).toBe("newValue")
+      expect(form.data.value).toBe('newValue')
     })
   })
 })
