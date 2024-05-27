@@ -1,3 +1,24 @@
+## 0.3.0 (2024-05-27)
+
+
+### 🚀 Features
+
+- **form-core:** keep unmounted values by default ([a551942](https://github.com/gutentag2012/form-signals/commit/a551942))
+- **form-core:** allow to validate unmounted fields on form ([6bf6c72](https://github.com/gutentag2012/form-signals/commit/6bf6c72))
+
+### 🩹 Fixes
+
+- **dev-tools-react:** css reset ([08a4d44](https://github.com/gutentag2012/form-signals/commit/08a4d44))
+- **form-core:** ignore undefined field values for equality ([1fe72c0](https://github.com/gutentag2012/form-signals/commit/1fe72c0))
+- **form-core:** deep signalisation of arrays ([0e27a32](https://github.com/gutentag2012/form-signals/commit/0e27a32))
+- **form-core:** default values overwriting existing form values ([a9e0bf0](https://github.com/gutentag2012/form-signals/commit/a9e0bf0))
+- **form-core:** combination of default values ([e611a62](https://github.com/gutentag2012/form-signals/commit/e611a62))
+- **form-core:** unmounted fields being ignored for default values ([a53c9d7](https://github.com/gutentag2012/form-signals/commit/a53c9d7))
+- **form-core:** errors clearing for unmounted fields on change ([ba0a5c3](https://github.com/gutentag2012/form-signals/commit/ba0a5c3))
+- **form-core:** handle change not changing the base object ([83d173f](https://github.com/gutentag2012/form-signals/commit/83d173f))
+- **form-react:** construction of FieldProvider on field group ([9bf95bf](https://github.com/gutentag2012/form-signals/commit/9bf95bf))
+- **form-react:** binding of handleChangeBound function ([ef65472](https://github.com/gutentag2012/form-signals/commit/ef65472))
+
 ## 0.2.1 (2024-05-24)
 
 
