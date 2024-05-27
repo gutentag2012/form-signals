@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/dev-tools-react",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "React dev tool component for the @formsignals/form-react library",
   "author": "joshua.gawenda",
   "license": "MIT",
@@ -64,7 +64,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@formsignals/form-react": "^0.3.0",
+    "@formsignals/form-react": "^0.3.1",
     "@radix-ui/react-tooltip": "^1.0.7"
   }
 }

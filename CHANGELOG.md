@@ -1,3 +1,10 @@
+## 0.3.1 (2024-05-27)
+
+
+### 🩹 Fixes
+
+- **form-core:** field transform function changes not being recognized ([09488cf](https://github.com/gutentag2012/form-signals/commit/09488cf))
+
 ## 0.3.0 (2024-05-27)
 
 
