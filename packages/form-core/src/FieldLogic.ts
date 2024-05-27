@@ -957,10 +957,12 @@ export class FieldLogic<
       return
     }
 
-    const options = this._options.peek()
+    const options = this._options
     const wrappedSignal = computed(() => {
-      if (!options?.transformToBinding) return undefined
-      return options.transformToBinding(unSignalifyValueSubscribed(this.data))
+      if (!options.value?.transformToBinding) return undefined
+      return options.value.transformToBinding(
+        unSignalifyValueSubscribed(this.data),
+      )
     })
 
     this._transformedData = {
@@ -968,8 +970,8 @@ export class FieldLogic<
         return baseSignal
       },
       set value(newValue: TBoundValue) {
-        if (!options?.transformFromBinding) return
-        const transformedValue = options.transformFromBinding(newValue)
+        if (!options.value?.transformFromBinding) return
+        const transformedValue = options.value.transformFromBinding(newValue)
         baseSignal.value = deepSignalifyValue(transformedValue).value
       },
       get value() {
