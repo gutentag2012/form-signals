@@ -28,6 +28,7 @@ export function isEqualDeep(a: unknown, b: unknown): boolean {
   if (isNullOrUndefined<unknown>(a) || isNullOrUndefined<unknown>(b))
     return a === b
   if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
+  if (a instanceof File && b instanceof File) return a === b
 
   if (typeof a !== 'object' || typeof b !== 'object') return false
 
@@ -61,6 +62,8 @@ function getLeftUnequalPathsInternal(
     return [...internalAcc, currentKey]
   if (a instanceof Date && b instanceof Date)
     return a.getTime() === b.getTime() ? acc : [...internalAcc, currentKey]
+  if (a instanceof File && b instanceof File)
+    return [...internalAcc, currentKey]
 
   if (typeof a !== 'object' || typeof b !== 'object')
     return [...internalAcc, currentKey]

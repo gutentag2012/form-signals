@@ -51,13 +51,15 @@ export type Paths<T, DepthCheck extends unknown[] = []> =
       ? never
       : T extends Date
         ? never
-        : T extends readonly any[] & IsTuple<T>
-          ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
-          : T extends any[]
-            ? `${number}` | CombinePath<T, number, DepthCheck>
-            : T extends object
-              ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
-              : never)
+        : T extends File
+          ? never
+          : T extends readonly any[] & IsTuple<T>
+            ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
+            : T extends any[]
+              ? `${number}` | CombinePath<T, number, DepthCheck>
+              : T extends object
+                ? (keyof T & string) | CombinePath<T, keyof T, DepthCheck>
+                : never)
 
 /**
  * Returns the parent path of a nested path.
@@ -265,26 +267,30 @@ export type MakeOptionalIfNotExistInCheck<
     ? CheckObject extends Date
       ? BaseObject
       : BaseObject | undefined
-    : BaseObject extends IsTuple<BaseObject>
-      ? CheckObject extends IsTuple<CheckObject>
-        ? MakeOptionalIfNotExistInCheckTuple<BaseObject, CheckObject>
+    : BaseObject extends File
+      ? CheckObject extends File
+        ? BaseObject
         : BaseObject | undefined
-      : BaseObject extends Array<infer T>
-        ? CheckObject extends Array<infer T2>
-          ? Array<
-              MakeOptionalIfNotExistInCheck<T, T2, [...DepthCheck, unknown]>
-            >
+      : BaseObject extends IsTuple<BaseObject>
+        ? CheckObject extends IsTuple<CheckObject>
+          ? MakeOptionalIfNotExistInCheckTuple<BaseObject, CheckObject>
           : BaseObject | undefined
-        : BaseObject extends object
-          ? {
-              [K in keyof BaseObject]: K extends keyof CheckObject
-                ? MakeOptionalIfNotExistInCheck<
-                    BaseObject[K],
-                    CheckObject[K],
-                    [...DepthCheck, unknown]
-                  >
-                : BaseObject[K] | undefined
-            }
-          : BaseObject extends CheckObject
-            ? BaseObject
+        : BaseObject extends Array<infer T>
+          ? CheckObject extends Array<infer T2>
+            ? Array<
+                MakeOptionalIfNotExistInCheck<T, T2, [...DepthCheck, unknown]>
+              >
             : BaseObject | undefined
+          : BaseObject extends object
+            ? {
+                [K in keyof BaseObject]: K extends keyof CheckObject
+                  ? MakeOptionalIfNotExistInCheck<
+                      BaseObject[K],
+                      CheckObject[K],
+                      [...DepthCheck, unknown]
+                    >
+                  : BaseObject[K] | undefined
+              }
+            : BaseObject extends CheckObject
+              ? BaseObject
+              : BaseObject | undefined

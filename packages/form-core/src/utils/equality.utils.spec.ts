@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { getLeftUnequalPaths, isEqualDeep } from './equality.utils'
 
+const fileA = new File([''], 'fileA')
+const fileB = new File([''], 'fileB')
+
 describe('equality.utils', () => {
   describe('isEqualDeep', () => {
     it.each([
@@ -8,6 +11,7 @@ describe('equality.utils', () => {
       [null, null],
       [undefined, undefined],
       [new Date(0), new Date(0)],
+      [fileA, fileA],
       [{}, {}],
       [{ a: 1 }, { a: 1 }],
       [
@@ -29,6 +33,7 @@ describe('equality.utils', () => {
       [null, undefined],
       [undefined, null],
       [new Date(0), new Date(1)],
+      [fileA, fileB],
       [{}, { a: 1 }],
       [{ a: 1 }, { a: 2 }],
       [{ a: 1 }, { aa: 1 }],
@@ -54,6 +59,7 @@ describe('equality.utils', () => {
       [null, null],
       [undefined, undefined],
       [new Date(0), new Date(0)],
+      [fileA, fileA],
       [{}, {}],
       [{ a: 1 }, { a: 1 }],
       [
@@ -80,6 +86,7 @@ describe('equality.utils', () => {
       [null, undefined, ['']],
       [undefined, null, ['']],
       [new Date(0), new Date(1), ['']],
+      [fileA, fileB, ['']],
       [{ a: 1 }, { a: 2 }, ['a']],
       [{ a: 1 }, { aa: 1 }, ['a']],
       [{ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, ['b.c']],
@@ -91,6 +98,7 @@ describe('equality.utils', () => {
             null,
             new Date(),
             { deeply: { nested: ['object', 'missing'] } },
+            fileA,
           ],
         },
         {
@@ -100,12 +108,14 @@ describe('equality.utils', () => {
             null,
             new Date(1),
             { deeply: { nested: ['objectt'] } },
+            fileB,
           ],
         },
         [
           'nestedArray.3',
           'nestedArray.4.deeply.nested.0',
           'nestedArray.4.deeply.nested.1',
+          'nestedArray.5',
         ],
       ],
     ])(
