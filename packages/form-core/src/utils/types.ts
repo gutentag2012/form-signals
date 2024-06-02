@@ -51,6 +51,8 @@ export type Paths<T, DepthCheck extends unknown[] = []> =
       ? never
       : T extends Date
         ? never
+      : T extends File
+        ? never
         : T extends readonly any[] & IsTuple<T>
           ? `${IndicesOf<T>}` | CombinePath<T, IndicesOf<T>, DepthCheck>
           : T extends any[]
@@ -263,6 +265,10 @@ export type MakeOptionalIfNotExistInCheck<
   ? never
   : BaseObject extends Date
     ? CheckObject extends Date
+      ? BaseObject
+      : BaseObject | undefined
+  : BaseObject extends File
+    ? CheckObject extends File
       ? BaseObject
       : BaseObject | undefined
     : BaseObject extends IsTuple<BaseObject>

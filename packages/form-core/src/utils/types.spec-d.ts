@@ -20,6 +20,7 @@ describe('types', () => {
     expectTypeOf<Paths<number>>().toEqualTypeOf<''>()
     expectTypeOf<Paths<boolean>>().toEqualTypeOf<''>()
     expectTypeOf<Paths<Date>>().toEqualTypeOf<''>()
+    expectTypeOf<Paths<File>>().toEqualTypeOf<''>()
     expectTypeOf<Paths<null>>().toEqualTypeOf<''>()
     expectTypeOf<Paths<undefined>>().toEqualTypeOf<''>()
   })
@@ -28,6 +29,7 @@ describe('types', () => {
     expectTypeOf<Paths<{ age: number }>>().toEqualTypeOf<'' | 'age'>()
     expectTypeOf<Paths<{ isHuman: boolean }>>().toEqualTypeOf<'' | 'isHuman'>()
     expectTypeOf<Paths<{ birthday: Date }>>().toEqualTypeOf<'' | 'birthday'>()
+    expectTypeOf<Paths<{ file: File }>>().toEqualTypeOf<'' | 'file'>()
   })
   it('should generate a deep path for nested objects', () => {
     expectTypeOf<Paths<{ person: { name: string } }>>().toEqualTypeOf<
@@ -190,6 +192,7 @@ describe('types', () => {
     expectTypeOf<ValueAtPath<string, ''>>().toEqualTypeOf<string>()
     expectTypeOf<ValueAtPath<boolean, ''>>().toEqualTypeOf<boolean>()
     expectTypeOf<ValueAtPath<Date, ''>>().toEqualTypeOf<Date>()
+    expectTypeOf<ValueAtPath<File, ''>>().toEqualTypeOf<File>()
   })
   //endregion
   //region ValueAtPathForTuple
@@ -269,6 +272,9 @@ describe('types', () => {
       MakeOptionalIfNotExistInCheck<Date, Date>
     >().toEqualTypeOf<Date>()
     expectTypeOf<
+      MakeOptionalIfNotExistInCheck<File, File>
+    >().toEqualTypeOf<File>()
+    expectTypeOf<
       MakeOptionalIfNotExistInCheck<null, null>
     >().toEqualTypeOf<null>()
     expectTypeOf<
@@ -288,6 +294,9 @@ describe('types', () => {
     expectTypeOf<
       MakeOptionalIfNotExistInCheck<Date, undefined>
     >().toEqualTypeOf<Date | undefined>()
+    expectTypeOf<
+      MakeOptionalIfNotExistInCheck<File, undefined>
+    >().toEqualTypeOf<File | undefined>()
     expectTypeOf<
       MakeOptionalIfNotExistInCheck<null, undefined>
     >().toEqualTypeOf<null | undefined>()
@@ -333,6 +342,9 @@ describe('types', () => {
     expectTypeOf<MakeOptionalIfNotExistInCheck<Date[], Date[]>>().toEqualTypeOf<
       Date[]
     >()
+    expectTypeOf<MakeOptionalIfNotExistInCheck<File[], File[]>>().toEqualTypeOf<
+      File[]
+    >()
     expectTypeOf<MakeOptionalIfNotExistInCheck<null[], null[]>>().toEqualTypeOf<
       null[]
     >()
@@ -353,6 +365,9 @@ describe('types', () => {
     expectTypeOf<
       MakeOptionalIfNotExistInCheck<Date[], undefined>
     >().toEqualTypeOf<Date[] | undefined>()
+    expectTypeOf<
+      MakeOptionalIfNotExistInCheck<File[], undefined>
+    >().toEqualTypeOf<File[] | undefined>()
     expectTypeOf<
       MakeOptionalIfNotExistInCheck<null[], undefined>
     >().toEqualTypeOf<null[] | undefined>()
@@ -382,6 +397,12 @@ describe('types', () => {
         { name: string; isHuman: boolean }
       >
     >().toEqualTypeOf<{ birthday: Date | undefined }>()
+    expectTypeOf<
+      MakeOptionalIfNotExistInCheck<
+        { file: File },
+        { name: string; isHuman: boolean }
+      >
+    >().toEqualTypeOf<{ file: File | undefined }>()
   })
   //endregion
 })

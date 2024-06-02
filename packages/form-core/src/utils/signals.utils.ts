@@ -81,6 +81,8 @@ export type SignalifiedData<T> = Signal<
   T extends object
     ? T extends Date
       ? T
+    : T extends File
+      ? T
       : T extends Array<infer U>
         ? Array<{ key: number; data: SignalifiedData<U> }>
         : T extends readonly any[]
@@ -107,6 +109,7 @@ export type SignalifiedData<T> = Signal<
  */
 export function deepSignalifyValue<T>(value: T): SignalifiedData<T> {
   if (
+    value instanceof File ||
     value instanceof Date ||
     typeof value !== 'object' ||
     value === null ||
@@ -139,6 +142,7 @@ function unSignalifyStep<T>(
 
   // In this case it is already a primitive value and can be returned
   if (
+    peekedValue instanceof File ||
     peekedValue instanceof Date ||
     typeof peekedValue !== 'object' ||
     peekedValue === null ||
@@ -382,6 +386,7 @@ export function setSignalValuesFromObject<
       return obj
     }
     if (
+      !(value instanceof File) &&
       !(value instanceof Date) &&
       typeof value === 'object' &&
       value !== null

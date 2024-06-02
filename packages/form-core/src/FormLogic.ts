@@ -977,7 +977,7 @@ export class FormLogic<
     if (this._disabled.peek()) return
     const signal = this.getValueForPath(path)
     const currentValue = signal.value
-    if (typeof currentValue !== 'object' || currentValue instanceof Date) {
+    if (typeof currentValue !== 'object' || currentValue instanceof Date || currentValue instanceof File) {
       console.error(
         `Tried to add a value to a non-object field at path ${path}`,
       )
@@ -1012,7 +1012,7 @@ export class FormLogic<
     if (this._disabled.peek()) return
     const signal = this.getValueForPath(path)
     const currentValue = signal.value
-    if (typeof currentValue !== 'object' || currentValue instanceof Date) {
+    if (typeof currentValue !== 'object' || currentValue instanceof Date || currentValue instanceof File) {
       console.error(
         `Tried to remove a value from a non-object field at path ${path}`,
       )
