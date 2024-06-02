@@ -98,7 +98,7 @@ describe('equality.utils', () => {
             null,
             new Date(),
             { deeply: { nested: ['object', 'missing'] } },
-            fileA
+            fileA,
           ],
         },
         {
@@ -108,7 +108,7 @@ describe('equality.utils', () => {
             null,
             new Date(1),
             { deeply: { nested: ['objectt'] } },
-            fileB
+            fileB,
           ],
         },
         [
