@@ -81,13 +81,13 @@ export type SignalifiedData<T> = Signal<
   T extends object
     ? T extends Date
       ? T
-    : T extends File
-      ? T
-      : T extends Array<infer U>
-        ? Array<{ key: number; data: SignalifiedData<U> }>
-        : T extends readonly any[]
-          ? SignalifiedTuple<T>
-          : { [K in keyof T]: SignalifiedData<T[K]> }
+      : T extends File
+        ? T
+        : T extends Array<infer U>
+          ? Array<{ key: number; data: SignalifiedData<U> }>
+          : T extends readonly any[]
+            ? SignalifiedTuple<T>
+            : { [K in keyof T]: SignalifiedData<T[K]> }
     : T
 >
 
