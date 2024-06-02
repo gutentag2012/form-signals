@@ -626,7 +626,8 @@ export class FieldLogic<
     const transform = this._options.peek()?.transformFromBinding
     if (!this._isMounted.peek() || !transform || this.disabled.peek()) return
     batch(() => {
-      if (this._transformedData) this._transformedData.value = newValue
+      // The transformed data is always set if the field is mounted
+      this._transformedData!.value = newValue
 
       if (options?.shouldTouch) {
         this._isTouched.value = true

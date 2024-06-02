@@ -63,7 +63,7 @@ function getLeftUnequalPathsInternal(
   if (a instanceof Date && b instanceof Date)
     return a.getTime() === b.getTime() ? acc : [...internalAcc, currentKey]
   if (a instanceof File && b instanceof File)
-    return a === b ? acc : [...internalAcc, currentKey]
+    return [...internalAcc, currentKey]
 
   if (typeof a !== 'object' || typeof b !== 'object')
     return [...internalAcc, currentKey]
