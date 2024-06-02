@@ -20,7 +20,6 @@ import {
   type ValidatorSchemaType,
   type ValidatorSync,
   type ValueAtPath,
-  deepSignalifyValue,
   getValueAtPath,
   isEqualDeep,
   pathToParts,
@@ -627,7 +626,8 @@ export class FieldLogic<
     const transform = this._options.peek()?.transformFromBinding
     if (!this._isMounted.peek() || !transform || this.disabled.peek()) return
     batch(() => {
-      setSignalValuesFromObject(this.data, transform(newValue))
+      if(this._transformedData) this._transformedData.value = newValue
+
       if (options?.shouldTouch) {
         this._isTouched.value = true
       }
@@ -972,7 +972,7 @@ export class FieldLogic<
       set value(newValue: TBoundValue) {
         if (!options.value?.transformFromBinding) return
         const transformedValue = options.value.transformFromBinding(newValue)
-        baseSignal.value = deepSignalifyValue(transformedValue).value
+        setSignalValuesFromObject(baseSignal, transformedValue)
       },
       get value() {
         return wrappedSignal.value as TBoundValue
