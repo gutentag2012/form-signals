@@ -151,7 +151,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -174,8 +174,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   examples/react/complex-product-details-form-signals:
     dependencies:
@@ -269,7 +269,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -292,8 +292,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   examples/react/complex-product-details-react-hook-form:
     dependencies:
@@ -375,7 +375,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -398,8 +398,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   examples/react/complex-product-details-tanstack-form:
     dependencies:
@@ -484,7 +484,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -507,8 +507,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   examples/react/files-form-signals:
     dependencies:
@@ -608,7 +608,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -631,8 +631,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   examples/react/performance-test-form-signals:
     dependencies:
@@ -678,7 +678,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.13.0))
+        version: 4.2.1(vite@5.2.12(@types/node@20.13.0))
       eslint:
         specifier: ^9.3.0
         version: 9.3.0
@@ -692,8 +692,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.2.0
-        version: 5.2.11(@types/node@20.13.0)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.13.0)
 
   examples/react/step-wizard-form-signals:
     dependencies:
@@ -790,7 +790,7 @@ importers:
         version: 7.10.0(eslint@9.3.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.11(@types/node@20.12.12))
+        version: 4.2.1(vite@5.2.12(@types/node@20.12.12))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -813,8 +813,8 @@ importers:
         specifier: ^5.2.2
         version: 5.4.5
       vite:
-        specifier: ^5.0.8
-        version: 5.2.11(@types/node@20.12.12)
+        specifier: ^5.2.12
+        version: 5.2.12(@types/node@20.12.12)
 
   packages/dev-tools-react:
     dependencies:
@@ -3576,6 +3576,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -3662,6 +3663,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -4742,34 +4744,6 @@ packages:
     resolution: {integrity: sha512-RIMeVnqBK/8I0E9nnQWzws6pdj5ilRMPJSnXYb6nWxNR4EmDPnksnb/ACoR5Fy7QfzULqS4gtQMrjwnNCC9zoA==}
     peerDependencies:
       vite: '*'
-
-  vite@5.2.11:
-    resolution: {integrity: sha512-HndV31LWW05i1BLPMUCE1B9E9GFbOu1MbenhS58FuK6owSO5qHm7GiCotrNY1YE5rMeQSFBGmT5ZaLEjFizgiQ==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': ^18.0.0 || >=20.0.0
-      less: '*'
-      lightningcss: ^1.21.0
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
 
   vite@5.2.12:
     resolution: {integrity: sha512-/gC8GxzxMK5ntBwb48pR32GGhENnjtY30G4A0jemunsBkiEZFw60s8InGpN8gkhHEkjnRK1aSAxeQgwvFhUHAA==}
@@ -7456,25 +7430,14 @@ snapshots:
       '@typescript-eslint/types': 7.10.0
       eslint-visitor-keys: 3.4.3
 
-  '@vitejs/plugin-react@4.2.1(vite@5.2.11(@types/node@20.12.12))':
+  '@vitejs/plugin-react@4.2.1(vite@5.2.12(@types/node@20.12.12))':
     dependencies:
       '@babel/core': 7.24.5
       '@babel/plugin-transform-react-jsx-self': 7.24.5(@babel/core@7.24.5)
       '@babel/plugin-transform-react-jsx-source': 7.24.1(@babel/core@7.24.5)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 5.2.11(@types/node@20.12.12)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-react@4.2.1(vite@5.2.11(@types/node@20.13.0))':
-    dependencies:
-      '@babel/core': 7.24.5
-      '@babel/plugin-transform-react-jsx-self': 7.24.5(@babel/core@7.24.5)
-      '@babel/plugin-transform-react-jsx-source': 7.24.1(@babel/core@7.24.5)
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.14.2
-      vite: 5.2.11(@types/node@20.13.0)
+      vite: 5.2.12(@types/node@20.12.12)
     transitivePeerDependencies:
       - supports-color
 
@@ -9571,22 +9534,13 @@ snapshots:
       picocolors: 1.0.1
       vite: 5.2.12(@types/node@20.13.0)
 
-  vite@5.2.11(@types/node@20.12.12):
+  vite@5.2.12(@types/node@20.12.12):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.17.2
     optionalDependencies:
       '@types/node': 20.12.12
-      fsevents: 2.3.3
-
-  vite@5.2.11(@types/node@20.13.0):
-    dependencies:
-      esbuild: 0.20.2
-      postcss: 8.4.38
-      rollup: 4.17.2
-    optionalDependencies:
-      '@types/node': 20.13.0
       fsevents: 2.3.3
 
   vite@5.2.12(@types/node@20.13.0):
