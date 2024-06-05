@@ -176,8 +176,8 @@ type TransformedSignal<
   TBoundValue,
 > = Signal<TBoundValue> & {
   get base(): SignalifiedData<ValueAtPath<TData, TName>>
-  get buffer(): Signal<TBoundValue | undefined>
-  get isValid(): Signal<boolean>
+  get buffer(): ReadonlySignal<TBoundValue | undefined>
+  get isValid(): ReadonlySignal<boolean>
   reset(): void
 }
 /**
@@ -978,6 +978,9 @@ export class FieldLogic<
     const writeBuffer = signal<TBoundValue | undefined>(undefined)
     const isValid = signal(true)
 
+    const readOnlyBuffer = computed(() => writeBuffer.value)
+    const readOnlyIsValid = computed(() => isValid.value)
+
     let previousErrors: Partial<ValidationErrorMap> | undefined = undefined
 
     const options = this._options
@@ -995,10 +998,10 @@ export class FieldLogic<
         return baseSignal
       },
       get buffer() {
-        return writeBuffer
+        return readOnlyBuffer
       },
       get isValid() {
-        return isValid
+        return readOnlyIsValid
       },
       reset() {
         writeBuffer.value = undefined
