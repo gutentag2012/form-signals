@@ -4,7 +4,7 @@ import {
   ErrorTransformers,
   type ValidationErrorMap,
   type ValidatorEvents,
-  clearSubmitEventErrors,
+  clearErrorMap,
   validateWithValidators,
 } from './validation'
 
@@ -729,7 +729,7 @@ describe('validation', () => {
         syncErrorEvent: 'onSubmit',
       })
 
-      clearSubmitEventErrors(errorMap)
+      clearErrorMap(errorMap)
 
       expect(errorMap.value).toEqual({
         sync: undefined,
@@ -742,7 +742,7 @@ describe('validation', () => {
         asyncErrorEvent: 'onSubmit',
       })
 
-      clearSubmitEventErrors(errorMap)
+      clearErrorMap(errorMap)
 
       expect(errorMap.value).toEqual({
         async: undefined,
@@ -757,7 +757,7 @@ describe('validation', () => {
         asyncErrorEvent: 'onSubmit',
       })
 
-      clearSubmitEventErrors(errorMap)
+      clearErrorMap(errorMap)
 
       expect(errorMap.value).toEqual({
         sync: undefined,

@@ -317,3 +317,45 @@ field.handleChangeBound("42")
 console.log(field.data.value) // 42
 console.log(typeof field.data.value) // number
 ```
+
+### What if I cannot transform the value?
+
+There might be cases where the given input cannot be transformed into the desired type.
+A common example is when trying to parse a string into a number, but the string is not a valid number.
+
+Using default transformation functions, the value will be set to `NaN` in this case.
+But usually you want the user to be able to keep typing until the value is valid.
+For those scenarios there is a `writeBuffer` worked into the transformation signal.
+
+The `writeBuffer` is a signal that holds the last raw value that was written to the field.
+If the transformation fails, you can choose to give the buffer value to the field instead.
+
+::: warning
+Keep in mind, that the value in the form will not be set if the validation failed.
+
+E.g., If field value was `12` and the user types `12a`, the value will **not** be set to `NaN` but will stay `12`. The buffer value will be `12a` then.
+:::
+
+The write buffer can be accessed in the `transformToBinding` function together with a boolean indicating if the value is valid.
+
+To tell the API to use the buffer value instead of the invalid one, you can return a validation error alongside the transformed value.
+If the validation error is a falsy value, the transformed value will be used, otherwise the buffer value.
+
+::: info
+The validation error will replace any other validation error until either the validation error is falsy or the field data is changed directly without the transformation.
+:::
+
+```ts
+const field = form.getOrCreateField("age", {
+  transformFromBinding: (value: string): [number, ValidationError] => {
+    const parsed = parseInt(value)
+    return [parsed, isNaN(parsed) && "Please enter a valid number"]
+  },
+  transformToBinding: (value: number, isValid: boolean, writeBuffer: string): string => {
+    if(!isValid) {
+      return writeBuffer // This is the last value entered by the user
+    }
+    return value.toString() // This is the last valid value
+  }
+})
+```

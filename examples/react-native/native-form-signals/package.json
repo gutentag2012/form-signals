@@ -6,9 +6,9 @@
     "example": "expo start"
   },
   "dependencies": {
-    "@formsignals/form-core": "^0.2.1",
-    "@formsignals/form-react": "^0.2.1",
-    "@formsignals/validation-adapter-zod": "^0.2.1",
+    "@formsignals/form-core": "^0.3.1",
+    "@formsignals/form-react": "^0.3.1",
+    "@formsignals/validation-adapter-zod": "^0.3.1",
     "@preact/signals-react": "^2.0.1",
     "expo": "~51.0.8",
     "expo-status-bar": "~1.12.1",

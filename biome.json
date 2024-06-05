@@ -55,7 +55,7 @@
       "jsxQuoteStyle": "double",
       "quoteProperties": "preserve",
       "arrowParentheses": "always",
-      "trailingComma": "all"
+      "trailingCommas": "all"
     }
   }
 }

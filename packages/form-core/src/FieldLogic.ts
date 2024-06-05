@@ -36,7 +36,7 @@ import type {
   ValueAtPathForTuple,
 } from './utils/types'
 import {
-  clearSubmitEventErrors,
+  clearErrorMap,
   getValidatorFromAdapter,
   validateWithValidators,
 } from './utils/validation'
@@ -153,17 +153,36 @@ export type FieldLogicOptions<
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
    * @param value The value from the binding
+   * @returns The value that should be set in the form OR an array with the value that should be set in the form and an error message
    * @note This will only affect the {@link handleChangeBound} method and the {@link transformedData}, so changes directly to the {@link signal} will not be transformed.
    */
-  transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName>
+  transformFromBinding?: (
+    value: TBoundValue,
+  ) => ValueAtPath<TData, TName> | [ValueAtPath<TData, TName>, ValidationError]
   /**
    * This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedData.
-   * @param value The value from the form
+   * @param value The last valid value from the form
+   * @param isValid Whether the value is valid
+   * @param writeBuffer The last value that was set from the binding (no matter if it was valid or not)
    * @note This will only affect the {@link transformedData} and not the {@link signal}.
    */
-  transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
+  transformToBinding?: (
+    value: ValueAtPath<TData, TName>,
+    isValid: boolean,
+    writeBuffer?: TBoundValue,
+  ) => TBoundValue
 }
 
+type TransformedSignal<
+  TData,
+  TName extends Paths<TData>,
+  TBoundValue,
+> = Signal<TBoundValue> & {
+  get base(): SignalifiedData<ValueAtPath<TData, TName>>
+  get buffer(): ReadonlySignal<TBoundValue | undefined>
+  get isValid(): ReadonlySignal<boolean>
+  reset(): void
+}
 /**
  * Logic for a field in the form.
  *
@@ -182,9 +201,7 @@ export class FieldLogic<
   TMixin extends readonly Exclude<Paths<TData>, TName>[] = never[],
 > {
   //region Utility State
-  private _transformedData?: Signal<TBoundValue | undefined> & {
-    get base(): SignalifiedData<ValueAtPath<TData, TName>>
-  }
+  private _transformedData?: TransformedSignal<TData, TName, TBoundValue>
 
   private readonly _options: Signal<
     | FieldLogicOptions<
@@ -226,8 +243,8 @@ export class FieldLogic<
       ),
   )
   private readonly _errors = computed(() => {
-    const { sync, async } = this._errorMap.value
-    return [sync, async].filter(Truthy)
+    const { sync, async, general, transform } = this._errorMap.value
+    return [sync, async, general, transform].filter(Truthy)
   })
   private readonly _isValid = computed(
     () => !this._errors.value.filter(Truthy).length,
@@ -305,8 +322,8 @@ export class FieldLogic<
    *
    * @returns The transformed data signal for the field.
    */
-  public get transformedData(): Signal<TBoundValue> {
-    return this._transformedData as Signal<TBoundValue>
+  public get transformedData(): TransformedSignal<TData, TName, TBoundValue> {
+    return this._transformedData!
   }
 
   /**
@@ -480,7 +497,8 @@ export class FieldLogic<
         return
       }
       // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
+      clearErrorMap(this._errorMap)
+      this._transformedData?.reset()
 
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEventInternal(
@@ -952,28 +970,77 @@ export class FieldLogic<
 
   private setupTransformedSignal() {
     const baseSignal = this.data
+    const errorMap = this._errorMap
 
     // If the base signal is not changed, then we do not need to recreate the transformed signal
     if (this._transformedData?.base === baseSignal) {
       return
     }
 
+    // This stores the last entered value from the binding
+    const writeBuffer = signal<TBoundValue | undefined>(undefined)
+    const isValid = signal(true)
+
+    const readOnlyBuffer = computed(() => writeBuffer.value)
+    const readOnlyIsValid = computed(() => isValid.value)
+
+    let previousErrors: Partial<ValidationErrorMap> | undefined = undefined
+
     const options = this._options
     const wrappedSignal = computed(() => {
       if (!options.value?.transformToBinding) return undefined
       return options.value.transformToBinding(
         unSignalifyValueSubscribed(this.data),
+        isValid.value,
+        writeBuffer.value,
       )
-    })
+    }) as ReadonlySignal<TBoundValue>
 
     this._transformedData = {
       get base() {
         return baseSignal
       },
+      get buffer() {
+        return readOnlyBuffer
+      },
+      get isValid() {
+        return readOnlyIsValid
+      },
+      reset() {
+        writeBuffer.value = undefined
+        isValid.value = true
+      },
       set value(newValue: TBoundValue) {
         if (!options.value?.transformFromBinding) return
-        const transformedValue = options.value.transformFromBinding(newValue)
-        setSignalValuesFromObject(baseSignal, transformedValue)
+        const afterTransform = options.value.transformFromBinding(newValue)
+        const [transformedValue, validationError] = Array.isArray(
+          afterTransform,
+        )
+          ? afterTransform
+          : [afterTransform, null]
+
+        batch(() => {
+          writeBuffer.value = newValue
+          const wasValid = isValid.peek()
+          isValid.value = !validationError
+
+          // // If there are errors, we want to overwrite all other errors until the transform is valid again
+          if (validationError) {
+            previousErrors = errorMap.peek()
+            errorMap.value = {
+              transform: validationError,
+            }
+            return
+          }
+
+          // // If the transform is valid, we want to remove the transform error and restore the previous errors
+          if (!wasValid && previousErrors) {
+            errorMap.value = previousErrors
+            previousErrors = undefined
+          }
+
+          setSignalValuesFromObject(baseSignal, transformedValue)
+        })
       },
       get value() {
         return wrappedSignal.value as TBoundValue

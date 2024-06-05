@@ -2143,5 +2143,212 @@ describe('FieldLogic', () => {
 
       expect(field.isTouched.value).toBe(true)
     })
+    it('should be possible to use the writeBuffer if a transform was not possible', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.transformedData.value = '12'
+      expect(field.data.value).toBe(12)
+      field.transformedData.value = 'not a number'
+      expect(field.data.value).toBe(12)
+      expect(field.errors.value).toEqual(['Input is not a number'])
+      field.transformedData.value = '1'
+      field.transformedData.value = '13'
+      field.transformedData.value = '134'
+      expect(field.errors.value).toEqual([])
+      field.transformedData.value = 'a134'
+      expect(field.data.value).toBe(134)
+      expect(field.transformedData.value).toBe('a134')
+      expect(field.errors.value).toEqual(['Input is not a number'])
+    })
+    it('should reactively update the buffer if an invalid change occurred', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      const fn = vi.fn()
+      effect(() => {
+        fn(field.transformedData.value)
+      })
+      fn.mockReset()
+
+      field.transformedData.value = '12'
+      expect(field.data.value).toBe(12)
+      expect(fn).toBeCalledTimes(1)
+      fn.mockReset()
+
+      field.transformedData.value = 'not a number'
+      expect(field.data.value).toBe(12)
+      expect(fn).toBeCalledTimes(1)
+      fn.mockReset()
+    })
+    it('should clear the input buffer when changing the data', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.transformedData.value = '12'
+      field.transformedData.value = 'no number'
+      expect(field.transformedData.value).toBe('no number')
+
+      field.data.value = 13
+      expect(field.transformedData.value).toBe('13')
+
+      field.transformedData.value = 'no number'
+      expect(field.transformedData.value).toBe('no number')
+
+      field.reset()
+      expect(field.data.value).toBe(0)
+      expect(field.transformedData.value).toBe('0')
+    })
+    it('should expose the state of a transformed signal', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.transformedData.value = 'not a number'
+
+      expect(field.transformedData.value).toBe('not a number')
+      expect(field.transformedData.buffer.value).toBe('not a number')
+      expect(field.transformedData.base.value).toBe(0)
+      expect(field.transformedData.isValid.value).toBe(false)
+
+      field.transformedData.reset()
+
+      expect(field.transformedData.value).toBe('0')
+      expect(field.transformedData.buffer.value).toBe(undefined)
+      expect(field.transformedData.base.value).toBe(0)
+      expect(field.transformedData.isValid.value).toBe(true)
+    })
+    it('should display errors if unable to transform the value, overriding existing error and reseting back to them', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        validator: (value) => value === 12 && 'Value must not be 12',
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.data.value = 12
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+
+      field.transformedData.value = 'not a number'
+      expect(field.errors.value).toEqual(['Input is not a number'])
+      expect(field.transformedData.value).toBe('not a number')
+
+      field.transformedData.value = '12'
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+      expect(field.transformedData.value).toBe('12')
+    })
+    it('should reset the transform buffer if the field value is changed', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        validator: (value) => value === 12 && 'Value must not be 12',
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.data.value = 12
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+
+      field.transformedData.value = 'not a number'
+      expect(field.errors.value).toEqual(['Input is not a number'])
+      expect(field.transformedData.value).toBe('not a number')
+
+      // We have to set the value to something else (since the value still is 12)
+      field.data.value = 1
+      field.data.value = 12
+
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+      expect(field.transformedData.value).toBe('12')
+      expect(field.transformedData.buffer.value).toBe(undefined)
+      expect(field.transformedData.isValid.value).toBe(true)
+    })
   })
 })
