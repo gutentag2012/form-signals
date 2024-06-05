@@ -153,6 +153,7 @@ export type FieldLogicOptions<
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
    * @param value The value from the binding
+   * @returns The value that should be set in the form OR an array with the value that should be set in the form and an error message
    * @note This will only affect the {@link handleChangeBound} method and the {@link transformedData}, so changes directly to the {@link signal} will not be transformed.
    */
   transformFromBinding?: (
@@ -160,7 +161,9 @@ export type FieldLogicOptions<
   ) => ValueAtPath<TData, TName> | [ValueAtPath<TData, TName>, ValidationError]
   /**
    * This takes the value from the form and transforms it to the value that should be set in the binding. This is used in the transformedData.
-   * @param value The value from the form
+   * @param value The last valid value from the form
+   * @param isValid Whether the value is valid
+   * @param writeBuffer The last value that was set from the binding (no matter if it was valid or not)
    * @note This will only affect the {@link transformedData} and not the {@link signal}.
    */
   transformToBinding?: (
