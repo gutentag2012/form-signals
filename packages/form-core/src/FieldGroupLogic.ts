@@ -34,7 +34,7 @@ import type {
   ValueAtPathForTuple,
 } from './utils/types'
 import {
-  clearSubmitEventErrors,
+  clearErrorMap,
   getValidatorFromAdapter,
   validateWithValidators,
 } from './utils/validation'
@@ -434,7 +434,7 @@ export class FieldGroupLogic<
         return
       }
       // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
+      clearErrorMap(this._errorMap)
 
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEventInternal(

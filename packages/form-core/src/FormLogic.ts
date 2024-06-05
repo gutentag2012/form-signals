@@ -38,7 +38,7 @@ import { deepCopy } from './utils/access.utils'
 import { Truthy } from './utils/internal.utils'
 import type { ConnectPath, ExcludeAll, KeepOptionalKeys } from './utils/types'
 import {
-  clearSubmitEventErrors,
+  clearErrorMap,
   getValidatorFromAdapter,
   validateWithValidators,
 } from './utils/validation'
@@ -173,8 +173,8 @@ export class FormLogic<
 
   //region Computed Error State
   private readonly _errors = computed(() => {
-    const { sync, async, general } = this._errorMap.value
-    return [sync, async, general].filter(Truthy)
+    const { sync, async, general, transform } = this._errorMap.value
+    return [sync, async, general, transform].filter(Truthy)
   })
   private readonly _mountedFieldErrors = computed(() => {
     const mountedFields = this._fieldsArray.value.filter(
@@ -532,7 +532,7 @@ export class FormLogic<
         return
       }
       // Clear all onSubmit errors when the value changes
-      clearSubmitEventErrors(this._errorMap)
+      clearErrorMap(this._errorMap)
 
       await this.validateForEventInternal('onChange', currentJson as TData)
     })
@@ -561,7 +561,7 @@ export class FormLogic<
    */
   public setErrors(errors: Partial<ValidationErrorMap>): void {
     this._errorMap.value = {
-      ...this._errorMap.value,
+      ...this._errorMap.peek(),
       ...errors,
     }
   }

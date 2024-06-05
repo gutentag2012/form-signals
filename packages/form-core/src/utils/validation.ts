@@ -128,6 +128,7 @@ export type ValidationErrorMap = {
   async?: ValidationError
   asyncErrorEvent?: ValidatorEvents
   general?: ValidationError
+  transform?: ValidationError
 }
 
 /**
@@ -384,11 +385,11 @@ export function validateWithValidators<
 }
 
 /**
- * Clears the errors within a given error map if the error event is 'onSubmit'
+ * Clears the errors within a given error map
  *
  * @param errorMap - The error map to clear the errors from
  */
-export const clearSubmitEventErrors = (
+export const clearErrorMap = (
   errorMap: Signal<Partial<ValidationErrorMap>>,
 ): void => {
   const newValue = { ...errorMap.peek() }
@@ -396,7 +397,8 @@ export const clearSubmitEventErrors = (
   if (
     !newValue.syncErrorEvent &&
     !newValue.asyncErrorEvent &&
-    !newValue.general
+    !newValue.general &&
+    !newValue.transform
   ) {
     return
   }
@@ -411,6 +413,9 @@ export const clearSubmitEventErrors = (
   }
   if (newValue.general) {
     newValue.general = undefined
+  }
+  if (newValue.transform) {
+    newValue.transform = undefined
   }
 
   errorMap.value = newValue
