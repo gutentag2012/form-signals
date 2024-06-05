@@ -2281,7 +2281,7 @@ describe('FieldLogic', () => {
       expect(field.transformedData.base.value).toBe(0)
       expect(field.transformedData.isValid.value).toBe(true)
     })
-    it("should display errors if unable to transform the value, overriding existing error and reseting back to them", () => {
+    it('should display errors if unable to transform the value, overriding existing error and reseting back to them', () => {
       const form = new FormLogic({
         defaultValues: {
           age: 0,
@@ -2313,7 +2313,7 @@ describe('FieldLogic', () => {
       expect(field.errors.value).toEqual(['Value must not be 12'])
       expect(field.transformedData.value).toBe('12')
     })
-    it("should reset the transform buffer if the field value is changed", () => {
+    it('should reset the transform buffer if the field value is changed', () => {
       const form = new FormLogic({
         defaultValues: {
           age: 0,

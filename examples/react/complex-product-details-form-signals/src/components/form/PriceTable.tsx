@@ -21,24 +21,28 @@ import {
 } from '@/components/ui/table.tsx'
 import type { Product } from '@/types.ts'
 import {
+  type ValidationError,
   useFieldContext,
   useForm,
-  useFormContext, ValidationError,
+  useFormContext,
 } from '@formsignals/form-react'
 import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { useComputed, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 
-const NumberToString = (value: number | null, isValid: boolean, buffer?: string) =>
-  !isValid ? buffer ?? '' : value === null ? '' : `${value}`
+const NumberToString = (
+  value: number | null,
+  isValid: boolean,
+  buffer?: string,
+) => (!isValid ? buffer ?? '' : value === null ? '' : `${value}`)
 
 const numberRegex = /^-?\d+([,.]\d+)?$/
 const StringToNumber = (value: string): number | [number, ValidationError] => {
-  if(!value) return null as never
+  if (!value) return null as never
 
   const number = Number.parseFloat(value.replace(',', '.'))
   const isNumber = numberRegex.test(value)
-  return [number, !isNumber && "Value is not a number"]
+  return [number, !isNumber && 'Value is not a number']
 }
 const NumberSchema = z
   .number({ invalid_type_error: 'Value must be greater than 0' })

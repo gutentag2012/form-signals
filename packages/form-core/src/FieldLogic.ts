@@ -1034,7 +1034,7 @@ export class FieldLogic<
           }
 
           // // If the transform is valid, we want to remove the transform error and restore the previous errors
-          if(!wasValid && previousErrors) {
+          if (!wasValid && previousErrors) {
             errorMap.value = previousErrors
             previousErrors = undefined
           }
