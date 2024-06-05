@@ -7,8 +7,8 @@
   "namespace": "form-signals",
   "scripts": {
     "style": "pnpm dlx @biomejs/biome check .",
-    "style:fix": "pnpm dlx @biomejs/biome check --apply .",
-    "style:fix:unsafe": "pnpm dlx @biomejs/biome check --apply-unsafe .",
+    "style:fix": "pnpm dlx @biomejs/biome check --write .",
+    "style:fix:unsafe": "pnpm dlx @biomejs/biome check --write --unsafe .",
     "test": "nx run-many --target=test --all",
     "test:dev-tools-react": "nx test dev-tools-react",
     "test:core": "nx test form-core",
