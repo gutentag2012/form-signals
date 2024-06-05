@@ -23,15 +23,23 @@ import type { Product } from '@/types.ts'
 import {
   useFieldContext,
   useForm,
-  useFormContext,
+  useFormContext, ValidationError,
 } from '@formsignals/form-react'
 import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { useComputed, useSignal } from '@preact/signals-react'
 import { z } from 'zod'
 
-const NumberToString = (value: number | null) =>
-  value === null ? '' : `${value}`
-const StringToNumber = (value: string) => Number.parseFloat(value)
+const NumberToString = (value: number | null, isValid: boolean, buffer?: string) =>
+  !isValid ? buffer ?? '' : value === null ? '' : `${value}`
+
+const numberRegex = /^-?\d+([,.]\d+)?$/
+const StringToNumber = (value: string): number | [number, ValidationError] => {
+  if(!value) return null as never
+
+  const number = Number.parseFloat(value.replace(',', '.'))
+  const isNumber = numberRegex.test(value)
+  return [number, !isNumber && "Value is not a number"]
+}
 const NumberSchema = z
   .number({ invalid_type_error: 'Value must be greater than 0' })
   .min(0, 'Value must be greater than 0')
@@ -130,7 +138,7 @@ export const PriceTable = () => {
                         value={field.transformedData}
                         id={field.name}
                         name={field.name}
-                        type="number"
+                        type="text" // This is deliberate to show the error message for the transformation
                         placeholder="Min Count"
                       />
                       <ErrorText />
