@@ -97,8 +97,8 @@ type FieldLogicOptions<
   removeValueOnUnmount?: boolean
   resetValueToDefaultOnUnmount?: boolean
 
-  transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName>
-  transformToBinding?: (value: ValueAtPath<TData, TName>) => TBoundValue
+  transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName> | [ValueAtPath<TData, TName>, ValidationError]
+  transformToBinding?: (value: ValueAtPath<TData, TName>, isValid: boolean, writeBuffer?: TBoundValue) => TBoundValue
 }
 ```
 
@@ -124,6 +124,20 @@ type FieldLogicOptions<
 You can access several states of the field, most of them being signals.
 
 ```ts
+type TransformedSignal<
+  TData,
+  TName extends Paths<TData>,
+  TBoundValue,
+> = Signal<TBoundValue> & {
+  get base(): SignalifiedData<ValueAtPath<TData, TName>>
+
+  get buffer(): ReadonlySignal<TBoundValue | undefined>
+
+  get isValid(): ReadonlySignal<boolean>
+
+  reset(): void
+}
+
 interface FieldLogicState<
   TData,
   TName extends Paths<TData>,
@@ -133,7 +147,7 @@ interface FieldLogicState<
 > {
   get data(): SignalifiedData<ValueAtPath<TData, TName>>
 
-  get transformedData(): Signal<TBoundValue>
+  get transformedData(): TransformedSignal<TData, TName, TBoundValue>
 
   get form(): FormLogic<TData, TFormAdapter>
 
