@@ -165,7 +165,7 @@ export type FieldLogicOptions<
    */
   transformToBinding?: (
     value: ValueAtPath<TData, TName>,
-    wasValid: boolean,
+    isValid: boolean,
     writeBuffer?: TBoundValue,
   ) => TBoundValue
 }

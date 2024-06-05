@@ -2158,8 +2158,8 @@ describe('FieldLogic', () => {
             Number.isNaN(parsedNumber) && 'Input is not a number',
           ]
         },
-        transformToBinding: (value: number, wasValid, buffer = '') =>
-          wasValid ? value.toString() : buffer,
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
       })
       field.mount()
 
@@ -2192,8 +2192,8 @@ describe('FieldLogic', () => {
             Number.isNaN(parsedNumber) && 'Input is not a number',
           ]
         },
-        transformToBinding: (value: number, wasValid, buffer = '') =>
-          wasValid ? value.toString() : buffer,
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
       })
       field.mount()
 
@@ -2228,8 +2228,8 @@ describe('FieldLogic', () => {
             Number.isNaN(parsedNumber) && 'Input is not a number',
           ]
         },
-        transformToBinding: (value: number, wasValid, buffer = '') =>
-          wasValid ? value.toString() : buffer,
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
       })
       field.mount()
 
@@ -2262,8 +2262,8 @@ describe('FieldLogic', () => {
             Number.isNaN(parsedNumber) && 'Input is not a number',
           ]
         },
-        transformToBinding: (value: number, wasValid, buffer = '') =>
-          wasValid ? value.toString() : buffer,
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
       })
       field.mount()
 
@@ -2297,8 +2297,8 @@ describe('FieldLogic', () => {
             Number.isNaN(parsedNumber) && 'Input is not a number',
           ]
         },
-        transformToBinding: (value: number, wasValid, buffer = '') =>
-          wasValid ? value.toString() : buffer,
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
       })
       field.mount()
 
@@ -2312,6 +2312,43 @@ describe('FieldLogic', () => {
       field.transformedData.value = '12'
       expect(field.errors.value).toEqual(['Value must not be 12'])
       expect(field.transformedData.value).toBe('12')
+    })
+    it("should reset the transform buffer if the field value is changed", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 0,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'age', {
+        validator: (value) => value === 12 && 'Value must not be 12',
+        transformFromBinding: (value: string) => {
+          const parsedNumber = Number.parseInt(value, 10)
+          return [
+            parsedNumber,
+            Number.isNaN(parsedNumber) && 'Input is not a number',
+          ]
+        },
+        transformToBinding: (value: number, isValid, buffer = '') =>
+          isValid ? value.toString() : buffer,
+      })
+      field.mount()
+
+      field.data.value = 12
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+
+      field.transformedData.value = 'not a number'
+      expect(field.errors.value).toEqual(['Input is not a number'])
+      expect(field.transformedData.value).toBe('not a number')
+
+      // We have to set the value to something else (since the value still is 12)
+      field.data.value = 1
+      field.data.value = 12
+
+      expect(field.errors.value).toEqual(['Value must not be 12'])
+      expect(field.transformedData.value).toBe('12')
+      expect(field.transformedData.buffer.value).toBe(undefined)
+      expect(field.transformedData.isValid.value).toBe(true)
     })
   })
 })
