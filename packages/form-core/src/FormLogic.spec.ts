@@ -644,6 +644,21 @@ describe('FormLogic', () => {
 
       expect(field.data.value).toBe('test')
     })
+    it('should skip the form validation that is triggered by adding a field to the form', () => {
+      const form = new FormLogic<{ name: string }>({
+        validator: () => 'error',
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name')
+      field.mount()
+
+      expect(form.isValid.value).toBe(true)
+      field.handleChange('test')
+      expect(form.isValid.value).toBe(false)
+    })
   })
   describe('state (field groups)', () => {
     it('should be valid if all field groups are valid', () => {
