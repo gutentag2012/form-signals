@@ -801,14 +801,16 @@ export class FormLogic<
     // This might be the case if a field was unmounted and preserved its value, in that case we do not want to do anything
     if (this._fields.peek().has(path)) return
 
-    this._currentlyRegisteringFields++
-
     const newMap = new Map(this._fields.peek())
     newMap.set(path, field as any)
     this._fields.value = newMap
 
     const currentValue = getSignalValueAtPath(this._data, path)
     if (defaultValues === undefined || currentValue !== undefined) return
+
+    // This skips the form validation that is triggered by applying the default value
+    this._currentlyRegisteringFields++
+
     setSignalValueAtPath<TData, TPath>(this._data, path, defaultValues)
   }
 
