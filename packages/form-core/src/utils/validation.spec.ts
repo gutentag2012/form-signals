@@ -720,6 +720,39 @@ describe('validation', () => {
 
       expect(validate).toHaveBeenCalledWith([value, ...valueMixins])
     })
+    it("should ignore debounce for 'onSubmit' events", async () => {
+      vi.useFakeTimers()
+      const value = 'test'
+      const event = 'onSubmit' as ValidatorEvents
+      const validate = vi.fn(async () => 'error')
+      const asyncValidatorState = signal(undefined)
+      const errorMap = signal<Partial<ValidationErrorMap>>({})
+      const isValidating = signal(false)
+
+      const promise = validateWithValidators(
+        value,
+        [],
+        event,
+        undefined,
+        undefined,
+        validate,
+        {
+          debounceMs: 100,
+        },
+        asyncValidatorState,
+        errorMap,
+        isValidating,
+      )
+      await promise
+
+      expect(validate).toHaveBeenCalled()
+      expect(errorMap.value).toEqual({
+        async: 'error',
+        asyncErrorEvent: event,
+      })
+
+      vi.useRealTimers()
+    })
   })
 
   describe('clearSubmitEventErrors', () => {

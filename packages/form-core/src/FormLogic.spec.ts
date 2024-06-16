@@ -1578,6 +1578,31 @@ describe('FormLogic', () => {
       expect(group.errors.value).toEqual(['Start must be before end'])
       expect(form.submitCountUnsuccessful.value).toBe(1)
     })
+    it('should ignore debounce for submit validation', async () => {
+      vi.useFakeTimers()
+
+      const validateFn = vi.fn()
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'test',
+        },
+        validatorAsync: async (value) => {
+          validateFn(value.name)
+          return 'error'
+        },
+        validatorAsyncOptions: {
+          debounceMs: 100,
+        },
+      })
+      await form.mount()
+
+      const formPromise = form.handleSubmit()
+      expect(form.errors.value).toEqual([])
+      await formPromise
+      expect(form.errors.value).toEqual(['error'])
+
+      vi.useRealTimers()
+    })
   })
   describe('helperMethods', () => {
     describe('reset', () => {

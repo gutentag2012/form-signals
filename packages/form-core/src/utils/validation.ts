@@ -287,7 +287,7 @@ async function validateAsync<TValue, TMixins extends readonly any[] = never[]>(
   // Start the validation
   isValidating.value = true
 
-  const error = await (validatorAsyncOptions?.debounceMs
+  const error = await (event !== 'onSubmit' && validatorAsyncOptions?.debounceMs
     ? validateWithDebounce(
         validatorAsync,
         validatorAsyncOptions,
