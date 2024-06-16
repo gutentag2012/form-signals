@@ -533,6 +533,18 @@ describe('FormLogic', () => {
         array: [2],
       })
     })
+    it('should not update the defaultValue of an array when updating the options', async () => {
+      const form = new FormLogic<{ array: number[] }>({
+        defaultValues: {
+          array: [1, 2, 3],
+        },
+      })
+      await form.mount()
+
+      form.handleChange('array', [4, 5])
+      form.updateOptions({ defaultValues: { array: [1, 2, 3] } })
+      expect(form.json.value.array).toEqual([4, 5])
+    })
 
     it('should update the data when using the handleChange method', () => {
       const form = new FormLogic<{ name: string }>()
@@ -1645,6 +1657,7 @@ describe('FormLogic', () => {
         expect(form.dirtyFields.value).toEqual([
           'name',
           'deep.value',
+          'array',
           'array.1',
         ])
         expect(form.submitCount.value).toBe(1)

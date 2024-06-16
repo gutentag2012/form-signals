@@ -63,10 +63,6 @@ describe('equality.utils', () => {
       [{}, {}],
       [{ a: 1 }, { a: 1 }],
       [
-        { a: 1, b: { c: 2 } },
-        { a: 1, b: { c: 2, d: 3 } },
-      ],
-      [
         { nestedArray: [1, undefined, null, new Date(0)] },
         { nestedArray: [1, undefined, null, new Date(0)] },
       ],
@@ -76,11 +72,6 @@ describe('equality.utils', () => {
         expect(getLeftUnequalPaths(a, b)).toEqual([])
       },
     )
-    it('should not report additional keys from right object', () => {
-      expect(getLeftUnequalPaths({ a: 1, b: 2 }, { a: 1, b: 2, c: 3 })).toEqual(
-        [],
-      )
-    })
     it.each([
       [1, 2, ['']],
       [null, undefined, ['']],
@@ -113,6 +104,7 @@ describe('equality.utils', () => {
         },
         [
           'nestedArray.3',
+          'nestedArray.4.deeply.nested',
           'nestedArray.4.deeply.nested.0',
           'nestedArray.4.deeply.nested.1',
           'nestedArray.5',
