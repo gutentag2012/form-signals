@@ -533,7 +533,7 @@ describe('FormLogic', () => {
         array: [2],
       })
     })
-    it("should not update the defaultValue of an array when updating the options", async () => {
+    it('should not update the defaultValue of an array when updating the options', async () => {
       const form = new FormLogic<{ array: number[] }>({
         defaultValues: {
           array: [1, 2, 3],
