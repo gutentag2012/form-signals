@@ -61,7 +61,7 @@ export async function updateUser(id: number, user: Omit<Partial<User>, 'id'>) {
     throw new Error('User not found')
   }
   const currentUsers = await getUsers()
-  if (currentUsers.some((u) => u.name === user.name)) {
+  if (currentUsers.some((u) => u.name === user.name && u.id !== id)) {
     return {
       path: 'name',
       message: 'User with this name already exists',
