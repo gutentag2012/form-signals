@@ -42,23 +42,21 @@ The versions do not match the versions where the features were added.
 - :white_check_mark: <LibraryChip library="form-react" /> Add example for async form setup
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for disabled fields
 - :white_check_mark: <LibraryChip library="form-core" /> Add support for parsing server side errors after form submission
-- :white_check_mark: <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
 - :white_check_mark: <LibraryChip library="form-react" /> Add example for StepWizard
-- :x: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
 - :white_check_mark: <LibraryChip library="form-react-native" /> Add example for react-native
-- :x: <LibraryChip library="chore" /> Add Use Cases & Examples section to documentation
 
 ## Version 0.3.0
 
-- :x: <LibraryChip library="form-core" /> Add support for server side validation
-- :x: <LibraryChip library="form-core" /> Add support for addons
-- :x: <LibraryChip library="addon-storage-persistence" /> Add addon to persist form state in browser storage (session or local)
+- :white_check_mark: <LibraryChip library="form-core" /> Add core support for sub forms, that can handle parts of the outer form and can be submitted independently
+- :x: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
+- :x: <LibraryChip library="chore" /> Add Use Cases & Examples section to documentation
 
 ## Version 0.4.0
 
+- :x: <LibraryChip library="form-core" /> Add support for addons
+- :x: <LibraryChip library="addon-storage-persistence" /> Add addon to persist form state in browser storage (session or local)
 - :x: <LibraryChip library="form-react" /> Measure performance and optimize with `React.memo` and `useMemo`
-- :x: <LibraryChip library="form-core" /> Add support for bracket syntax for field names
-- :x: <LibraryChip library="form-core" /> Add support for typed default values
+
 
 ## Version 1.0.0
 
