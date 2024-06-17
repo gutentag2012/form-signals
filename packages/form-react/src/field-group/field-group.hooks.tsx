@@ -1,8 +1,8 @@
-import type {
+import {
   ExcludeAll,
   FieldGroupLogic,
   FieldGroupLogicOptions,
-  FormLogic,
+  FormLogic, isEqualDeep,
   Paths,
   ValidatorAdapter,
 } from '@formsignals/form-core'
@@ -13,6 +13,17 @@ import {
   type FieldGroupContextType,
   fieldGroupLogicToFieldGroupContext,
 } from './field-group.context'
+
+function useEqualityMemoized<T>(value: T): T {
+  const [state, setState] = React.useState(value)
+
+  React.useEffect(() => {
+    if(isEqualDeep(value, state)) return
+    setState(value)
+  }, [value, state])
+
+  return state
+}
 
 /**
  * Creates a field group logic object and returns the field group context object.
@@ -48,13 +59,14 @@ export function useFieldGroup<
   TFormAdapter,
   TFieldGroupMixin
 > {
+  const memoizedMembers = useEqualityMemoized(members)
   // biome-ignore lint/correctness/useExhaustiveDependencies: We only ever want to create a field once, and we have to update the options in a layout effect to avoid setting state during render
   const group = React.useMemo(
     () =>
       fieldGroupLogicToFieldGroupContext(
-        form.getOrCreateFieldGroup(members, options),
+        form.getOrCreateFieldGroup(memoizedMembers, options),
       ),
-    [form, members],
+    [form, memoizedMembers],
   )
 
   useIsomorphicLayoutEffect(() => {
