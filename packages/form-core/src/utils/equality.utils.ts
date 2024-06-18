@@ -71,6 +71,12 @@ function getLeftUnequalPathsInternal(
   const aNonNullable = a as NonNullable<unknown>
   const bNonNullable = b as NonNullable<unknown>
   const aKeys = Object.keys(aNonNullable)
+  const bKeys = Object.keys(bNonNullable)
+
+  // In this case we do not want to return, since an object can both be dirty and have dirty children
+  if (aKeys.length !== bKeys.length) {
+    internalAcc = [...internalAcc, currentKey]
+  }
 
   for (const key of aKeys) {
     const nextKey = currentKey ? `${currentKey}.${key}` : key
