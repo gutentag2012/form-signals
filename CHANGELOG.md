@@ -1,3 +1,21 @@
+## 0.4.0 (2024-06-18)
+
+
+### 🚀 Features
+
+- **form-core:** allow files as a deep signalify exception similar to dates ([7c6ac75](https://github.com/gutentag2012/form-signals/commit/7c6ac75))
+- **form-core:** add transform buffer to bridge invalid transformations ([ffe09b5](https://github.com/gutentag2012/form-signals/commit/ffe09b5))
+
+### 🩹 Fixes
+
+- **form-core:** transform signal not doing finegrained updates ([54d7d16](https://github.com/gutentag2012/form-signals/commit/54d7d16))
+- **form-core:** form validation skipping if fields without default values are registered ([564eb8a](https://github.com/gutentag2012/form-signals/commit/564eb8a))
+- **form-core:** onSubmit validation running debounce ([0b26e7a](https://github.com/gutentag2012/form-signals/commit/0b26e7a))
+- **form-core:** array not being marked as dirty when adding or removing values ([82827e7](https://github.com/gutentag2012/form-signals/commit/82827e7))
+- **form-core:** creation of form group mutating members array ([e5432e0](https://github.com/gutentag2012/form-signals/commit/e5432e0))
+- **form-react:** field group rerendering too much because members array is recognized as changed even though it hasnt ([eca1d7a](https://github.com/gutentag2012/form-signals/commit/eca1d7a))
+- **form-react:** allow to manage mounted state by a different source than the hooks ([9ce5206](https://github.com/gutentag2012/form-signals/commit/9ce5206))
+
 ## 0.3.1 (2024-05-27)
 
 
