@@ -771,6 +771,19 @@ describe('FormLogic', () => {
       group.unmount()
       expect(form.fieldGroups.value).toEqual([])
     })
+    it('should not mutate the passed members array when creating a field group', () => {
+      const members = ['start', 'end'] as ['start', 'end']
+      const form = new FormLogic({
+        defaultValues: {
+          start: 0,
+          end: 1,
+        },
+      })
+      form.mount()
+
+      form.getOrCreateFieldGroup(members)
+      expect(members).toEqual(['start', 'end'])
+    })
   })
   describe('validation', () => {
     it('should trigger submit validation for all fields on submit as well as the form', async () => {

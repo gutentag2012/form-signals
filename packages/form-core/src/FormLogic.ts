@@ -35,7 +35,7 @@ import {
   unSignalifyValueSubscribed,
 } from './utils'
 import { deepCopy } from './utils/access.utils'
-import { Truthy } from './utils/internal.utils'
+import { Truthy, getGroupKey } from './utils/internal.utils'
 import type { ConnectPath, ExcludeAll, KeepOptionalKeys } from './utils/types'
 import {
   clearErrorMap,
@@ -827,7 +827,7 @@ export class FormLogic<
       TMixin
     >,
   ): FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin> {
-    const groupKey = members.sort().join('-')
+    const groupKey = getGroupKey(members)
     const existingGroup = this._fieldGroups.value.get(groupKey) as
       | FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin>
       | undefined
@@ -856,7 +856,7 @@ export class FormLogic<
     members: TMembers,
     group: FieldGroupLogic<TData, TMembers, TGroupAdapter, TAdapter, TMixin>,
   ): void {
-    const groupKey = members.sort().join('-')
+    const groupKey = getGroupKey(members)
     if (this._fieldGroups.peek().has(groupKey)) return
 
     const newMap = new Map(this._fieldGroups.peek())
@@ -867,7 +867,7 @@ export class FormLogic<
   public unregisterFieldGroup<TMembers extends Paths<TData>[]>(
     members: TMembers,
   ): void {
-    const groupKey = members.sort().join('-')
+    const groupKey = getGroupKey(members)
     if (!this._fieldGroups.peek().has(groupKey)) return
 
     const newMap = new Map(this._fieldGroups.peek())

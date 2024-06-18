@@ -94,6 +94,7 @@ export function UserForm() {
             name="email"
             validator={z.string().email()}
             validatorAsync={async (value) => {
+              if (value === user?.data?.email) return undefined
               const isTaken = await isEmailTaken(value)
               return isTaken ? 'Email is already taken' : undefined
             }}
