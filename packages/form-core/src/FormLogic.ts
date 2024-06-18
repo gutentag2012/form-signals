@@ -35,7 +35,7 @@ import {
   unSignalifyValueSubscribed,
 } from './utils'
 import { deepCopy } from './utils/access.utils'
-import {getGroupKey, Truthy} from './utils/internal.utils'
+import { Truthy, getGroupKey } from './utils/internal.utils'
 import type { ConnectPath, ExcludeAll, KeepOptionalKeys } from './utils/types'
 import {
   clearErrorMap,

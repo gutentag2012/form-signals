@@ -759,8 +759,8 @@ describe('FormLogic', () => {
       group.unmount()
       expect(form.fieldGroups.value).toEqual([])
     })
-    it("should not mutate the passed members array when creating a field group", () => {
-      const members = ['start', 'end'] as ["start", "end"]
+    it('should not mutate the passed members array when creating a field group', () => {
+      const members = ['start', 'end'] as ['start', 'end']
       const form = new FormLogic({
         defaultValues: {
           start: 0,

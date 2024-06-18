@@ -1,5 +1,5 @@
 import { FormLogic } from '@formsignals/form-core'
-import {fieldLogicToFieldContext} from "@formsignals/form-react";
+import { fieldLogicToFieldContext } from '@formsignals/form-react'
 
 export interface CartFormValues {
   name: string
@@ -28,14 +28,17 @@ export const form = new FormLogic<CartFormValues>({
     products: [],
   },
   onSubmit: async (values) => {
-    alert(`Sending order to server with values ${JSON.stringify(values, null, 2)}`)
+    alert(
+      `Sending order to server with values ${JSON.stringify(values, null, 2)}`,
+    )
     form.reset()
-  }
+  },
 })
 form.mount()
 
-const productsFieldLogic = form.getOrCreateField("products", {
-  validator: products => !products.length && "Please add at least one product",
+const productsFieldLogic = form.getOrCreateField('products', {
+  validator: (products) =>
+    !products.length && 'Please add at least one product',
 })
 productsFieldLogic.mount()
 export const productsField = fieldLogicToFieldContext(productsFieldLogic)

@@ -1,10 +1,11 @@
 import {
-  ExcludeAll,
-  FieldGroupLogic,
-  FieldGroupLogicOptions,
-  FormLogic, isEqualDeep,
-  Paths,
-  ValidatorAdapter,
+  type ExcludeAll,
+  type FieldGroupLogic,
+  type FieldGroupLogicOptions,
+  type FormLogic,
+  type Paths,
+  type ValidatorAdapter,
+  isEqualDeep,
 } from '@formsignals/form-core'
 import React from 'react'
 import type { FormContextType } from '../form'
@@ -18,7 +19,7 @@ function useEqualityMemoized<T>(value: T): T {
   const [state, setState] = React.useState(value)
 
   React.useEffect(() => {
-    if(isEqualDeep(value, state)) return
+    if (isEqualDeep(value, state)) return
     setState(value)
   }, [value, state])
 

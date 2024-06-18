@@ -1374,8 +1374,8 @@ describe('FieldGroupLogic', () => {
         expect(field.errors.value).toEqual(['error'])
         expect(group.isDirty.value).toBe(true)
         expect(group.dirtyFields.value).toEqual([
-          'array.1',
           'deep.value',
+          'array.1',
           'name',
         ])
         expect(group.submitCount.value).toBe(1)

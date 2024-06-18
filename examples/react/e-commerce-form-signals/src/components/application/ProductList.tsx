@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button'
+import { type CartFormValues, productsField } from '@/lib/CartForm.ts'
+import { useFieldContext } from '@formsignals/form-react'
+import { useComputed } from '@preact/signals-react'
 import { FileImageIcon } from 'lucide-react'
-import {type CartFormValues, productsField} from '@/lib/CartForm.ts'
-import {useFieldContext} from '@formsignals/form-react'
-import {useComputed} from "@preact/signals-react";
 
 const products = [
   {
@@ -44,7 +44,7 @@ const products = [
     id: '8',
     name: 'Smartphone Stand',
     price: 9.99,
-  }
+  },
 ]
 
 export function ProductList() {
@@ -62,14 +62,16 @@ export function ProductList() {
 function ProductCard({
   product,
 }: { product: Omit<CartFormValues['products'][0], 'quantity'> }) {
-  const parentField = useFieldContext<CartFormValues, "products">()
+  const parentField = useFieldContext<CartFormValues, 'products'>()
 
   const buttonText = useComputed(() => {
-    const existingProduct = parentField.data
-      .value
-      .find((p) => p.data.value.id.peek() === product.id)
+    const existingProduct = parentField.data.value.find(
+      (p) => p.data.value.id.peek() === product.id,
+    )
 
-    return existingProduct ? `Add Another (${existingProduct.data.value.quantity.value})` : 'Add to Cart'
+    return existingProduct
+      ? `Add Another (${existingProduct.data.value.quantity.value})`
+      : 'Add to Cart'
   })
 
   return (
