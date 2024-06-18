@@ -590,7 +590,7 @@ importers:
     devDependencies:
       '@preact/signals-react-transform':
         specifier: ^0.3.0
-        version: 0.3.1(@babel/core@7.24.5)(react@18.3.1)
+        version: 0.3.1(@babel/core@7.24.7)(react@18.3.1)
       '@types/node':
         specifier: ^20.11.16
         version: 20.14.2
@@ -602,13 +602,13 @@ importers:
         version: 18.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.10.0
-        version: 7.12.0(@typescript-eslint/parser@7.12.0(eslint@9.4.0)(typescript@5.4.5))(eslint@9.4.0)(typescript@5.4.5)
+        version: 7.13.0(@typescript-eslint/parser@7.12.0(eslint@9.4.0)(typescript@5.4.5))(eslint@9.4.0)(typescript@5.4.5)
       '@typescript-eslint/parser':
         specifier: ^7.11.0
         version: 7.12.0(eslint@9.4.0)(typescript@5.4.5)
       '@vitejs/plugin-react':
         specifier: ^4.3.0
-        version: 4.3.0(vite@5.2.13(@types/node@20.14.2))
+        version: 4.3.0(vite@5.3.1(@types/node@20.14.2))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.19(postcss@8.4.38)
@@ -632,7 +632,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.2.13
-        version: 5.2.13(@types/node@20.14.2)
+        version: 5.3.1(@types/node@20.14.2)
 
   examples/react/files-form-signals:
     dependencies:
@@ -4057,6 +4057,11 @@ packages:
   lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
+
+  lucide-react@0.391.0:
+    resolution: {integrity: sha512-cj0/2Gy4tBeemAeiU5ny5KeYZulQskCGaMA8SEfBYkJBoOKbwCV9GOXPaxJG0KomwNB3bClcZgoS3BKYy6R/0w==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
 
   lucide-react@0.395.0:
     resolution: {integrity: sha512-6hzdNH5723A4FLaYZWpK50iyZH8iS2Jq5zuPRRotOFkhu6kxxJiebVdJ72tCR5XkiIeYFOU5NUawFZOac+VeYw==}
@@ -8447,6 +8452,10 @@ snapshots:
   lru-cache@6.0.0:
     dependencies:
       yallist: 4.0.0
+
+  lucide-react@0.391.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   lucide-react@0.395.0(react@18.3.1):
     dependencies:
