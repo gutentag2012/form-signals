@@ -96,6 +96,25 @@ describe('Field hooks', () => {
 
       cleanup()
     })
+    it('should not unmount the field if it was mounted from another source', () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = form.getOrCreateField('name')
+      field.mount()
+
+      function MyComponent() {
+        useField(form, 'name', {
+          defaultValue: 'John',
+        })
+        return null
+      }
+
+      const screen = render(<MyComponent />)
+      expect(field.isMounted.value).toBeTruthy()
+      screen.unmount()
+      expect(field.isMounted.value).toBeTruthy()
+
+      cleanup()
+    })
   })
   describe('useFieldWithComponents', () => {
     it('should return the field context from the provided field logic', () => {

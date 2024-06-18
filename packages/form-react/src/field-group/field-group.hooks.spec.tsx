@@ -87,6 +87,23 @@ describe('Field Group hooks', () => {
 
       cleanup()
     })
+    it('should not unmount the group if it was mounted from another source', () => {
+      const form = new FormLogic<{ name: string }>()
+      const group = form.getOrCreateFieldGroup(['name'])
+      group.mount()
+
+      function MyComponent() {
+        useFieldGroup(form, ['name'])
+        return null
+      }
+
+      const screen = render(<MyComponent />)
+      expect(group.isMounted.value).toBeTruthy()
+      screen.unmount()
+      expect(group.isMounted.value).toBeTruthy()
+
+      cleanup()
+    })
   })
   describe('useFieldGroupWithComponents', () => {
     it('should return the field group context from the provided field group logic', () => {

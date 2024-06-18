@@ -54,6 +54,8 @@ export function useField<
   }, [field, options])
 
   useIsomorphicLayoutEffect(() => {
+    // In this case the fields mounted state is managed by another owner
+    if (field.isMounted.peek()) return
     field.mount()
     return () => {
       field.unmount()
