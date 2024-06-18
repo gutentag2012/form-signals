@@ -77,6 +77,8 @@ export function useFieldGroup<
   }, [group, options])
 
   useIsomorphicLayoutEffect(() => {
+    // In this case the groups mounted state is managed by another owner
+    if (group.isMounted.peek()) return
     group.mount()
     return () => {
       group.unmount()
