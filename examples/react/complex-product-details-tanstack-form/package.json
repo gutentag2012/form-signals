@@ -25,7 +25,7 @@
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4",
-    "@tanstack/react-form": "^0.20.3",
+    "@tanstack/react-form": "^0.23.3",
     "@tanstack/zod-form-adapter": "^0.20.3"
   },
   "devDependencies": {
