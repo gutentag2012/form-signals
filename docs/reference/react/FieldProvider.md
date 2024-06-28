@@ -50,7 +50,7 @@ declare function FieldProvider<
     TFormAdapter,
     TMixin
   >,
-): React.ReactElement
+): React.JSX.Element
 ```
 
 An example of the usage:
@@ -87,7 +87,7 @@ declare function FieldWithForm<
   TAdapter,
   TFormAdapter,
   TMixin
->): React.ReactElement
+>): React.JSX.Element
 ```
 
 An example of the usage:
@@ -128,7 +128,7 @@ declare function Field<
   TAdapter,
   TFormAdapter,
   TMixin
->): React.ReactElement
+>): React.JSX.Element
 ```
 
 An example of the usage:
@@ -185,7 +185,7 @@ declare function SubField<
   TFormAdapter,
   TParentMixin,
   TMixin
->): React.ReactElement
+>): React.JSX.Element
 ```
 
 An example of the usage:

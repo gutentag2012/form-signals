@@ -126,7 +126,7 @@ export function FieldGroupProvider<
     TFormAdapter,
     TFieldGroupMixin
   >,
-): React.ReactElement {
+): React.JSX.Element {
   return (
     <FieldGroupContext.Provider value={props.fieldGroup}>
       {useUnwrappedChildren(props.children, props.fieldGroup)}
@@ -187,7 +187,7 @@ export function FieldGroupWithForm<
   TFieldGroupAdapter,
   TFormAdapter,
   TFieldGroupMixin
->): React.ReactElement {
+>): React.JSX.Element {
   const group = useFieldGroup(form, members, props)
   return <FieldGroupProvider fieldGroup={group}>{children}</FieldGroupProvider>
 }
@@ -247,7 +247,7 @@ export function FieldGroup<
   TFieldGroupAdapter,
   TFormAdapter,
   TFieldGroupMixin
->): React.ReactElement {
+>): React.JSX.Element {
   const form = useFormContext<TData, TFormAdapter>()
   return (
     <FieldGroupWithForm form={form} members={members} {...props}>

@@ -70,7 +70,7 @@ function Calendar({
       }}
       components={{
         Dropdown: ({ value, onChange, children, ...props }: DropdownProps) => {
-          const options = Children.toArray(children) as React.ReactElement<
+          const options = Children.toArray(children) as React.JSX.Element<
             React.HTMLProps<HTMLOptionElement>
           >[]
           const selected = options.find((child) => child.props.value === value)

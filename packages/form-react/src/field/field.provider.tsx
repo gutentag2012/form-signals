@@ -121,7 +121,7 @@ export function FieldProvider<
     TFormAdapter,
     TMixin
   >,
-): React.ReactElement {
+): React.JSX.Element {
   return (
     <FieldContext.Provider value={props.field}>
       {useUnwrappedChildren(props.children, props.field)}
@@ -170,7 +170,7 @@ export function FieldWithForm<
   TAdapter,
   TFormAdapter,
   TMixin
->): React.ReactElement {
+>): React.JSX.Element {
   const field = useField(form, name, props)
   return <FieldProvider field={field}>{children}</FieldProvider>
 }
@@ -229,7 +229,7 @@ export function Field<
   TAdapter,
   TFormAdapter,
   TMixin
->): React.ReactElement {
+>): React.JSX.Element {
   const form = useFormContext<TData, TFormAdapter>()
   return (
     <FieldWithForm form={form} name={name} {...props}>
@@ -310,7 +310,7 @@ export function SubField<
   TFormAdapter,
   TParentMixin,
   TMixin
->): React.ReactElement {
+>): React.JSX.Element {
   const field = useField(
     parentField.form as unknown as FormContextType<TData, TFormAdapter>,
     `${parentField.name}.${name}` as unknown as TName,
