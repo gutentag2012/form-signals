@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/dev-tools-react",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "React dev tool component for the @formsignals/form-react library",
   "author": "joshua.gawenda",
   "license": "MIT",
@@ -19,12 +19,12 @@
   "exports": {
     ".": {
       "import": {
-        "default": "./dist/esm/index.js",
-        "types": "./dist/esm/index.d.ts"
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
       },
       "require": {
-        "default": "./dist/cjs/index.cjs",
-        "types": "./dist/cjs/index.d.ts"
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.cjs"
       }
     },
     "./package.json": "./package.json"
@@ -64,7 +64,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@formsignals/form-react": "^0.4.0",
+    "@formsignals/form-react": "^0.4.1",
     "@radix-ui/react-tooltip": "^1.0.7"
   }
 }
