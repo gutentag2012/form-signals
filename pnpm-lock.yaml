@@ -944,7 +944,7 @@ importers:
     dependencies:
       '@formsignals/form-react':
         specifier: ^0.4.0
-        version: 0.4.0(@preact/signals-core@1.6.0)(@preact/signals-react@2.0.1(react@18.3.1))(react@18.3.1)
+        version: link:../form-react
       '@preact/signals-react':
         specifier: ^2.0.0
         version: 2.0.1(react@18.3.1)
@@ -987,7 +987,7 @@ importers:
     dependencies:
       '@formsignals/form-core':
         specifier: 0.4.0
-        version: 0.4.0(@preact/signals-core@1.6.0)
+        version: link:../form-core
       '@preact/signals-react':
         specifier: ^2.0.0
         version: 2.0.1(react@18.3.1)
@@ -1021,7 +1021,7 @@ importers:
     dependencies:
       '@formsignals/form-core':
         specifier: 0.4.0
-        version: 0.4.0(@preact/signals-core@1.6.0)
+        version: link:../form-core
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -2053,17 +2053,6 @@ packages:
 
   '@floating-ui/utils@0.2.2':
     resolution: {integrity: sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==}
-
-  '@formsignals/form-core@0.4.0':
-    resolution: {integrity: sha512-j8tgBg3FdocnEQnJ2ODByeiWsUPIrarrqWf7kMuluhrnE53KBhtf5X0+ixwJ/VVDpDOlJwc3M2NpjPcNdxBOSQ==}
-    peerDependencies:
-      '@preact/signals-core': ^1.5.1
-
-  '@formsignals/form-react@0.4.0':
-    resolution: {integrity: sha512-Wunn3sv0CRo5ZNuKyYZZWUwNqzCPoprCS8r+ahhIa1kR45UIsJzoVa342SZR08M3witt/xPpJrRCwoAnoRApjQ==}
-    peerDependencies:
-      '@preact/signals-react': ^2.0.0
-      react: ^18.2.0
 
   '@hookform/resolvers@3.5.0':
     resolution: {integrity: sha512-bgL8iT0/F+2Q7wB7vYSFu3H1c70C3yI2f9evVw0Td3yf6Fa9eBp6nw5L8mzVJV01EGN1Ky+FhlzGSIoZBOeHDA==}
@@ -6377,18 +6366,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/utils@0.2.2': {}
-
-  '@formsignals/form-core@0.4.0(@preact/signals-core@1.6.0)':
-    dependencies:
-      '@preact/signals-core': 1.6.0
-
-  '@formsignals/form-react@0.4.0(@preact/signals-core@1.6.0)(@preact/signals-react@2.0.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@formsignals/form-core': 0.4.0(@preact/signals-core@1.6.0)
-      '@preact/signals-react': 2.0.1(react@18.3.1)
-      react: 18.3.1
-    transitivePeerDependencies:
-      - '@preact/signals-core'
 
   '@hookform/resolvers@3.5.0(react-hook-form@7.52.0(react@18.3.1))':
     dependencies:
