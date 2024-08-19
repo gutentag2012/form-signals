@@ -1,3 +1,10 @@
+## 0.4.1 (2024-08-19)
+
+
+### 🩹 Fixes
+
+- move default entry file to last place to resolve nextjs error ([0ff0855](https://github.com/gutentag2012/form-signals/commit/0ff0855))
+
 ## 0.4.0 (2024-06-18)
 
 
