@@ -52,7 +52,7 @@ declare function FieldGroupProvider<
     TFormAdapter,
     TFieldGroupMixin
   >,
-): React.ReactElement
+): React.JSX.Element
 ```
 
 An example of the usage:
@@ -95,7 +95,7 @@ declare function FieldGroupWithForm<
   TFieldGroupAdapter,
   TFormAdapter,
   TFieldGroupMixin
->): React.ReactElement
+>): React.JSX.Element
 ```
 
 An example of the usage:
@@ -137,7 +137,7 @@ declare function FieldGroup<
   TFieldGroupAdapter,
   TFormAdapter,
   TFieldGroupMixin
->): React.ReactElement
+>): React.JSX.Element
 ```
 
 An example of the usage:
