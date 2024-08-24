@@ -190,4 +190,6 @@ export default function FieldErrors() {
 
 :::
 
-[//]: # (TODO Add Stackblitz example)
+## Interactive Example
+
+<iframe width="110%" style="margin-left: -5%;" height="500px" src="https://stackblitz.com/fork/github/gutentag2012/form-signals/tree/main/examples/react/simple-form-signals?startScript=example&title=Form%20Signals%20&#124;%20Simple%20Example&file=src%2FApp.tsx&embed=1&ctl=1&hidedevtools=1&terminalHeight=0&hideNavigation=1"></iframe>

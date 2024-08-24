@@ -45,6 +45,7 @@ export default defineConfig({
           },
           { text: 'Concepts', link: '/guide/concepts' },
           { text: 'Devtools', link: '/guide/devtools' },
+          { text: 'Examples', link: '/guide/examples' },
         ],
       },
       {

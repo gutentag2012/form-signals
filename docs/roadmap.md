@@ -52,7 +52,7 @@ The versions do not match the versions where the features were added.
 ## Version 0.4.0
 
 - :white_check_mark: <LibraryChip library="form-react" /> Add example for shopping cart on e-commerce site (multipage) (with form outside of react components)
-- :x: <LibraryChip library="chore" /> Add Use Cases & Examples section to documentation --> Add simple examples with minimal dependencies for the doc site to integrate with stackblitz and codesandbox but mention the other examples in the repo
+- :white_check_mark: <LibraryChip library="chore" /> Add Use Cases & Examples section to documentation --> Add simple examples with minimal dependencies for the doc site to integrate with stackblitz and codesandbox but mention the other examples in the repo
 
 ## Version 0.5.0
 
