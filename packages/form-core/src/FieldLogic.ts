@@ -509,7 +509,7 @@ export class FieldLogic<
       )
     }
     if (this._options.peek()?.validateOnNestedChange) {
-      this._unsubscribeFromChangeEffect = effect(async () => {
+      this._unsubscribeFromChangeEffect = effect(() => {
         const currentValue = unSignalifyValueSubscribed(this.data)
         const mixinValues =
           this._options
@@ -517,13 +517,13 @@ export class FieldLogic<
             ?.validateMixin?.map((mixin) =>
               unSignalifyValueSubscribed(this._form.getValueForPath(mixin)),
             ) ?? []
-        await runOnChangeValidation(
+        runOnChangeValidation(
           currentValue,
           mixinValues as ValueAtPathForTuple<TData, TMixin>,
         )
       })
     } else {
-      this._unsubscribeFromChangeEffect = effect(async () => {
+      this._unsubscribeFromChangeEffect = effect(() => {
         const currentValue = unSignalifyValue<ValueAtPath<TData, TName>>(
           this.data.value,
         )
@@ -533,7 +533,7 @@ export class FieldLogic<
             ?.validateMixin?.map((mixin) =>
               unSignalifyValue(this._form.getValueForPath(mixin).value),
             ) ?? []
-        await runOnChangeValidation(
+        runOnChangeValidation(
           currentValue,
           mixinValues as ValueAtPathForTuple<TData, TMixin>,
         )

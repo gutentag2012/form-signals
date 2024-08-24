@@ -444,14 +444,14 @@ export class FieldGroupLogic<
         mixins,
       )
     }
-    this._unsubscribeFromChangeEffect = effect(async () => {
+    this._unsubscribeFromChangeEffect = effect(() => {
       const mixinValues =
         this._options
           .peek()
           ?.validateMixin?.map((mixin) =>
             unSignalifyValue(this._form.getValueForPath(mixin).value),
           ) ?? []
-      await runOnChangeValidation(
+      runOnChangeValidation(
         this.data.value,
         mixinValues as ValueAtPathForTuple<TData, TMixin>,
       )

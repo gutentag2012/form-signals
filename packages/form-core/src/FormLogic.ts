@@ -520,7 +520,7 @@ export class FormLogic<
   public async mount(): Promise<() => void> {
     // Once mounted, we want to listen to all changes to the form
     this._unsubscribeFromChangeEffect?.()
-    this._unsubscribeFromChangeEffect = effect(async () => {
+    this._unsubscribeFromChangeEffect = effect(() => {
       const currentJson = this._jsonData.value
 
       if (!this._isMounted.peek()) {
@@ -534,7 +534,7 @@ export class FormLogic<
       // Clear all onSubmit errors when the value changes
       clearErrorMap(this._errorMap)
 
-      await this.validateForEventInternal('onChange', currentJson as TData)
+      this.validateForEventInternal('onChange', currentJson as TData)
     })
 
     this._isMounted.value = true
