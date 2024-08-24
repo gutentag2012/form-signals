@@ -36,6 +36,7 @@ export const form = new FormLogic<CartFormValues>({
 })
 form.mount()
 
+// Since this field is used in different locations, we create and mount it manually so that it is not unmounted in a different place
 const productsFieldLogic = form.getOrCreateField('products', {
   validator: (products) =>
     !products.length && 'Please add at least one product',

@@ -13,7 +13,6 @@ import {
 } from '../ui/table'
 
 export function UserList() {
-  // For some reason, I have to destructure isFetching to _ to be able to get the newest data
   const {
     isLoading,
     data,

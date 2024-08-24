@@ -1,14 +1,6 @@
 import { useFieldContext, useForm } from '@formsignals/form-react'
 import type { Signal } from '@preact/signals-react'
 
-const dateToString = (date: Date | null) => {
-  if (date === null) return ''
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
-}
-
 function App() {
   const form = useForm({
     defaultValues: {
@@ -101,4 +93,12 @@ export function ErrorText() {
   const field = useFieldContext()
   if (field.isValid.value) return null
   return <span>{field.errors.value.join(', ')}</span>
+}
+
+function dateToString(date: Date | null) {
+  if (date === null) return ''
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
 }

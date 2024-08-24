@@ -90,6 +90,7 @@ export const Index = () => {
   )
 }
 
+// This is extracted to a separate component to avoid re-rendering the whole form when the canSubmit value changes
 const SubmitButton = () => {
   const form = useFormContext()
   return (

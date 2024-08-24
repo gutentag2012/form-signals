@@ -7,10 +7,10 @@
     "example": "vite"
   },
   "dependencies": {
-    "@formsignals/dev-tools-react": "workspace:*",
-    "@formsignals/form-core": "workspace:*",
-    "@formsignals/form-react": "workspace:*",
-    "@formsignals/validation-adapter-zod": "workspace:*",
+    "@formsignals/dev-tools-react": "^0.4.1",
+    "@formsignals/form-core": "^0.4.1",
+    "@formsignals/form-react": "^0.4.1",
+    "@formsignals/validation-adapter-zod": "^0.4.1",
     "@preact/signals-react": "^2.2.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.0",

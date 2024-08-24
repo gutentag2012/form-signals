@@ -5,6 +5,33 @@ import { ErrorText } from './ErrorText.tsx'
 import { PersonInputs } from './PersonInputs.tsx'
 import type { Person } from './types.ts'
 
+function App() {
+  const form = useForm({
+    defaultValues: {
+      contacts: [] as Person[],
+    },
+    validatorAdapter: ZodAdapter,
+    onSubmit: (values) => {
+      alert(JSON.stringify(values, null, 2))
+    },
+  })
+
+  return (
+    <form.FormProvider>
+      <form.FieldProvider
+        name="contacts"
+        validator={(value) =>
+          value.length < 440 &&
+          'There must be at least 440 contacts to be accepted'
+        }
+      >
+        <ArrayField />
+      </form.FieldProvider>
+      <FormDevTools />
+    </form.FormProvider>
+  )
+}
+
 const ArrayField = () => {
   const field = useFieldContext<Person[], ''>()
 
@@ -68,33 +95,6 @@ const ArrayField = () => {
         </field.SubFieldProvider>
       ))}
     </form>
-  )
-}
-
-function App() {
-  const form = useForm({
-    defaultValues: {
-      contacts: [] as Person[],
-    },
-    validatorAdapter: ZodAdapter,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2))
-    },
-  })
-
-  return (
-    <form.FormProvider>
-      <form.FieldProvider
-        name="contacts"
-        validator={(value) =>
-          value.length < 440 &&
-          'There must be at least 440 contacts to be accepted'
-        }
-      >
-        <ArrayField />
-      </form.FieldProvider>
-      <FormDevTools />
-    </form.FormProvider>
   )
 }
 
