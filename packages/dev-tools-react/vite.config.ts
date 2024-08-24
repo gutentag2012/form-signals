@@ -15,7 +15,7 @@ export default defineConfig({
       enabled: true,
       provider: 'istanbul',
       include: ['src/**/*'],
-      exclude: ['src/**/*.spec.ts', 'src/**/*.spec-d.ts'],
+      exclude: ['src/**/*.spec.ts?(x)', 'src/**/*.spec-d.ts?(x)'],
       reporter: [
         'html',
         'lcov',

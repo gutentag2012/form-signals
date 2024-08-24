@@ -15,8 +15,8 @@ export default defineConfig({
       provider: 'istanbul',
       include: ['src/**/*'],
       exclude: [
-        'src/**/*.spec.ts',
-        'src/**/*.spec-d.ts',
+        'src/**/*.spec.ts?(x)',
+        'src/**/*.spec-d.ts?(x)',
         'src/TestComponent.tsx',
         'src/utils/useIsomorphicLayoutEffect.ts',
       ],
