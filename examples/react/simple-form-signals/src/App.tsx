@@ -56,6 +56,7 @@ function App() {
           name="dateOfBirth"
           transformToBinding={dateToString}
           transformFromBinding={(e) => new Date(e)}
+          validator={(value) => !value && 'This field is required!'}
         >
           {(field) => (
             <div>
