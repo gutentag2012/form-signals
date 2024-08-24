@@ -1,0 +1,7 @@
+node_modules
+coverage
+src
+index.html
+project.json
+tsconfig.json
+vite.config.ts
