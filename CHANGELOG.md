@@ -1,3 +1,11 @@
+## 0.4.2 (2024-08-24)
+
+
+### 🩹 Fixes
+
+- elements returning jsx elements instead of react nodes ([a38dd87](https://github.com/gutentag2012/form-signals/commit/a38dd87))
+- add npmignore to reduce package size ([70f3199](https://github.com/gutentag2012/form-signals/commit/70f3199))
+
 ## 0.4.1 (2024-08-19)
 
 
