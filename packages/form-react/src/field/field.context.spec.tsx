@@ -130,9 +130,9 @@ describe('Field Context', () => {
     it('should throw an error if used outside of a FieldProvider', () => {
       function ContextConsumer() {
         useFieldContext()
-        return null
       }
       expect(() => {
+        // @ts-expect-error This is not technically a valid component
         render(<ContextConsumer />)
       }).toThrowError('useFieldContext must be used within a FieldProvider')
     })

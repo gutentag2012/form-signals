@@ -36,10 +36,10 @@
     "README.md"
   ],
   "dependencies": {
-    "@formsignals/form-core": "0.4.1"
+    "@formsignals/form-core": "^0.4.1"
   },
   "peerDependencies": {
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "keywords": [
     "signals",

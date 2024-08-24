@@ -38,17 +38,17 @@
     "README.md"
   ],
   "peerDependencies": {
-    "@preact/signals-react": "^2.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@preact/signals-react": "^2.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@preact/signals-react-transform": "^0.3.0",
+    "@preact/signals-react-transform": "^0.4.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.2.19",
-    "@vitejs/plugin-react": "^4.3.0"
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1"
   },
   "keywords": [
     "signals",
@@ -65,6 +65,6 @@
   },
   "dependencies": {
     "@formsignals/form-react": "^0.4.1",
-    "@radix-ui/react-tooltip": "^1.0.7"
+    "@radix-ui/react-tooltip": "^1.1.2"
   }
 }

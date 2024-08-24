@@ -113,15 +113,11 @@ describe('Form Context', () => {
   describe('useFormContext', () => {
     it('should throw an error when used outside of a FormProvider', () => {
       function ContextConsumer() {
-        const context = useFormContext()
-        return (
-          <div>
-            <p>Has context: {JSON.stringify(!!context)}</p>
-          </div>
-        )
+        useFormContext()
       }
 
       expect(() => {
+        // @ts-expect-error This is not technically a valid component
         render(<ContextConsumer />)
       }).toThrowError('useFormContext must be used within a FormProvider')
     })

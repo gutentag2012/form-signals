@@ -57,9 +57,9 @@ describe('Field Group Context', () => {
     it('should throw an error if used outside of a FieldGroupProvider', () => {
       function ContextConsumer() {
         useFieldGroupContext()
-        return null
       }
       expect(() => {
+        // @ts-expect-error This is not technically a valid component
         render(<ContextConsumer />)
       }).toThrowError(
         'useFieldGroupContext must be used within a FieldGroupProvider',
