@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@preact/signals-react-transform": "^0.3.2",
+    "@preact/signals-react-transform": "^0.4.0",
     "@types/react": "~18.3.5",
     "typescript": "^5.5.4"
   },
