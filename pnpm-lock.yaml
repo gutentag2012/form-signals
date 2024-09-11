@@ -426,8 +426,8 @@ importers:
         specifier: ^0.23.3
         version: 0.23.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/zod-form-adapter':
-        specifier: ^0.20.3
-        version: 0.20.3(zod@3.23.8)
+        specifier: ^0.32.0
+        version: 0.32.0(zod@3.23.8)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -2815,11 +2815,11 @@ packages:
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
-  '@tanstack/form-core@0.20.3':
-    resolution: {integrity: sha512-oFu1fBSQyDL7fkvXxP2ZPnXWFcac973xghNPfiF8DMUzJ7MBFe4sZHB5HS6l3YGWtMFnqRwW4sFIhHLGKtDVJA==}
-
   '@tanstack/form-core@0.23.3':
     resolution: {integrity: sha512-unm9IoFZQTNF8thAwWcQSolAzqVHZ7WqDxsCDazDqhrWXoWu1VfDcqKML6MBjaoUxLTictjHg/akrnXtEggnZw==}
+
+  '@tanstack/form-core@0.32.0':
+    resolution: {integrity: sha512-8x+6/QRUxiZy2Oq4p62wHXilVOIhV/Zy3uQwhBU/+pSgaC4ZmIxTE9GmUfxZTD8fhx8KBwcQsivC/8AXs4Zarg==}
 
   '@tanstack/query-core@5.51.24':
     resolution: {integrity: sha512-qtIR0FMHUDIWyIQw87q4C+so7XaN59MsGfWrc6rgi2VTHrVZF3Hd0St2dbpqRetHf6XW5yY5lzTrXpTilPlxUg==}
@@ -2840,14 +2840,11 @@ packages:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
 
-  '@tanstack/store@0.3.1':
-    resolution: {integrity: sha512-A49KN8SpLMWaNmZGPa9K982RQ81W+m7W6iStcQVeKeVS70JZRqkF0fDwKByREPq6qz9/kS0aQFOPQ0W6wIeU5g==}
-
   '@tanstack/store@0.5.5':
     resolution: {integrity: sha512-EOSrgdDAJExbvRZEQ/Xhh9iZchXpMN+ga1Bnk8Nmygzs8TfiE6hbzThF+Pr2G19uHL6+DTDTHhJ8VQiOd7l4tA==}
 
-  '@tanstack/zod-form-adapter@0.20.3':
-    resolution: {integrity: sha512-ghsytT4isgelVER6Qdty6ZVdD8SZfT8TuhNHrbC2snVrqQxrSdqQFr5JPvVMycs06y5l3OLspW97HkIO3d7lBw==}
+  '@tanstack/zod-form-adapter@0.32.0':
+    resolution: {integrity: sha512-N42Sl02rZBMZ70iLtqsnPTtGbRwuwx+SePFdGcJiQ1JE6W8s/0lBpSi8ArGRO2I+Pg0Bn1fpzDSx3FpxhyiqJQ==}
     peerDependencies:
       zod: ^3.x
 
@@ -7242,11 +7239,11 @@ snapshots:
 
   '@sinclair/typebox@0.27.8': {}
 
-  '@tanstack/form-core@0.20.3':
-    dependencies:
-      '@tanstack/store': 0.3.1
-
   '@tanstack/form-core@0.23.3':
+    dependencies:
+      '@tanstack/store': 0.5.5
+
+  '@tanstack/form-core@0.32.0':
     dependencies:
       '@tanstack/store': 0.5.5
 
@@ -7273,13 +7270,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.2.2(react@18.3.1)
 
-  '@tanstack/store@0.3.1': {}
-
   '@tanstack/store@0.5.5': {}
 
-  '@tanstack/zod-form-adapter@0.20.3(zod@3.23.8)':
+  '@tanstack/zod-form-adapter@0.32.0(zod@3.23.8)':
     dependencies:
-      '@tanstack/form-core': 0.20.3
+      '@tanstack/form-core': 0.32.0
       zod: 3.23.8
 
   '@testing-library/dom@10.4.0':
