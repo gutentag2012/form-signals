@@ -13,8 +13,8 @@ import { Button } from './components/ui/button'
 import './index.css'
 
 export const Index = () => {
-  const form = useForm<Product, typeof zodValidator>({
-    validatorAdapter: zodValidator,
+  const form = useForm<Product, ReturnType<typeof zodValidator>>({
+    validatorAdapter: zodValidator(),
     onSubmit: (values) => {
       window.alert(
         `Form submitted with values\n${JSON.stringify(values, null, 2)}`,
@@ -89,22 +89,6 @@ export const Index = () => {
 const SubmitButton = ({ form }: { form: FormApi<any, any> }) => {
   return (
     <>
-      <pre>
-        {JSON.stringify(
-          {
-            canSubmit: form.state.canSubmit,
-            isSubmitting: form.state.isSubmitting,
-            isValid: form.state.isValid,
-            isDirty: form.state.isDirty,
-            isTouched: form.state.isTouched,
-            errors: form.state.errors,
-            errorMap: form.state.errorMap,
-            fieldErrorMaps: form.state.fieldMeta,
-          },
-          null,
-          2,
-        )}
-      </pre>
       <Button
         className="mt-2 max-w-[280px]"
         type="submit"

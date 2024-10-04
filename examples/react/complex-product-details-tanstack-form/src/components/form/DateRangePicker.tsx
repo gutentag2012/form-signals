@@ -2,13 +2,13 @@ import { ErrorText } from '@/components/form/ErrorText.tsx'
 import { DatePicker } from '@/components/ui/DatePicker.tsx'
 import { Label } from '@/components/ui/label.tsx'
 import type { Product } from '@/types.ts'
-import type { FormApi } from '@tanstack/react-form'
+import type { ReactFormApi } from '@tanstack/react-form'
 import type { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 
 export const DateRangePicker = ({
   form,
-}: { form: FormApi<Product, typeof zodValidator> }) => {
+}: { form: ReactFormApi<Product, ReturnType<typeof zodValidator>> }) => {
   return (
     <div className="flex flex-row gap-2">
       <form.Field

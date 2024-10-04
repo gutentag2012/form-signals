@@ -9,7 +9,12 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.tsx'
 import type { Product } from '@/types.ts'
-import type { FieldApi, FormApi, FormState } from '@tanstack/react-form'
+import type {
+  FormState,
+  ReactFormApi,
+  UseField,
+  Validator,
+} from '@tanstack/react-form'
 import type { zodValidator } from '@tanstack/zod-form-adapter'
 import {
   type Dispatch,
@@ -21,9 +26,16 @@ import {
 } from 'react'
 import { z } from 'zod'
 
+type ReactFieldApi<
+  TParentData,
+  TFormValidator extends
+    | Validator<TParentData, unknown>
+    | undefined = undefined,
+> = ReturnType<UseField<TParentData, TFormValidator>>
+
 export const VariantCreator = ({
   form,
-}: { form: FormApi<Product, typeof zodValidator> }) => {
+}: { form: ReactFormApi<Product, ReturnType<typeof zodValidator>> }) => {
   const field = form.useField({
     name: 'variants',
     mode: 'array',
@@ -82,7 +94,7 @@ const VariantTab = ({
   field,
 }: {
   index: number
-  field: FieldApi<Product, 'variants', never, typeof zodValidator>
+  field: ReactFieldApi<Product, ReturnType<typeof zodValidator>>
 }) => {
   // Determines whether the last option was just added to focus it
   const justAddedOption = useRef(false)
@@ -171,12 +183,7 @@ const VariantOptionsList = ({
   index,
 }: {
   justAddedOption: RefObject<boolean>
-  field: FieldApi<
-    Product,
-    `variants[${number}].options`,
-    never,
-    typeof zodValidator
-  >
+  field: ReactFieldApi<Product, ReturnType<typeof zodValidator>>
   index: number
 }) => {
   return field.state.value.map((_, optionIndex) => (
@@ -213,7 +220,7 @@ const VariantTabsTrigger = ({
 }: {
   selectedVariant: string
   setSelectedVariant: Dispatch<SetStateAction<string>>
-  field: FieldApi<Product, 'variants', never, typeof zodValidator>
+  field: ReactFieldApi<Product, ReturnType<typeof zodValidator>>
 }) => {
   return (
     <>
