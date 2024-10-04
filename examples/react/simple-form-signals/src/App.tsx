@@ -26,8 +26,8 @@ function App() {
         >
           {(field) => (
             <div>
-              <label>Name:</label>
-              <InputSignal data={field.data} />
+              <label htmlFor="name">Name:</label>
+              <InputSignal name="name" data={field.data} />
               <ErrorText />
             </div>
           )}
@@ -38,8 +38,8 @@ function App() {
         >
           {(field) => (
             <div>
-              <label>Email:</label>
-              <InputSignal data={field.data} type="email" />
+              <label htmlFor="email">Email:</label>
+              <InputSignal data={field.data} type="email" name="email" />
               <ErrorText />
             </div>
           )}
@@ -52,8 +52,12 @@ function App() {
         >
           {(field) => (
             <div>
-              <label>Date of Birth:</label>
-              <InputSignal data={field.transformedData} type="date" />
+              <label htmlFor="dob">Date of Birth:</label>
+              <InputSignal
+                data={field.transformedData}
+                type="date"
+                name="dob"
+              />
               <ErrorText />
             </div>
           )}

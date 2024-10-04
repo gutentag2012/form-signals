@@ -21,8 +21,8 @@ import {
 import type { Product } from '@/types.ts'
 import {
   type FieldApi,
-  type FormApi,
   type FormState,
+  type ReactFormApi,
   useForm,
 } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
@@ -46,7 +46,7 @@ const TaxRateSchema = z
 const supportedCurrencies = ['EUR', 'USD', 'GBP']
 export const PriceTable = ({
   form,
-}: { form: FormApi<Product, typeof zodValidator> }) => {
+}: { form: ReactFormApi<Product, ReturnType<typeof zodValidator>> }) => {
   const [selectedCurrency, setSelectedCurrency] = useState('EUR')
 
   const pricesField = form.useField({
@@ -61,9 +61,9 @@ export const PriceTable = ({
   })
   const subForm = useForm<
     Product['prices'][string][number],
-    typeof zodValidator
+    ReturnType<typeof zodValidator>
   >({
-    validatorAdapter: zodValidator,
+    validatorAdapter: zodValidator(),
     defaultValues: {
       count: null as never,
       price: null as never,
@@ -108,8 +108,6 @@ export const PriceTable = ({
               <form.Field
                 key={`prices.${currency}`}
                 name={`prices.${currency}`}
-                // Cannot use defaultValue={[]} here, since that would set the value to [] every time it mounts again
-                preserveValue
               >
                 {(field) => (
                   <PriceTableBody field={field} pricesField={pricesField} />
@@ -239,8 +237,18 @@ const PriceTableBody = ({
   field,
   pricesField,
 }: {
-  field: FieldApi<Product, `prices.${string}`, undefined, typeof zodValidator>
-  pricesField: FieldApi<Product, `prices`, undefined, typeof zodValidator>
+  field: FieldApi<
+    Product,
+    `prices.${string}`,
+    undefined,
+    ReturnType<typeof zodValidator>
+  >
+  pricesField: FieldApi<
+    Product,
+    `prices`,
+    undefined,
+    ReturnType<typeof zodValidator>
+  >
 }) => {
   if (!field.state.value) return null
   return field.state.value.map((arrayEntry, index) => (
@@ -266,7 +274,9 @@ const PriceTableBody = ({
 
 const PriceTableErrorText = ({
   field,
-}: { field: FieldApi<Product, any, undefined, typeof zodValidator> }) => {
+}: {
+  field: FieldApi<Product, any, undefined, ReturnType<typeof zodValidator>>
+}) => {
   if (!field.state.meta.errors.length) return null
   return (
     <TableRow disableHoverStyle>

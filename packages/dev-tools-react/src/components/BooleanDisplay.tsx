@@ -18,12 +18,12 @@ export function BooleanDisplay(props: BooleanDisplayProps) {
   return (
     <div className="fs-utils--flex">
       <Tooltip delayDuration={500}>
-        <label className="fs-boolean-display">
+        <span className="fs-boolean-display">
           <TooltipTrigger asChild>
             <strong>{props.label}</strong>
           </TooltipTrigger>
           <div className={dotClass} />
-        </label>
+        </span>
         <TooltipContent>
           <p>{props.tooltip}</p>
         </TooltipContent>

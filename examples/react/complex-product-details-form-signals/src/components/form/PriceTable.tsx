@@ -34,7 +34,7 @@ const NumberToString = (
   value: number | null,
   isValid: boolean,
   buffer?: string,
-) => (!isValid ? buffer ?? '' : value === null ? '' : `${value}`)
+) => (!isValid ? (buffer ?? '') : value === null ? '' : `${value}`)
 
 const numberRegex = /^-?\d+([,.]\d+)?$/
 const StringToNumber = (value: string): number | [number, ValidationError] => {

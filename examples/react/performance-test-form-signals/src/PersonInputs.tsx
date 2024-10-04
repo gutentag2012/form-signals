@@ -21,8 +21,8 @@ export function PersonInputs() {
         validator={z.string().min(1)}
         defaultValue="asd"
       >
-        <label>Name</label>
-        <FormInput />
+        <label htmlFor="name">Name</label>
+        <FormInput id="name" />
       </field.SubFieldProvider>
       <field.SubFieldProvider
         name="age"
@@ -33,16 +33,16 @@ export function PersonInputs() {
         transformFromBinding={(v) => Number.parseInt(v)}
         defaultValue={0}
       >
-        <label>Age</label>
-        <FormInputTransformed type="number" />
+        <label htmlFor="name">Age</label>
+        <FormInputTransformed name="age" type="number" />
       </field.SubFieldProvider>
       <field.SubFieldProvider
         name="email"
         validator={z.string().email().min(1)}
         defaultValue="asd@asd.de"
       >
-        <label>Email</label>
-        <FormInput type="email" />
+        <label htmlFor="email">Email</label>
+        <FormInput type="email" name="email" />
       </field.SubFieldProvider>
       <field.SubFieldProvider
         name="dob"
@@ -56,8 +56,8 @@ export function PersonInputs() {
         }
         transformFromBinding={(v) => (v as unknown as Date) && new Date(v!)}
       >
-        <label>Date of Birth</label>
-        <FormInputTransformed type="date" />
+        <label htmlFor="dob">Date of Birth</label>
+        <FormInputTransformed name="dob" type="date" />
       </field.SubFieldProvider>
       <ErrorText />
     </div>

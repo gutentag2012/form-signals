@@ -5,26 +5,22 @@
   "scripts": {
     "example": "expo start"
   },
-  "type": "module",
   "dependencies": {
-    "@formsignals/form-core": "^0.3.1",
-    "@formsignals/form-react": "^0.3.1",
-    "@formsignals/validation-adapter-zod": "^0.3.1",
+    "@formsignals/form-core": "^0.4.2",
+    "@formsignals/form-react": "^0.4.2",
+    "@formsignals/validation-adapter-zod": "^0.4.2",
     "@preact/signals-react": "^2.2.0",
     "expo": "~51.0.28",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",
-    "react-native": "0.74.1",
+    "react-native": "0.74.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@preact/signals-react-transform": "^0.3.2",
-    "@types/react": "~18.3.5",
-    "typescript": "^5.5.4"
-  },
-  "engine": {
-    "npm": ">= 10.0.0"
+    "@babel/core": "^7.20.0",
+    "@preact/signals-react-transform": "^0.4.0",
+    "@types/react": "~18.2.45",
+    "typescript": "^5.1.3"
   },
   "private": true
 }
