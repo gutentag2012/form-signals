@@ -64,6 +64,6 @@
   },
   "dependencies": {
     "@formsignals/form-react": "^0.4.2",
-    "@radix-ui/react-tooltip": "^1.1.2"
+    "@radix-ui/react-tooltip": "^1.1.3"
   }
 }
