@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.3",
-    "@nx/js": "19.8.3",
+    "@nx/js": "20.0.3",
     "@types/node": "^22.7.4",
     "@vitest/coverage-istanbul": "^2.1.2",
     "jsdom": "^25.0.1",
