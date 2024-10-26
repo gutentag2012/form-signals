@@ -47,6 +47,16 @@ const signalData = signal({
 })
 ```
 
+## Array Field Specific Options
+
+When working with array fields, there are two important options that can be set:
+
+- `removeValueOnUnmount`: If the field is unmounted, should the form remove the value from the array?
+- `resetValueToDefaultOnUnmount`: If the field is unmounted, should the form reset the value to the default value?
+
+By default, unmounting a field does not affect the form values implicitly.
+These options provide a way to add this implicit behavior if needed.
+
 ## Helper Functions
 
 Since every new entry to an array has to be converted to the special signal syntax,
