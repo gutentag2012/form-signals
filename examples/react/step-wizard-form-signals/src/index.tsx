@@ -20,7 +20,6 @@ export const Index = () => {
   }, [step])
 
   const form = useForm<FormValues, typeof ZodAdapter>({
-    validateUnmountedChildren: true,
     validatorAdapter: ZodAdapter,
     onSubmit: (values) => {
       alert(`Form submitted!\n${JSON.stringify(values, null, 2)}`)

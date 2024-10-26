@@ -82,25 +82,46 @@ describe('FormLogic', () => {
       expect(form.fields.peek().length).toBe(1)
       expect(form.fields.peek()[0]).toBe(field)
     })
-    it('should loose a field once it is unmounted without preserving its value', () => {
+    it('should loose a fields value once it is unmounted if configured', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         removeValueOnUnmount: true,
       })
       field.mount()
+      field.data.value = 'asd'
       expect(form.fields.peek().length).toBe(1)
+      expect(form.json.value.name).toBe('asd')
 
       field.unmount()
       expect(form.fields.peek().length).toBe(0)
+      expect(form.json.value.name).toBeUndefined()
     })
-    it('should keep a field once it is unmounted if preserving its value', () => {
+    it('should reset a fields value to default once it is unmounted if configured', () => {
+      const form = new FormLogic<{ name: string }>()
+      const field = new FieldLogic(form, 'name', {
+        resetValueToDefaultOnUnmount: true,
+        defaultValue: 'default',
+      })
+      field.mount()
+      field.data.value = 'asd'
+      expect(form.fields.peek().length).toBe(1)
+      expect(form.json.value.name).toBe('asd')
+
+      field.unmount()
+      expect(form.fields.peek().length).toBe(0)
+      expect(form.json.value.name).toBe('default')
+    })
+    it('should only keep a fields value once it is unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
       field.mount()
+      field.data.value = 'asd'
       expect(form.fields.peek().length).toBe(1)
+      expect(form.json.value.name).toBe('asd')
 
       field.unmount()
-      expect(form.fields.peek().length).toBe(1)
+      expect(form.fields.peek().length).toBe(0)
+      expect(form.json.value.name).toBe('asd')
     })
     it('should no register a field that is already registered', () => {
       const form = new FormLogic<{ name: string }>()
@@ -240,7 +261,7 @@ describe('FormLogic', () => {
       expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(true)
     })
-    it('should consider removed fields when calculating touched and dirty when configured', () => {
+    it('should consider removed fields when calculating dirty (but not touched) state when configured', () => {
       const form = new FormLogic({
         defaultValues: {
           name: 'default',
@@ -263,7 +284,8 @@ describe('FormLogic', () => {
       expect(form.isDirty.value).toBe(true)
 
       newField.unmount()
-      expect(form.isTouched.value).toBe(true)
+      // It should not be touched, since the field that was touched was removed and a form is only touched if one of its fields is touched
+      expect(form.isTouched.value).toBe(false)
       expect(form.isDirty.value).toBe(true)
     })
     it('should stay dirty but not touched when removed field sets value to undefined', () => {
@@ -387,7 +409,7 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(form.canSubmit.value).toBe(false)
     })
-    it('should not can submit if a form field is invalid, unmounted and did preserve its value', async () => {
+    it('should can submit if a form field is invalid, unmounted and did preserve its value', async () => {
       const form = new FormLogic<{ name: string }>()
       await form.mount()
       const field = new FieldLogic(form, 'name', {
@@ -399,7 +421,8 @@ describe('FormLogic', () => {
       await field.mount()
       expect(form.canSubmit.value).toBe(false)
       field.unmount()
-      expect(form.canSubmit.value).toBe(false)
+      // It should be possible to submit since the validator is not mounted anymore
+      expect(form.canSubmit.value).toBe(true)
     })
     it('should not can submit if the form is disabled', async () => {
       const form = new FormLogic<{ name: string }>()
@@ -1088,30 +1111,7 @@ describe('FormLogic', () => {
 
       expect(validate).toHaveBeenCalledTimes(1)
     })
-    it('should show errors for fields that are unmounted and preserved their value', async () => {
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: '',
-        },
-      })
-      form.mount()
-      const field = new FieldLogic(form, 'name', {
-        validator: () => 'error',
-      })
-      field.mount()
-
-      form.data.value.name.value = 'test1'
-
-      expect(field.errors.value).toEqual(['error'])
-      expect(form.mountedFieldErrors.value).toEqual(['error'])
-      expect(form.unmountedFieldErrors.value).toEqual([])
-      field.unmount()
-
-      expect(field.errors.value).toEqual(['error'])
-      expect(form.mountedFieldErrors.value).toEqual([])
-      expect(form.unmountedFieldErrors.value).toEqual(['error'])
-    })
-    it('should not show errors for fields that are unmounted and did not preserve their value', async () => {
+    it('should not show errors for fields that are unmounted', async () => {
       const form = new FormLogic<{ name: string }>({
         defaultValues: {
           name: '',
@@ -1127,13 +1127,11 @@ describe('FormLogic', () => {
       form.data.value.name.value = 'test1'
 
       expect(field.errors.value).toEqual(['error'])
-      expect(form.mountedFieldErrors.value).toEqual(['error'])
-      expect(form.unmountedFieldErrors.value).toEqual([])
+      expect(form.fieldErrors.value).toEqual(['error'])
       field.unmount()
 
       expect(field.errors.value).toEqual([])
-      expect(form.mountedFieldErrors.value).toEqual([])
-      expect(form.unmountedFieldErrors.value).toEqual([])
+      expect(form.fieldErrors.value).toEqual([])
     })
     it('should validate with a given adapter', () => {
       const form = new FormLogic<number, typeof adapter>({
@@ -1214,23 +1212,6 @@ describe('FormLogic', () => {
       field.unmount()
       await form.handleSubmit()
       expect(field.errors.value).toEqual([])
-    })
-    it('should validate unmounted fields onSubmit if configured', async () => {
-      const form = new FormLogic<{ name: string }>({
-        defaultValues: {
-          name: 'default',
-        },
-        validateUnmountedChildren: true,
-      })
-      await form.mount()
-      const field = new FieldLogic(form, 'name', {
-        validator: () => 'error',
-      })
-      await field.mount()
-
-      field.unmount()
-      await form.handleSubmit()
-      expect(field.errors.value).toEqual(['error'])
     })
   })
   describe('handleSubmit', () => {
@@ -1806,6 +1787,48 @@ describe('FormLogic', () => {
 
         expect(form.json.value).toEqual(defaultValues)
         expect(nestedUpdate).toHaveBeenCalledTimes(6)
+      })
+      it('should reset dirty array fields back to default value', () => {
+        const form = new FormLogic({
+          defaultValues: {
+            array: [1, 2, 3],
+          },
+        })
+        form.mount()
+        const arrayField = form.getOrCreateField('array')
+        arrayField.mount()
+
+        arrayField.pushValueToArray(4)
+
+        expect(form.json.value).toEqual({
+          array: [1, 2, 3, 4],
+        })
+        expect(arrayField.data.value.length).toBe(4)
+        form.reset()
+        expect(form.json.value).toEqual({
+          array: [1, 2, 3],
+        })
+        expect(arrayField.data.value.length).toBe(3)
+      })
+      it('should reset dirty array fields if the default value is on the field', () => {
+        const form = new FormLogic<{ array: number[] }>()
+        form.mount()
+        const arrayField = form.getOrCreateField('array', {
+          defaultValue: [1, 2, 3],
+        })
+        arrayField.mount()
+
+        arrayField.pushValueToArray(4)
+
+        expect(form.json.value).toEqual({
+          array: [1, 2, 3, 4],
+        })
+        expect(arrayField.data.value.length).toBe(4)
+        form.reset()
+        expect(form.json.value).toEqual({
+          array: [1, 2, 3],
+        })
+        expect(arrayField.data.value.length).toBe(3)
       })
     })
 
@@ -2442,6 +2465,32 @@ describe('FormLogic', () => {
       form.handleChange('', 'newValue')
 
       expect(form.data.value).toBe('newValue')
+    })
+  })
+  describe('bugs', () => {
+    it('#119 - should be able to reset array fields after children mounted', () => {
+      const form = new FormLogic<{
+        variants: Array<{ name: string; options: string[] }>
+      }>()
+      form.mount()
+      const variantsField = form.getOrCreateField('variants', {
+        defaultValue: [],
+      })
+      variantsField.mount()
+      variantsField.pushValueToArray({ name: 'variant1', options: [] })
+
+      const variant1NameField = form.getOrCreateField('variants.0.name')
+      variant1NameField.mount()
+      const variant1OptionsField = form.getOrCreateField('variants.0.options')
+      variant1OptionsField.mount()
+
+      expect(form.json.value).toEqual({
+        variants: [{ name: 'variant1', options: [] }],
+      })
+      form.reset()
+      expect(form.json.value).toEqual({
+        variants: [],
+      })
     })
   })
 })

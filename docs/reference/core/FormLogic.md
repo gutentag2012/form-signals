@@ -57,8 +57,6 @@ export type FormLogicOptions<
     : ValidatorAsync<TData> | ReturnType<ValidatorSchemaType<TData, never[]>>
   validatorAsyncOptions?: ValidatorAsyncOptions
 
-  validateUnmountedChildren?: boolean
-
   defaultValues?: TData
 
   onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError> | ValidationError>) => void) => void | Promise<void>
@@ -73,7 +71,6 @@ export type FormLogicOptions<
 | `validatorOptions`          | Options to pass to the synchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-sync).                                                                                                                       |
 | `validatorAsync`            | If no adapter is given, it is an asynchronous function that returns an error message. If an adapter is given, it can also be a validation schema fitting for that adapter. <br/>Reference the [Validation API](/reference/core/Validation#validator-async). |
 | `validatorAsyncOptions`     | Options to pass to the asynchronous validation. <br/>Reference the [Validation API](/reference/core/Validation#validatoroptions-async).                                                                                                                     |
-| `validateUnmountedChildren` | If set to `true`, the form will validate all fields and groups, even if they are not mounted.                                                                                                                                                               |
 | `defaultValues`             | The default values for the form. They will be transformed to the nested signals and set as the form values.                                                                                                                                                 |
 | `onSubmit`                  | The function that is called once the form is submitted without any validation errors. This function receives the `TData` as the input as well as a function to add errors to the form or fields during validation. It can be an asynchronous function.      |
 
@@ -98,9 +95,7 @@ interface FormLogic<
 
   get errors(): ReadonlySignal<Array<ValidationError>>
 
-  get mountedFieldErrors(): ReadonlySignal<Array<ValidationError>>
-
-  get unmountedFieldErrors(): ReadonlySignal<Array<ValidationError>>
+  get fieldErrors(): ReadonlySignal<Array<ValidationError>>
 
   get fields(): ReadonlySignal<Array<FieldLogic<TData, Paths<TData>, any>>>
 
@@ -151,8 +146,7 @@ interface FormLogic<
 | `json`                    | The signal of the form values as a plain JSON object. All signal references are resolved there.                                                                    |
 | `isMounted`               | Is the form currently mounted                                                                                                                                      |
 | `errors`                  | The reactive signal of all errors in the form.                                                                                                                     |
-| `mountedFieldErrors`      | The reactive signal of all errors in the mounted fields.                                                                                                           |
-| `unmountedFieldErrors`    | The reactive signal of all errors in the unmounted fields.                                                                                                         |
+| `fieldErrors`             | The reactive signal of all errors in the fields.                                                                                                                   |
 | `fields`                  | The reactive signal of all fields in the form.                                                                                                                     |
 | `groups`                  | The reactive signal of all field groups in the form.                                                                                                               |
 | `isValidForm`             | Is the form valid?                                                                                                                                                 |

@@ -114,27 +114,33 @@ describe('FieldGroupLogic', () => {
       expect(group.fields.peek().length).toBe(1)
       expect(group.fields.peek()[0]).toBe(field)
     })
-    it('should loose a field once it is unmounted without preserving its value', () => {
+    it('should loose a fields value once it is unmounted if configured', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         removeValueOnUnmount: true,
       })
       field.mount()
+      field.data.value = 'asd'
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)
+      expect(group.data.value.name).toBe('asd')
 
       field.unmount()
       expect(group.fields.peek().length).toBe(0)
+      expect(group.data.value.name).toBeUndefined()
     })
-    it('should keep a field once it is unmounted if preserving its value', () => {
+    it('should keep a fields value once it is unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
       field.mount()
+      field.data.value = 'asd'
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)
+      expect(group.data.value.name).toBe('asd')
 
       field.unmount()
-      expect(group.fields.peek().length).toBe(1)
+      expect(group.fields.peek().length).toBe(0)
+      expect(group.data.value.name).toBe('asd')
     })
     it('should set the value of the group if a field with default value is registered', () => {
       const form = new FormLogic<{ name: string }>()

@@ -11,7 +11,6 @@
     "style:fix:unsafe": "pnpm dlx @biomejs/biome check --write --unsafe .",
     "test": "nx run-many --target=test --all",
     "test:dev-tools-react": "nx test dev-tools-react",
-    "test:devtools": "nx test devtools-react",
     "test:core": "nx test form-core",
     "test:react": "nx test form-react",
     "test:validator-zod": "nx test @form-signals/validation-adapter-zod",

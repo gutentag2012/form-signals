@@ -1,5 +1,9 @@
 # Quickstart
 
+::: danger IMPORTANT
+This library is still in early development and the API might change before the first stable release.
+:::
+
 This library supports react-native out of the box through the React bindings.
 Please refer to the [React documentation](/guide/react/quickstart) for more detailed information.
 

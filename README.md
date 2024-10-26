@@ -1,5 +1,8 @@
 <img src="https://github.com/gutentag2012/form-signals/raw/main/assets/repo-banner-light.svg" alt="Signal Form Banner" width="100%">
 
+> [!CAUTION]
+> This library is still in early development and the API might change before the first stable release.
+
 ![GitHub Actions Workflow Status](https://github.com/gutentag2012/form-signals/actions/workflows/ci.yml/badge.svg)
 ![GitHub Actions Workflow Status](https://github.com/gutentag2012/form-signals/actions/workflows/cd.yml/badge.svg)<br/>
 [![form-core-version](https://img.shields.io/npm/v/%40formsignals%2Fform-core?style=for-the-badge&logo=npm&label=form-core)](https://www.npmjs.com/package/@formsignals/form-core)

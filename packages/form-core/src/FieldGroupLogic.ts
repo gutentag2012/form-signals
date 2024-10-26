@@ -437,12 +437,7 @@ export class FieldGroupLogic<
       clearErrorMap(this._errorMap)
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEventInternal(
-        'onChange',
-        false,
-        currentValue,
-        mixins,
-      )
+      await this.validateForEventInternal('onChange', currentValue, mixins)
     }
     this._unsubscribeFromChangeEffect = effect(() => {
       const mixinValues =
@@ -505,18 +500,14 @@ export class FieldGroupLogic<
    * Validates the field group for a given event.
    *
    * @param event - The event to validate for.
-   * @param validateIfUnmounted - Whether to validate even if the field group is not mounted.
    *
    * @returns A promise that resolves when the validation is done.
    *
    * @note
    * If the field group is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
-  public validateForEvent(
-    event: ValidatorEvents,
-    validateIfUnmounted?: boolean,
-  ): void | Promise<void> {
-    return this.validateForEventInternal(event, validateIfUnmounted)
+  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
+    return this.validateForEventInternal(event)
   }
 
   /**
@@ -665,16 +656,13 @@ export class FieldGroupLogic<
   //region Internals
   private validateForEventInternal(
     event: ValidatorEvents,
-    validateIfUnmounted?: boolean,
     checkValue?: PartialForPaths<TData, TMembers>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
     if (
       this._skipValidation ||
       this._form.skipValidation ||
-      (!this._isMounted.peek() &&
-        event !== 'onSubmit' &&
-        !validateIfUnmounted) ||
+      (!this._isMounted.peek() && event !== 'onSubmit') ||
       this._disabled.peek()
     ) {
       return

@@ -84,13 +84,6 @@ export type FormLogicOptions<
   validatorAsyncOptions?: ValidatorAsyncOptions
 
   /**
-   * Whether to validate unmounted fields and groups when submitting the form.
-   * If true, all fields and groups will be validated when submitting the form, even if they are not mounted.
-   * @default false
-   */
-  validateUnmountedChildren?: boolean
-
-  /**
    * Default values for the form
    */
   defaultValues?: TData
@@ -176,17 +169,10 @@ export class FormLogic<
     const { sync, async, general, transform } = this._errorMap.value
     return [sync, async, general, transform].filter(Truthy)
   })
-  private readonly _mountedFieldErrors = computed(() => {
-    const mountedFields = this._fieldsArray.value.filter(
-      (field) => field.isMounted.value,
-    )
-    return mountedFields.flatMap((field) => field.errors.value).filter(Truthy)
-  })
-  private readonly _unmountedFieldErrors = computed(() => {
-    const unmountedFields = this._fieldsArray.value.filter(
-      (field) => !field.isMounted.value,
-    )
-    return unmountedFields.flatMap((field) => field.errors.value).filter(Truthy)
+  private readonly _fieldErrors = computed(() => {
+    return this._fieldsArray.value
+      .flatMap((field) => field.errors.value)
+      .filter(Truthy)
   })
   private readonly _fieldGroupErrors = computed(() => {
     return this._fieldGroupsArray.value
@@ -235,7 +221,11 @@ export class FormLogic<
     for (const field of fields) {
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
-      if (currentDefaultValue !== undefined) continue
+      if (
+        currentDefaultValue !== undefined ||
+        fieldOptions?.defaultValue === undefined
+      )
+        continue
       setValueAtPath(
         combinedDefaultValues,
         field.name,
@@ -342,15 +332,8 @@ export class FormLogic<
   /**
    * An array of errors for fields that are currently mounted.
    */
-  public get mountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
-    return this._mountedFieldErrors
-  }
-
-  /**
-   * An array of errors for fields that are currently unmounted.
-   */
-  public get unmountedFieldErrors(): ReadonlySignal<Array<ValidationError>> {
-    return this._unmountedFieldErrors
+  public get fieldErrors(): ReadonlySignal<Array<ValidationError>> {
+    return this._fieldErrors
   }
 
   public get fieldGroupErrors(): ReadonlySignal<Array<ValidationError>> {
@@ -646,20 +629,10 @@ export class FormLogic<
       this.validateForEvent('onSubmit'),
       ...this._fieldsArray
         .peek()
-        .map((field) =>
-          field.validateForEvent(
-            'onSubmit',
-            this._options.peek()?.validateUnmountedChildren,
-          ),
-        ),
+        .map((field) => field.validateForEvent('onSubmit')),
       ...this._fieldGroupsArray
         .peek()
-        .map((group) =>
-          group.validateForEvent(
-            'onSubmit',
-            this._options.peek()?.validateUnmountedChildren,
-          ),
-        ),
+        .map((group) => group.validateForEvent('onSubmit')),
     ])
 
     if (!this._isValid.peek()) {
@@ -910,15 +883,15 @@ export class FormLogic<
     removeValue?: boolean,
     resetToDefault?: boolean,
   ): void {
-    if (removeValue) {
-      const newMap = new Map(this._fields.peek())
-      newMap.delete(path)
-      for (const key of newMap.keys()) {
-        if (!(key as string).startsWith(`${path}.`)) continue
-        newMap.delete(key)
-      }
-      this._fields.value = newMap
+    const newMap = new Map(this._fields.peek())
+    newMap.delete(path)
+    for (const key of newMap.keys()) {
+      if (!(key as string).startsWith(`${path}.`)) continue
+      newMap.delete(key)
+    }
+    this._fields.value = newMap
 
+    if (removeValue) {
       removeSignalValueAtPath(this._data, path)
     }
 
