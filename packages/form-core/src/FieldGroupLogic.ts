@@ -439,7 +439,6 @@ export class FieldGroupLogic<
       // The value has to be passed here so that the effect subscribes to it
       await this.validateForEventInternal(
         'onChange',
-        false,
         currentValue,
         mixins,
       )
@@ -505,7 +504,6 @@ export class FieldGroupLogic<
    * Validates the field group for a given event.
    *
    * @param event - The event to validate for.
-   * @param validateIfUnmounted - Whether to validate even if the field group is not mounted.
    *
    * @returns A promise that resolves when the validation is done.
    *
@@ -514,9 +512,8 @@ export class FieldGroupLogic<
    */
   public validateForEvent(
     event: ValidatorEvents,
-    validateIfUnmounted?: boolean,
   ): void | Promise<void> {
-    return this.validateForEventInternal(event, validateIfUnmounted)
+    return this.validateForEventInternal(event)
   }
 
   /**
@@ -665,7 +662,6 @@ export class FieldGroupLogic<
   //region Internals
   private validateForEventInternal(
     event: ValidatorEvents,
-    validateIfUnmounted?: boolean,
     checkValue?: PartialForPaths<TData, TMembers>,
     mixins?: ValueAtPathForTuple<TData, TMixin>,
   ): void | Promise<void> {
@@ -673,8 +669,7 @@ export class FieldGroupLogic<
       this._skipValidation ||
       this._form.skipValidation ||
       (!this._isMounted.peek() &&
-        event !== 'onSubmit' &&
-        !validateIfUnmounted) ||
+        event !== 'onSubmit') ||
       this._disabled.peek()
     ) {
       return
