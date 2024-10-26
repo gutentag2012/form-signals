@@ -96,6 +96,7 @@ type FieldLogicOptions<
 
   removeValueOnUnmount?: boolean
   resetValueToDefaultOnUnmount?: boolean
+  keepInFormOnUnmount?: boolean
 
   transformFromBinding?: (value: TBoundValue) => ValueAtPath<TData, TName> | [ValueAtPath<TData, TName>, ValidationError]
   transformToBinding?: (value: ValueAtPath<TData, TName>, isValid: boolean, writeBuffer?: TBoundValue) => TBoundValue
@@ -116,6 +117,7 @@ type FieldLogicOptions<
 | `defaultState`                 | The default state of the field. There you can set default errors and the touched state.                                                                                                   |
 | `removeValueOnUnmount`         | If set to `true`, the value of the field will be removed when the field is unmounted.                                                                                                     |
 | `resetValueToDefaultOnUnmount` | If set to `true`, the value of the field will be reset to the default value when the field is unmounted.                                                                                  |
+| `keepInFormOnUnmount`          | If set to `true`, the field will stay in the form when unmounted.                                                                                                                         |
 | `transformFromBinding`         | The function to transform the value from the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                             |
 | `transformToBinding`           | The function to transform the value to the binding. <br/>Reference the [Basic Usage](/guide/basic-usage#add-transformation)                                                               |
 

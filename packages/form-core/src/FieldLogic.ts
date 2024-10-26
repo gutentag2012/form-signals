@@ -149,6 +149,11 @@ export type FieldLogicOptions<
    * If true, the field value will set to its default value.
    */
   resetValueToDefaultOnUnmount?: boolean
+  /**
+   * Whenever a field is unmounted, the field is removed from the form.
+   * If true, the field will stay in the form.
+   */
+  keepInFormOnUnmount?: boolean
 
   /**
    * This takes the value provided by the binding and transforms it to the value that should be set in the form.
@@ -572,6 +577,7 @@ export class FieldLogic<
       this.defaultValue.peek(),
       this._options.peek()?.removeValueOnUnmount,
       this._options.peek()?.resetValueToDefaultOnUnmount,
+      this._options.peek()?.keepInFormOnUnmount,
     )
   }
 
