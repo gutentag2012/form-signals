@@ -18,13 +18,12 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn('p-3', className)}
       classNames={{
-        months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month: 'space-y-4',
         caption: 'flex justify-center pt-1 relative items-center',
         caption_label: 'text-sm font-medium',
-        nav: 'space-x-1 flex items-center',
+        nav: 'absolute top-3 right-3',
         nav_button: cn(
-          buttonVariants({ variant: 'outline' }),
+          buttonVariants({ variant: 'ghost' }),
           'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
         ),
         nav_button_previous: 'absolute left-1',
@@ -34,13 +33,21 @@ function Calendar({
         head_cell:
           'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
         row: 'flex w-full mt-2',
-        cell: cn(
+        day: cn(
           'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md',
           props.mode === 'range'
             ? '[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md'
             : '[&:has([aria-selected])]:rounded-md',
         ),
-        day: cn(
+        selected: cn(
+          buttonVariants(),
+          'h-8 w-8 p-0 font-normal aria-selected:opacity-100',
+        ),
+        today: cn(
+          buttonVariants({ variant: 'link' }),
+          'h-8 w-8 p-0 font-normal aria-selected:opacity-100',
+        ),
+        day_button: cn(
           buttonVariants({ variant: 'ghost' }),
           'h-8 w-8 p-0 font-normal aria-selected:opacity-100',
         ),
@@ -58,8 +65,12 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeftIcon className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRightIcon className="h-4 w-4" />,
+        Chevron: ({ ...props }) =>
+          props.orientation === 'right' ? (
+            <ChevronRightIcon className="h-6 w-6" />
+          ) : (
+            <ChevronLeftIcon className="h-6 w-6" />
+          ),
       }}
       {...props}
     />

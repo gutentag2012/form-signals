@@ -43,11 +43,11 @@
   },
   "devDependencies": {
     "@preact/signals-react-transform": "^0.4.0",
-    "@testing-library/react": "^16.0.0",
+    "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1"
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3"
   },
   "keywords": [
     "signals",
@@ -63,7 +63,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@formsignals/form-react": "^0.4.2",
-    "@radix-ui/react-tooltip": "^1.1.2"
+    "@formsignals/form-react": "workspace:^",
+    "@radix-ui/react-tooltip": "^1.1.3"
   }
 }

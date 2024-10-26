@@ -36,7 +36,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@formsignals/form-core": "^0.4.2"
+    "@formsignals/form-core": "workspace:^"
   },
   "peerDependencies": {
     "zod": "^3.23.8"
