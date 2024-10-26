@@ -50,14 +50,22 @@ export const AddressStep = (props: PersonalStepProps) => {
         </CardHeader>
 
         <CardContent>
-          <group.FieldProvider name="street" validator={z.string().min(1)}>
+          <group.FieldProvider
+            name="street"
+            validator={z.string().min(1)}
+            keepInFormOnUnmount
+          >
             <div className="flex-1">
               <Label>Street</Label>
               <InputForm placeholder="Type here..." />
               <ErrorText />
             </div>
           </group.FieldProvider>
-          <group.FieldProvider name="city" validator={z.string().min(1)}>
+          <group.FieldProvider
+            name="city"
+            validator={z.string().min(1)}
+            keepInFormOnUnmount
+          >
             <div className="flex-1">
               <Label>City</Label>
               <InputForm placeholder="Type here..." />
@@ -65,14 +73,22 @@ export const AddressStep = (props: PersonalStepProps) => {
             </div>
           </group.FieldProvider>
           <div className="mb-1.5 flex flex-row gap-2">
-            <group.FieldProvider name="zip" validator={z.string().min(1)}>
+            <group.FieldProvider
+              name="zip"
+              validator={z.string().min(1)}
+              keepInFormOnUnmount
+            >
               <div className="flex-1">
                 <Label>Postal Code</Label>
                 <InputForm placeholder="Type here..." />
                 <ErrorText />
               </div>
             </group.FieldProvider>
-            <group.FieldProvider name="state" validator={z.string().min(1)}>
+            <group.FieldProvider
+              name="state"
+              validator={z.string().min(1)}
+              keepInFormOnUnmount
+            >
               <div className="flex-[5]">
                 <Label>State</Label>
                 <InputForm placeholder="Type here..." />
@@ -84,6 +100,7 @@ export const AddressStep = (props: PersonalStepProps) => {
             name="country"
             validator={z.string()}
             defaultValue="USA"
+            keepInFormOnUnmount
           >
             {(field) => (
               <div>

@@ -45,14 +45,22 @@ export const PersonalStep = (props: PersonalStepProps) => {
 
         <CardContent>
           <div className="mb-1.5 flex flex-row gap-2">
-            <group.FieldProvider name="firstName" validator={z.string().min(1)}>
+            <group.FieldProvider
+              name="firstName"
+              validator={z.string().min(1)}
+              keepInFormOnUnmount
+            >
               <div className="flex-1">
                 <Label>First Name</Label>
                 <InputForm placeholder="Type here..." />
                 <ErrorText />
               </div>
             </group.FieldProvider>
-            <group.FieldProvider name="lastName" validator={z.string().min(1)}>
+            <group.FieldProvider
+              name="lastName"
+              validator={z.string().min(1)}
+              keepInFormOnUnmount
+            >
               <div className="flex-1">
                 <Label>Last Name</Label>
                 <InputForm placeholder="Type here..." />
@@ -60,7 +68,11 @@ export const PersonalStep = (props: PersonalStepProps) => {
               </div>
             </group.FieldProvider>
           </div>
-          <group.FieldProvider name="dateOfBirth" validator={z.date()}>
+          <group.FieldProvider
+            name="dateOfBirth"
+            validator={z.date()}
+            keepInFormOnUnmount
+          >
             {(field) => (
               <div className="flex flex-1 flex-col gap-1">
                 <Label htmlFor={field.name}>Date of Birth</Label>
@@ -78,6 +90,7 @@ export const PersonalStep = (props: PersonalStepProps) => {
             name="email"
             validator={z.string().email().min(1)}
             validatorOptions={{ validateOnChangeIfTouched: true }}
+            keepInFormOnUnmount
           >
             <div className="flex-1">
               <Label>Email</Label>
@@ -85,7 +98,11 @@ export const PersonalStep = (props: PersonalStepProps) => {
               <ErrorText />
             </div>
           </group.FieldProvider>
-          <group.FieldProvider name="phone" validator={z.string().optional()}>
+          <group.FieldProvider
+            name="phone"
+            validator={z.string().optional()}
+            keepInFormOnUnmount
+          >
             <div className="flex-1">
               <Label>Phone</Label>
               <InputForm placeholder="Type here..." />

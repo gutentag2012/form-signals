@@ -47,6 +47,7 @@ export const AccountStep = (props: PersonalStepProps) => {
             name="username"
             validator={z.string().min(3)}
             validatorOptions={{ validateOnChangeIfTouched: true }}
+            keepInFormOnUnmount
           >
             <div className="flex-1">
               <Label>Username</Label>
@@ -58,6 +59,7 @@ export const AccountStep = (props: PersonalStepProps) => {
             name="password"
             validator={z.string().min(8)}
             validatorOptions={{ validateOnChangeIfTouched: true }}
+            keepInFormOnUnmount
           >
             <div className="flex-1">
               <Label>Password</Label>
@@ -72,6 +74,7 @@ export const AccountStep = (props: PersonalStepProps) => {
             }
             validateMixin={['password']}
             validatorOptions={{ validateOnChangeIfTouched: true }}
+            keepInFormOnUnmount
           >
             <div className="flex-1">
               <Label>Confirm Password</Label>

@@ -53,7 +53,6 @@ export const PreferencesStep = (props: PersonalStepProps) => {
           <group.FieldProvider
             name="contact"
             validator={([value, email, phone]) => {
-              console.log('validate', value, email, phone)
               if (value === 'email' && !email)
                 return 'Email is required for this contact method'
               if (value === 'phone' && !phone)
@@ -64,6 +63,7 @@ export const PreferencesStep = (props: PersonalStepProps) => {
             }}
             defaultValue="email"
             validateMixin={['email', 'phone']}
+            keepInFormOnUnmount
           >
             {(field) => (
               <div>
@@ -86,6 +86,7 @@ export const PreferencesStep = (props: PersonalStepProps) => {
             name="language"
             validator={z.string()}
             defaultValue="english"
+            keepInFormOnUnmount
           >
             {(field) => (
               <div>
@@ -107,6 +108,7 @@ export const PreferencesStep = (props: PersonalStepProps) => {
             name="newsletter"
             validator={z.boolean()}
             defaultValue={false}
+            keepInFormOnUnmount
           >
             <Label className="items-top mt-2 flex gap-2">
               <CheckboxForm className="h-5 w-5 rounded" />
