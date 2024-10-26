@@ -437,11 +437,7 @@ export class FieldGroupLogic<
       clearErrorMap(this._errorMap)
 
       // The value has to be passed here so that the effect subscribes to it
-      await this.validateForEventInternal(
-        'onChange',
-        currentValue,
-        mixins,
-      )
+      await this.validateForEventInternal('onChange', currentValue, mixins)
     }
     this._unsubscribeFromChangeEffect = effect(() => {
       const mixinValues =
@@ -510,9 +506,7 @@ export class FieldGroupLogic<
    * @note
    * If the field group is not mounted, the form is not mounted, or the data is not set, the validation will not run.
    */
-  public validateForEvent(
-    event: ValidatorEvents,
-  ): void | Promise<void> {
+  public validateForEvent(event: ValidatorEvents): void | Promise<void> {
     return this.validateForEventInternal(event)
   }
 
@@ -668,8 +662,7 @@ export class FieldGroupLogic<
     if (
       this._skipValidation ||
       this._form.skipValidation ||
-      (!this._isMounted.peek() &&
-        event !== 'onSubmit') ||
+      (!this._isMounted.peek() && event !== 'onSubmit') ||
       this._disabled.peek()
     ) {
       return

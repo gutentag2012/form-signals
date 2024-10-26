@@ -88,9 +88,9 @@ describe('FormLogic', () => {
         removeValueOnUnmount: true,
       })
       field.mount()
-      field.data.value = "asd"
+      field.data.value = 'asd'
       expect(form.fields.peek().length).toBe(1)
-      expect(form.json.value.name).toBe("asd")
+      expect(form.json.value.name).toBe('asd')
 
       field.unmount()
       expect(form.fields.peek().length).toBe(0)
@@ -100,28 +100,28 @@ describe('FormLogic', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name', {
         resetValueToDefaultOnUnmount: true,
-        defaultValue: "default"
+        defaultValue: 'default',
       })
       field.mount()
-      field.data.value = "asd"
+      field.data.value = 'asd'
       expect(form.fields.peek().length).toBe(1)
-      expect(form.json.value.name).toBe("asd")
+      expect(form.json.value.name).toBe('asd')
 
       field.unmount()
       expect(form.fields.peek().length).toBe(0)
-      expect(form.json.value.name).toBe("default")
+      expect(form.json.value.name).toBe('default')
     })
     it('should only keep a fields value once it is unmounted', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
       field.mount()
-      field.data.value = "asd"
+      field.data.value = 'asd'
       expect(form.fields.peek().length).toBe(1)
-      expect(form.json.value.name).toBe("asd")
+      expect(form.json.value.name).toBe('asd')
 
       field.unmount()
       expect(form.fields.peek().length).toBe(0)
-      expect(form.json.value.name).toBe("asd")
+      expect(form.json.value.name).toBe('asd')
     })
     it('should no register a field that is already registered', () => {
       const form = new FormLogic<{ name: string }>()
@@ -1795,7 +1795,7 @@ describe('FormLogic', () => {
           },
         })
         form.mount()
-        const arrayField = form.getOrCreateField("array")
+        const arrayField = form.getOrCreateField('array')
         arrayField.mount()
 
         arrayField.pushValueToArray(4)
@@ -1811,9 +1811,9 @@ describe('FormLogic', () => {
         expect(arrayField.data.value.length).toBe(3)
       })
       it('should reset dirty array fields if the default value is on the field', () => {
-        const form = new FormLogic<{array: number[]}>()
+        const form = new FormLogic<{ array: number[] }>()
         form.mount()
-        const arrayField = form.getOrCreateField("array", {
+        const arrayField = form.getOrCreateField('array', {
           defaultValue: [1, 2, 3],
         })
         arrayField.mount()
@@ -2469,13 +2469,15 @@ describe('FormLogic', () => {
   })
   describe('bugs', () => {
     it('#119 - should be able to reset array fields after children mounted', () => {
-      const form = new FormLogic<{variants: Array<{name: string, options: string[]}>}>()
+      const form = new FormLogic<{
+        variants: Array<{ name: string; options: string[] }>
+      }>()
       form.mount()
       const variantsField = form.getOrCreateField('variants', {
-        defaultValue: []
+        defaultValue: [],
       })
       variantsField.mount()
-      variantsField.pushValueToArray({name: 'variant1', options: []})
+      variantsField.pushValueToArray({ name: 'variant1', options: [] })
 
       const variant1NameField = form.getOrCreateField('variants.0.name')
       variant1NameField.mount()
@@ -2483,13 +2485,11 @@ describe('FormLogic', () => {
       variant1OptionsField.mount()
 
       expect(form.json.value).toEqual({
-        variants: [
-          {name: "variant1", options: []}
-        ]
+        variants: [{ name: 'variant1', options: [] }],
       })
       form.reset()
       expect(form.json.value).toEqual({
-        variants: []
+        variants: [],
       })
     })
   })

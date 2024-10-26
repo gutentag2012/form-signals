@@ -120,10 +120,10 @@ describe('FieldGroupLogic', () => {
         removeValueOnUnmount: true,
       })
       field.mount()
-      field.data.value = "asd"
+      field.data.value = 'asd'
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)
-      expect(group.data.value.name).toBe("asd")
+      expect(group.data.value.name).toBe('asd')
 
       field.unmount()
       expect(group.fields.peek().length).toBe(0)
@@ -133,14 +133,14 @@ describe('FieldGroupLogic', () => {
       const form = new FormLogic<{ name: string }>()
       const field = new FieldLogic(form, 'name')
       field.mount()
-      field.data.value = "asd"
+      field.data.value = 'asd'
       const group = form.getOrCreateFieldGroup(['name'])
       expect(group.fields.peek().length).toBe(1)
-      expect(group.data.value.name).toBe("asd")
+      expect(group.data.value.name).toBe('asd')
 
       field.unmount()
       expect(group.fields.peek().length).toBe(0)
-      expect(group.data.value.name).toBe("asd")
+      expect(group.data.value.name).toBe('asd')
     })
     it('should set the value of the group if a field with default value is registered', () => {
       const form = new FormLogic<{ name: string }>()

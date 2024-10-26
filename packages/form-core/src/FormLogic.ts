@@ -170,7 +170,9 @@ export class FormLogic<
     return [sync, async, general, transform].filter(Truthy)
   })
   private readonly _fieldErrors = computed(() => {
-    return this._fieldsArray.value.flatMap((field) => field.errors.value).filter(Truthy)
+    return this._fieldsArray.value
+      .flatMap((field) => field.errors.value)
+      .filter(Truthy)
   })
   private readonly _fieldGroupErrors = computed(() => {
     return this._fieldGroupsArray.value
@@ -219,7 +221,11 @@ export class FormLogic<
     for (const field of fields) {
       const fieldOptions = field.options.value
       const currentDefaultValue = getValueAtPath(defaultValues, field.name)
-      if (currentDefaultValue !== undefined || fieldOptions?.defaultValue === undefined) continue
+      if (
+        currentDefaultValue !== undefined ||
+        fieldOptions?.defaultValue === undefined
+      )
+        continue
       setValueAtPath(
         combinedDefaultValues,
         field.name,
@@ -623,18 +629,10 @@ export class FormLogic<
       this.validateForEvent('onSubmit'),
       ...this._fieldsArray
         .peek()
-        .map((field) =>
-          field.validateForEvent(
-            'onSubmit',
-          ),
-        ),
+        .map((field) => field.validateForEvent('onSubmit')),
       ...this._fieldGroupsArray
         .peek()
-        .map((group) =>
-          group.validateForEvent(
-            'onSubmit',
-          ),
-        ),
+        .map((group) => group.validateForEvent('onSubmit')),
     ])
 
     if (!this._isValid.peek()) {
