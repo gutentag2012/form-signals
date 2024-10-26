@@ -1,3 +1,11 @@
+## 0.4.3 (2024-10-26)
+
+### 🩹 Fixes
+
+- unmounted fields not being removed from the form ([80dae36](https://github.com/gutentag2012/form-signals/commit/80dae36))
+- add option to keep fields in form even if they are unmounted ([f2a3f2e](https://github.com/gutentag2012/form-signals/commit/f2a3f2e))
+- **examples:** update package versions from workspace to explicit npm versions ([309c881](https://github.com/gutentag2012/form-signals/commit/309c881))
+
 ## 0.4.2 (2024-08-24)
 
 
