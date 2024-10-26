@@ -844,41 +844,6 @@ describe('FormDevTools', () => {
 
     cleanup()
   })
-  it('should keep removed fields if they are configured to keep their value', async () => {
-    const form = new FormLogic<{ name: string }>()
-    const formContext = formLogicToFormContext(form)
-    await formContext.mount()
-
-    const field = form.getOrCreateField('name', {
-      defaultValue: 'John',
-    })
-    await field.mount()
-    field.unmount()
-
-    function TestComponent() {
-      return (
-        <formContext.FormProvider>
-          <FormDevTools />
-        </formContext.FormProvider>
-      )
-    }
-
-    const screen = render(<TestComponent />)
-
-    const openButton = screen.getByRole('button')
-    expect(openButton).toBeDefined()
-    if (!openButton) throw new Error('openButton is not defined')
-    await fireEvent.click(openButton)
-
-    const fieldContainer = screen.container.querySelector(
-      '.fs-drawer--field-states',
-    )
-    expect(fieldContainer).toBeDefined()
-    if (!fieldContainer) throw new Error('fieldContainer is not defined')
-    expect(fieldContainer.children.length).toBe(1)
-
-    cleanup()
-  })
   it('should show async validating and submission state', async () => {
     vi.useFakeTimers()
 

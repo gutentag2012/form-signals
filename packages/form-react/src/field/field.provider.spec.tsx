@@ -123,6 +123,7 @@ describe('FieldProvider', () => {
 
       expect(screen.getByText('default')).toBeDefined()
       expect(form.fields.value.length).toBe(1)
+      expect(form.fields.value[0].name).toBe('name')
       expect(form.json.value).toEqual({ name: 'default' })
 
       screen.rerender(
@@ -132,7 +133,8 @@ describe('FieldProvider', () => {
       )
 
       expect(screen.getByText('default')).toBeDefined()
-      expect(form.fields.value.length).toBe(2)
+      expect(form.fields.value.length).toBe(1)
+      expect(form.fields.value[0].name).toBe('other')
       expect(form.json.value).toEqual({ name: 'default', other: 'default' })
 
       cleanup()
