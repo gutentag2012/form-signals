@@ -51,16 +51,16 @@ importers:
   examples/react/async-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -175,16 +175,16 @@ importers:
   examples/react/complex-product-details-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -508,16 +508,16 @@ importers:
   examples/react/e-commerce-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -632,16 +632,16 @@ importers:
   examples/react/files-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -756,16 +756,16 @@ importers:
   examples/react/performance-test-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -817,10 +817,10 @@ importers:
   examples/react/simple-form-signals:
     dependencies:
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@preact/signals-react':
         specifier: ^2.2.0
@@ -854,16 +854,16 @@ importers:
   examples/react/step-wizard-form-signals:
     dependencies:
       '@formsignals/dev-tools-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-core
       '@formsignals/form-react':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/form-react
       '@formsignals/validation-adapter-zod':
-        specifier: workspace:^
+        specifier: ^0.4.3
         version: link:../../../packages/validation-adapter-zod
       '@preact/signals-react':
         specifier: ^2.2.0
