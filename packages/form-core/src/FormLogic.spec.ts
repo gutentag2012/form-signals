@@ -1244,7 +1244,7 @@ describe('FormLogic', () => {
       await field.mount()
 
       field.unmount()
-      form.data.value.name.value = "asd"
+      form.data.value.name.value = 'asd'
       expect(field.errors.value).toEqual([])
     })
   })
