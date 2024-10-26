@@ -928,6 +928,67 @@ describe('FieldGroupLogic', () => {
         'Value must be less than or equal to 7',
       ])
     })
+    it('should still keep validating, even if fields are unmounted', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          age: 51,
+        },
+      })
+      form.mount()
+      const fieldName = form.getOrCreateField('name')
+      fieldName.mount()
+      const fieldAge = form.getOrCreateField('age')
+      fieldAge.mount()
+
+      const fieldGroup = form.getOrCreateFieldGroup(['name', 'age'], {
+        validator: ({ name, age }) => {
+          if (name === 'default') return 'name should not be default'
+          if (age < 50) return 'age should be over 50'
+          return undefined
+        },
+        validatorOptions: {
+          validateOnMount: true,
+        },
+      })
+      fieldGroup.mount()
+
+      expect(fieldGroup.errors.value).toEqual(['name should not be default'])
+    })
+    it('should still keep validating its fields, even if fields are unmounted, if configured', () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          age: 51,
+        },
+      })
+      form.mount()
+      const fieldName = form.getOrCreateField('name', {
+        keepInFormOnUnmount: true,
+        validator: (name) =>
+          name === 'default' ? 'name should not be default' : undefined,
+        validatorOptions: {
+          validateOnMount: true,
+        },
+      })
+      fieldName.mount()
+      const fieldAge = form.getOrCreateField('age', {
+        keepInFormOnUnmount: true,
+        validator: (age) => (age < 50 ? 'age should be over 50' : undefined),
+        validatorOptions: {
+          validateOnMount: true,
+        },
+      })
+      fieldAge.mount()
+
+      const fieldGroup = form.getOrCreateFieldGroup(['name', 'age'])
+      fieldGroup.mount()
+
+      fieldName.unmount()
+      fieldAge.unmount()
+
+      expect(fieldGroup.isValid.value).toEqual(false)
+    })
   })
   describe('handleSubmit', () => {
     it('should not handle submit if the group is invalid', () => {

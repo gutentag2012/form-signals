@@ -1213,6 +1213,40 @@ describe('FormLogic', () => {
       await form.handleSubmit()
       expect(field.errors.value).toEqual([])
     })
+    it('should validate unmounted fields if they are kept, only for the submit event', async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: () => 'error',
+        keepInFormOnUnmount: true,
+      })
+      await field.mount()
+
+      field.unmount()
+      await form.handleSubmit()
+      expect(field.errors.value).toEqual(['error'])
+    })
+    it("should not validate unmounted fields if they are kept, for any event other than 'onSubmit'", async () => {
+      const form = new FormLogic<{ name: string }>({
+        defaultValues: {
+          name: 'default',
+        },
+      })
+      await form.mount()
+      const field = new FieldLogic(form, 'name', {
+        validator: () => 'error',
+        keepInFormOnUnmount: true,
+      })
+      await field.mount()
+
+      field.unmount()
+      form.data.value.name.value = "asd"
+      expect(field.errors.value).toEqual([])
+    })
   })
   describe('handleSubmit', () => {
     it('should not handle submit if the form is invalid', () => {
