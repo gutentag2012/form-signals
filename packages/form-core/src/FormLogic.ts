@@ -629,7 +629,13 @@ export class FormLogic<
       this.validateForEvent('onSubmit'),
       ...this._fieldsArray
         .peek()
-        .map((field) => field.validateForEvent('onSubmit')),
+        // If the values are kept in the form but are unmounted, we want to force validation
+        .map((field) =>
+          field.validateForEvent(
+            'onSubmit',
+            field.options.peek()?.keepInFormOnUnmount,
+          ),
+        ),
       ...this._fieldGroupsArray
         .peek()
         .map((group) => group.validateForEvent('onSubmit')),
@@ -871,6 +877,7 @@ export class FormLogic<
    * @param defaultValue - The default value for the field.
    * @param removeValue - If true, the value will be removed in the form data.
    * @param resetToDefault - If true, the value will be reset to the default value.
+   * @param keepInForm - If true, the field will not be removed from the form.
    *
    * @note
    * By default, the value of an unregistered Field will be removed from the form data.
@@ -882,14 +889,17 @@ export class FormLogic<
     defaultValue?: ValueAtPath<TData, TPath>,
     removeValue?: boolean,
     resetToDefault?: boolean,
+    keepInForm?: boolean,
   ): void {
-    const newMap = new Map(this._fields.peek())
-    newMap.delete(path)
-    for (const key of newMap.keys()) {
-      if (!(key as string).startsWith(`${path}.`)) continue
-      newMap.delete(key)
+    if (!keepInForm) {
+      const newMap = new Map(this._fields.peek())
+      newMap.delete(path)
+      for (const key of newMap.keys()) {
+        if (!(key as string).startsWith(`${path}.`)) continue
+        newMap.delete(key)
+      }
+      this._fields.value = newMap
     }
-    this._fields.value = newMap
 
     if (removeValue) {
       removeSignalValueAtPath(this._data, path)
