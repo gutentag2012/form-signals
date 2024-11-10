@@ -29,6 +29,16 @@ describe('FormLogic (types)', () => {
 
     assertType<'John'>(form.data.value.name.value)
   })
+  it('should allow any return value for the onSubmit method', () => {
+    new FormLogic({
+      defaultValues: {
+        nested: {
+          test: "asd"
+        }
+      },
+      onSubmit: values => values
+    })
+  })
   //endregion
   //region inferring types
   it('should infer the primitive string type of a field from the default value', () => {

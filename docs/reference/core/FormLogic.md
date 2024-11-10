@@ -59,7 +59,7 @@ export type FormLogicOptions<
 
   defaultValues?: TData
 
-  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError> | ValidationError>) => void) => void | Promise<void>
+  onSubmit?: (data: TData, addErrors: (errors: Partial<Record<Paths<TData>, ValidationError> | ValidationError>) => void) => unknown | Promise<unknown>
 }
 ```
 

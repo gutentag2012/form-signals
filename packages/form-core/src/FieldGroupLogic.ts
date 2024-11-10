@@ -126,7 +126,7 @@ export type FieldGroupLogicOptions<
     addErrors: (
       errors: Partial<Record<Paths<TData>, ValidationError>> | ValidationError,
     ) => void,
-  ) => void | Promise<void>
+  ) => unknown | Promise<unknown>
 }
 
 /**
