@@ -1,3 +1,9 @@
+## 0.4.4 (2024-11-10)
+
+### 🩹 Fixes
+
+- change submit return to allow all values ([232a8d7](https://github.com/gutentag2012/form-signals/commit/232a8d7))
+
 ## 0.4.3 (2024-10-26)
 
 ### 🩹 Fixes
