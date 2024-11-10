@@ -1,3 +1,9 @@
+## 0.4.5 (2024-11-10)
+
+### 🩹 Fixes
+
+- wrong copy of date objects ([b6787c2](https://github.com/gutentag2012/form-signals/commit/b6787c2))
+
 ## 0.4.4 (2024-11-10)
 
 ### 🩹 Fixes
