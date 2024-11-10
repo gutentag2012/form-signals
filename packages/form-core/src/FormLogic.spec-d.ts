@@ -33,10 +33,10 @@ describe('FormLogic (types)', () => {
     new FormLogic({
       defaultValues: {
         nested: {
-          test: "asd"
-        }
+          test: 'asd',
+        },
       },
-      onSubmit: values => values
+      onSubmit: (values) => values,
     })
   })
   //endregion
