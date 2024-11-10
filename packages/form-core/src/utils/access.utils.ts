@@ -155,6 +155,9 @@ export function deepCopy<T>(value: T): T {
   if (Array.isArray(value)) {
     return value.map(deepCopy) as T
   }
+  if (value instanceof Date) {
+    return new Date(value.getTime()) as T
+  }
   if (typeof value === 'object' && value !== null) {
     return Object.fromEntries(
       Object.entries(value).map(([key, value]) => [key, deepCopy(value)]),

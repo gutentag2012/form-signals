@@ -47,6 +47,10 @@ describe('access.utils', () => {
     it('should return value for array path', () => {
       expect(getValueAtPath({ a: [1, 2] }, 'a.0')).toBe(1)
     })
+    it('should return dates', () => {
+      const date = new Date()
+      expect(getValueAtPath({ date }, 'date')).toBe(date)
+    })
   })
   describe('setValueAtPath', () => {
     it('should do nothing for an undefined object', () => {
@@ -145,6 +149,14 @@ describe('access.utils', () => {
       expect(copy).not.toBe(obj)
       expect(copy.a).not.toBe(obj.a)
       expect(copy.a[0]).not.toBe(obj.a[0])
+    })
+    it('should copy dates', () => {
+      const date = new Date()
+      const obj = { date }
+      const copy = deepCopy(obj)
+      expect(copy).toStrictEqual(obj)
+      expect(copy).not.toBe(obj)
+      expect(copy.date).toStrictEqual(obj.date)
     })
   })
 })

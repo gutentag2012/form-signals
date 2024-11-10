@@ -205,6 +205,31 @@ describe('FieldGroupLogic', () => {
       field.handleChange('default')
       expect(group.isDirty.value).toBe(false)
     })
+    it('should be dirty if any of the fields are different from their default value in the form', () => {
+      const startDate = new Date(2024, 1, 1)
+      const otherDate = new Date(2024, 2, 1)
+      const form = new FormLogic({
+        defaultValues: {
+          name: 'default',
+          date: startDate,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'name')
+      const dateField = new FieldLogic(form, 'date')
+      field.mount()
+      dateField.mount()
+      const group = form.getOrCreateFieldGroup(['name', 'date'])
+      group.mount()
+
+      expect(form.isDirty.value).toBe(false)
+      expect(group.isDirty.value).toBe(false)
+      expect(field.isDirty.value).toBe(false)
+      dateField.data.value = otherDate
+      expect(form.isDirty.value).toBe(true)
+      expect(group.isDirty.value).toBe(true)
+      expect(dateField.isDirty.value).toBe(true)
+    })
     it('should be dirty if elements have been added to an array field', () => {
       const form = new FormLogic({
         defaultValues: {
