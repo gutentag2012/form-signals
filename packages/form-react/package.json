@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/form-react",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "React bindings package for Signal Form",
   "author": "joshua.gawenda",
   "license": "MIT",
@@ -49,7 +49,7 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
-    "@formsignals/form-core": "0.4.5"
+    "@formsignals/form-core": "0.4.6"
   },
   "keywords": [
     "signals",

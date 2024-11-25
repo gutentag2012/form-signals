@@ -1,3 +1,9 @@
+## 0.4.6 (2024-11-25)
+
+### 🩹 Fixes
+
+- possible mutation errors due to missing copy of updated options ([c03edfc](https://github.com/gutentag2012/form-signals/commit/c03edfc))
+
 ## 0.4.5 (2024-11-10)
 
 ### 🩹 Fixes
