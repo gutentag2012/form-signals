@@ -471,7 +471,7 @@ export class FormLogic<
    */
   public updateOptions(options?: FormLogicOptions<TData, TAdapter>): void {
     const dirtyFields = this._dirtyFields.peek()
-    this._options.value = options
+    this._options.value = deepCopy(options)
 
     if (options && 'disabled' in options) {
       this._disabled.value = !!options.disabled
@@ -483,7 +483,7 @@ export class FormLogic<
 
     this._skipValidation = true
     // We do not want to update dirty field values, since we do not want to reset the form, but just override the default values
-    const newDefaultValues = { ...options.defaultValues }
+    const newDefaultValues = options.defaultValues
     for (const dirtyField of dirtyFields) {
       setValueAtPath(
         newDefaultValues,
