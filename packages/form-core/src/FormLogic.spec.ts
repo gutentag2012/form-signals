@@ -568,6 +568,23 @@ describe('FormLogic', () => {
       form.updateOptions({ defaultValues: { array: [1, 2, 3] } })
       expect(form.json.value.array).toEqual([4, 5])
     })
+    it('should not change dates when updating options of a dirty fields', () => {
+      const d1 = new Date('2021-01-01')
+      const d2 = new Date('2021-01-02')
+      const form = new FormLogic<{ date: Date }>({
+        defaultValues: {
+          date: d1,
+        },
+      })
+      form.mount()
+      const field = new FieldLogic(form, 'date')
+      field.mount()
+
+      field.data.value = d2
+      form.updateOptions({ defaultValues: { date: d1 } })
+      form.updateOptions({ defaultValues: { date: d1 } })
+      expect(form.json.value.date).toEqual(d2)
+    })
 
     it('should update the data when using the handleChange method', () => {
       const form = new FormLogic<{ name: string }>()
