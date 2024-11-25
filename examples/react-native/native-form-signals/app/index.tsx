@@ -1,5 +1,5 @@
-import { Text, View } from "react-native";
-import {UserForm} from "@/components/UserForm";
+import { UserForm } from '@/components/UserForm'
+import { View } from 'react-native'
 
 export default function Index() {
   return (
@@ -12,5 +12,5 @@ export default function Index() {
     >
       <UserForm />
     </View>
-  );
+  )
 }

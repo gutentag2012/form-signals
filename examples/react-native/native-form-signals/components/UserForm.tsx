@@ -52,7 +52,11 @@ export function UserForm() {
         <FormInput secureTextEntry />
       </form.FieldProvider>
 
-      <Button title="Submit" onPress={() => form.handleSubmit()} disabled={!form.canSubmit.value} />
+      <Button
+        title="Submit"
+        onPress={() => form.handleSubmit()}
+        disabled={!form.canSubmit.value}
+      />
     </form.FormProvider>
   )
 }
