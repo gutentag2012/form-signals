@@ -34,10 +34,10 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@formsignals/form-core": "0.4.6"
+    "@formsignals/form-core": "workspace:*"
   },
   "peerDependencies": {
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "keywords": [
     "signals",
