@@ -1,6 +1,6 @@
 {
   "name": "@formsignals/validation-adapter-zod",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Validation adapter for zod enabling the usage of zod schemas with signal forms",
   "author": "joshua.gawenda",
   "license": "MIT",
@@ -34,7 +34,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@formsignals/form-core": "0.4.6"
+    "@formsignals/form-core": "0.4.7"
   },
   "peerDependencies": {
     "zod": "^3.23.8"

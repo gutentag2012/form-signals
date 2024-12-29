@@ -1,3 +1,9 @@
+## 0.4.7 (2024-12-29)
+
+### 🩹 Fixes
+
+- next js type inference ([8b146ce](https://github.com/gutentag2012/form-signals/commit/8b146ce))
+
 ## 0.4.6 (2024-11-25)
 
 ### 🩹 Fixes
