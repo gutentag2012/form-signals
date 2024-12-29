@@ -25,6 +25,7 @@
     "example:react:complex:tanstack-form": "nx example complex-product-details-tanstack-form-react",
     "example:react:e-commerce:form-signals": "nx example e-commerce-form-signals-react",
     "example:react:files:form-signals": "nx example files-form-signals-react",
+    "example:react:next:form-signals": "nx example next-form-signals-react",
     "example:react:performance:form-signals": "nx example performance-test-form-signals-react",
     "example:react:simple:form-signals": "nx example simple-form-signals-react",
     "example:react:step-wizard:form-signals": "nx example step-wizard-form-signals-react",
