@@ -3,6 +3,7 @@ import { ErrorText } from '@/components/form/ErrorText'
 import { Button } from '@/components/ui/button'
 import { InputForm } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FormDevTools } from '@formsignals/dev-tools-react'
 import { useForm, useFormContext } from '@formsignals/form-react'
 import { ZodAdapter } from '@formsignals/validation-adapter-zod'
 import { useSignals } from '@preact/signals-react/runtime'
@@ -85,6 +86,7 @@ export function LoginForm() {
 
         <FormSubmitButton />
       </form>
+      <FormDevTools />
     </form.FormProvider>
   )
 }

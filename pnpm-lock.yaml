@@ -755,6 +755,9 @@ importers:
 
   examples/react/next-form-signals:
     dependencies:
+      '@formsignals/dev-tools-react':
+        specifier: workspace:*
+        version: link:../../../packages/dev-tools-react
       '@formsignals/form-core':
         specifier: workspace:*
         version: link:../../../packages/form-core
@@ -1125,7 +1128,7 @@ importers:
         specifier: workspace:*
         version: link:../form-core
       zod:
-        specifier: ^3.23.8
+        specifier: ^3.24.1
         version: 3.24.1
 
 packages:
