@@ -5,7 +5,7 @@ This is an example application that demonstrates how to use the `form-signals` l
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/gutentag2012/form-signals/tree/main/examples/react/next-form-signals?startScript=example&title=Form%20Signals%20&#124;%20Next%2Ejs%20Example)
 
 > [!NOTE]
-> For now I did not find a way to use the `@preact/signals-react-transform` package to automatically track signals, that is why you will finde the manual use of the `useSignals()` hook.
+> For now I did not find a way to use the `@preact/signals-react-transform` package to automatically track signals, that is why you will find the manual use of the `useSignals()` hook.
 
 ## Quick Start
 
