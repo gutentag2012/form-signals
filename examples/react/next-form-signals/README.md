@@ -23,4 +23,4 @@ pnpm example
 
 ## Relevant Files
 
-[//]: # (TODO: Update the following file links)
+- [`components/form/LoginForm.tsx`](./components/form/LoginForm.tsx): The main form components for the example.
