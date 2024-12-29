@@ -41,7 +41,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     minify: false,
     rollupOptions: {
       external: [
@@ -59,7 +59,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       fileName: (format, entryName) => {
         const folder = format === 'cjs' ? 'cjs' : 'esm'
-        const fileEnding = format === 'cjs' ? 'cjs' : 'js'
+        const fileEnding = format === 'cjs' ? 'cjs' : 'mjs'
         return `${folder}/${entryName}.${fileEnding}`
       },
       formats: ['es', 'cjs'],
@@ -79,7 +79,6 @@ export default defineConfig({
         'vite.config.ts',
         'src/TestComponent.tsx',
       ],
-      insertTypesEntry: true,
     }),
   ],
 })
