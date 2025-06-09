@@ -34,7 +34,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@formsignals/form-core": "0.4.7"
+    "@formsignals/form-core": "workspace:*"
   },
   "peerDependencies": {
     "zod": "^3.23.8"

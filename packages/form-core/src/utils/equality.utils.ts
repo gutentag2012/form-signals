@@ -1,7 +1,3 @@
-function isNullOrUndefined<T>(value: T): value is NonNullable<T> {
-  return value === null || value === undefined
-}
-
 /**
  * Checks if two values are equal. If they are objects or arrays, it will do a deep comparison instead of a reference check.
  *
@@ -25,7 +21,7 @@ function isNullOrUndefined<T>(value: T): value is NonNullable<T> {
 export function isEqualDeep(a: unknown, b: unknown): boolean {
   // Primitives + object references
   if (a === b) return true
-  if (isNullOrUndefined<unknown>(a) || isNullOrUndefined<unknown>(b))
+  if (a === null || a === undefined || b === null || b === undefined)
     return a === b
   if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
   if (a instanceof File && b instanceof File) return a === b
@@ -58,7 +54,7 @@ function getLeftUnequalPathsInternal(
   let internalAcc = acc
   // Primitives + object references
   if (a === b) return acc
-  if (isNullOrUndefined<unknown>(a) || isNullOrUndefined<unknown>(b))
+  if (a === null || a === undefined || b === null || b === undefined)
     return [...internalAcc, currentKey]
   if (a instanceof Date && b instanceof Date)
     return a.getTime() === b.getTime() ? acc : [...internalAcc, currentKey]

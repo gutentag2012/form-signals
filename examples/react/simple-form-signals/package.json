@@ -7,19 +7,19 @@
     "example": "vite"
   },
   "dependencies": {
-    "@formsignals/form-core": "^0.4.3",
-    "@formsignals/form-react": "^0.4.3",
-    "@preact/signals-react": "^2.2.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@formsignals/form-core": "workspace:^",
+    "@formsignals/form-react": "workspace:^",
+    "@preact/signals-react": "^3.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@preact/signals-react-transform": "^0.4.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.7.2",
-    "vite": "^5.4.11"
+    "@preact/signals-react-transform": "^0.5.2",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   },
   "stackblitz": {
     "startCommand": "npm run example",

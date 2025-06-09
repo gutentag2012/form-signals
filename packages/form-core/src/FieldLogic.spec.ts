@@ -1473,6 +1473,56 @@ describe('FieldLogic', () => {
         'Value must be less than or equal to 7',
       ])
     })
+    it("should allow for validation with array mixin values", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          name: "Name",
+          ages: [19, 20]
+        }
+      })
+      form.mount()
+
+      const field = form.getOrCreateField("name", {
+        validateMixin: ["ages.0", "ages.1"],
+        validator: ([name, age0, age1]) => {
+          if(name !== "Name") return "Name must be 'Name'"
+          if(age0 + age1 < 50) return "Ages must be at least 50"
+          return undefined
+        },
+        validatorOptions: {
+          validateOnMount: true
+        }
+      })
+      field.mount()
+
+      expect(field.errors.value[0]).toBe("Ages must be at least 50")
+      form.data.value.ages.value[0].data.value = 50
+      expect(field.errors.value[0]).toBeUndefined()
+      form.data.value.name.value = "Other Name"
+      expect(field.errors.value[0]).toBe("Name must be 'Name'")
+    })
+    it("should allow for nested validation of arrays", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          names: [{ first: 'John', last: 'Doe' }, { first: 'Jane', last: 'Doe' }],
+        }
+      })
+      form.mount()
+
+      const field = form.getOrCreateField('names', {
+        validateOnNestedChange: true,
+        validator: (value) => {
+          return value.some((item) => !item.first || !item.last)
+            ? 'All names must have a first and last name'
+            : undefined
+        },
+      })
+      field.mount()
+
+      expect(field.errors.value).toEqual([])
+      field.data.value[0].data.value.first.value = ''
+      expect(field.errors.value).toEqual(['All names must have a first and last name'])
+    })
   })
   describe('state', () => {
     it('should not be mounted after construction', () => {
@@ -2349,6 +2399,41 @@ describe('FieldLogic', () => {
       expect(field.transformedData.value).toBe('12')
       expect(field.transformedData.buffer.value).toBe(undefined)
       expect(field.transformedData.isValid.value).toBe(true)
+    })
+    it("should not show a transform error if the value is set back to the default value", () => {
+      const form = new FormLogic({
+        defaultValues: {
+          age: 20 as null | number
+        }
+      })
+      form.mount()
+
+      const field = form.getOrCreateField("age", {
+        transformFromBinding: (value: string) => {
+          if(!value) return null
+          const parsedNumber = Number.parseInt(value, 10)
+          if(Number.isNaN(parsedNumber)) {
+            return [parsedNumber, 'Input is not a number']
+          }
+          return parsedNumber
+        },
+        transformToBinding: (value, isValid) => {
+          if(!isValid) return "buffer"
+          if(value === null) return ""
+          return value.toString()
+        }
+      })
+      field.mount()
+
+      expect(field.transformedData.value).toBe('20')
+      field.transformedData.value = ""
+      expect(field.transformedData.isValid.value).toBeTruthy()
+      expect(form.data.value.age.value).toBeNull()
+      expect(form.errors.value.length).toBe(0)
+      field.transformedData.value = "asd"
+      expect(form.data.value.age.value).toBeNull()
+      expect(field.transformedData.isValid.value).toBeFalsy()
+      expect(field.errors.value.length).toBe(1)
     })
   })
 })
